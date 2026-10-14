@@ -8,7 +8,7 @@
 
 코드를 볼 필요가 없다면 저장소를 내려받지 마시고 배포본 하나만 받으면 됩니다.
 
-1. **[내려받기 — 최신 배포본](https://github.com/fansenryu-cmd/tugotl/releases/latest)** 페이지의 html 파일(약 30 MB). 같은 파일이 저장소의 [release/투고틀.html](https://github.com/fansenryu-cmd/tugotl/blob/main/release/투고틀.html)에도 있습니다.
+1. **[내려받기 — tugotl.html](https://github.com/fansenryu-cmd/tugotl/releases/latest/download/tugotl.html)** (최신 배포본, 약 30 MB. [배포 페이지](https://github.com/fansenryu-cmd/tugotl/releases/latest)). 같은 파일이 저장소의 [release/투고틀.html](https://github.com/fansenryu-cmd/tugotl/blob/main/release/투고틀.html)에도 있습니다.
    - 또는 웹에서 바로 열기: **https://fansenryu-cmd.github.io/tugotl/** 의 ‘웹에서 바로 열기’(같은 파일을 GitHub Pages로 띄운 것. 열어 둔 뒤 인터넷을 끊어도 됩니다.)
 2. 받은 `tugotl.html`(또는 `투고틀.html`)을 Chrome 또는 Edge에서 더블클릭으로 엽니다. HWP 엔진(rhwp, WebAssembly)·학회 양식 34개·투고 서식 15개가 전부 안에 들어 있어 **설치도, 인터넷도 필요 없습니다.** 원고는 PC 밖으로 나가지 않습니다.
 3. 확인(선택): 파일 옆의 [`투고틀.sha256`](https://github.com/fansenryu-cmd/tugotl/blob/main/release/투고틀.sha256)과 비교합니다. 윈도우 PowerShell: `Get-FileHash .\투고틀.html -Algorithm SHA256`
