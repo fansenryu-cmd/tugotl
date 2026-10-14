@@ -262,7 +262,7 @@ main.over .dropline { display: block; }
       <div class="mast-status" id="status" role="status" aria-live="polite"><span class="dot" aria-hidden="true"></span><span id="status-text">엔진 준비 중…</span></div>
       <div class="skins" id="skins" role="radiogroup" aria-label="화면 스킨"><span class="sk-label">스킨</span><button type="button" class="sw sw-default" data-skin="" role="radio" aria-label="다크 스튜디오(기본)" title="다크 스튜디오(기본)"></button><button type="button" class="sw sw-paper" data-skin="paper" role="radio" aria-label="종이·서지" title="종이·서지"></button><button type="button" class="sw sw-mono" data-skin="mono" role="radio" aria-label="모노크롬 미니멀" title="모노크롬 미니멀"></button><button type="button" class="sw sw-navy" data-skin="navy" role="radio" aria-label="네이비·크림" title="네이비·크림"></button><button type="button" class="sw sw-type" data-skin="type" role="radio" aria-label="타이포 편집" title="타이포 편집"></button><button type="button" class="sw sw-slack" data-skin="slack" role="radio" aria-label="보라(슬랙식, 이전 기본)" title="보라(슬랙식, 이전 기본)"></button><button type="button" class="sw sw-violet" data-skin="violet" role="radio" aria-label="바이올렛" title="바이올렛"></button></div>
       <div class="mast-note" id="status-note" hidden>본 투고 양식 편집은 프로그램 규칙에 따른 것으로 완벽한 편집이 아닙니다. 저장한 원고는 투고 전에 반드시 저자가 직접 확인해 주세요.</div>
-      <div class="side-fine">원고는 이 브라우저 안에서만 처리되며 전송되지 않습니다 · <a href="https://github.com/edwardkim/rhwp" target="_blank" rel="noopener">rhwp</a> · v1.2 · 빌드 2026-10-14 12:52</div>
+      <div class="side-fine">원고는 이 브라우저 안에서만 처리되며 전송되지 않습니다 · <a href="https://github.com/edwardkim/rhwp" target="_blank" rel="noopener">rhwp</a> · v1.2 · 빌드 2026-10-14 23:24</div>
     </div>
   </aside>
   <main id="main" tabindex="-1"></main>
@@ -21402,6 +21402,10 @@ main.over .dropline { display: block; }
           push("toc", "\uBAA9\uCC28 \uD56D\uBAA9(\uAC19\uC740 \uC81C\uBAA9\uC774 \uB4A4\uC5D0 \uB2E4\uC2DC \uB098\uC634)");
           continue;
         }
+      }
+      if (state2 === "toc" && short && (RE.refHead.test(t) || RE.abstractEnHead.test(t)) && nt && nt.length <= 40 && (headingLike(nt) || RE.refHead.test(nt) || RE.abstractEnHead.test(nt) || /^[가-힣](?:\s[가-힣]){1,5}$/.test(nt))) {
+        push("toc", "\uBAA9\uCC28 \uD56D\uBAA9(\uB05D \uC81C\uBAA9)");
+        continue;
       }
       if (RE.abstractHead.test(t) && !/^[Ⅰ-Ⅻ①-⑳㉠-㉭\d]/.test(t) && !(sawBody && blocks.some((b) => b.role === "abstractHead"))) {
         state2 = "abstractKo";
