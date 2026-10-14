@@ -8,7 +8,7 @@ const RE = {
   tocHead: /^[^가-힣A-Za-z0-9\sⅠ-Ⅻ]{0,3}\s*(목\s*차|차\s*례)\s*[^가-힣A-Za-z0-9\s]{0,3}$/,
   abstractHead: /^[^가-힣A-Za-z0-9\sⅠ-Ⅻ]{0,3}\s*((국문|한글|논문)\s*)?(초\s*록|요\s*약|개\s*요)(\s*문)?\s*[^가-힣A-Za-z0-9\s]{0,3}$/,
   abstractEnHead: /^[^가-힣A-Za-z0-9\sⅠ-Ⅻ]{0,3}\s*(abstract|summary|english\s*abstract)\s*[^가-힣A-Za-z0-9\s]{0,3}$/i,
-  refHead: /^[^가-힣A-Za-z0-9\s]{0,3}\s*(참\s*고\s*문\s*헌|참\s*고\s*자\s*료|인\s*용\s*문\s*헌|참\s*고\s*및\s*인\s*용\s*문\s*헌|references|bibliography|works\s+cited)\s*[^가-힣A-Za-z0-9\s(]{0,3}(\s*\(.*\))?$/i,
+  refHead: /^[^가-힣A-Za-z0-9\s]{0,3}\s*(참\s*고\s*문\s*헌|[參参]\s*考\s*文\s*[獻献]|참\s*고\s*자\s*료|인\s*용\s*문\s*헌|참\s*고\s*및\s*인\s*용\s*문\s*헌|references|bibliography|works\s+cited)(?:\s*[^가-힣A-Za-z0-9\s(]){0,3}(\s*\(.*\))?$/i,
   keywords: /^(?:[^가-힣A-Za-z0-9\sⅠ-Ⅻ]{0,3}\s*(?:국문\s*|한글\s*)?(?:주\s*제\s*어|핵\s*심\s*어|키\s*워\s*드|색\s*인\s*어|주\s*요\s*어|중\s*심\s*어)\s*(?:(?:[(（][^()（）]{1,24}[)）]\s*)?[^가-힣A-Za-z0-9\s:：(（\[【〔「『<〈‘“,.;·、]{0,2}\s*[:：〻￨|;；]|[^가-힣A-Za-z0-9\s:：(（\[【〔「『<〈‘“’”'",.;·、]{1,3}(?=\s|$))|[\[【〔]\s*(?:주\s*제\s*어|핵\s*심\s*어|키\s*워\s*드|색\s*인\s*어|주\s*요\s*어|중\s*심\s*어)\s*[\]】〕])/,
   keywordsEn: /^(?:[^가-힣A-Za-z0-9\sⅠ-Ⅻ]{0,3}\s*key[\s〻]*-?[\s〻]*words?\s*(?:(?:[(（][^()（）]{1,24}[)）]\s*)?[^가-힣A-Za-z0-9\s:：(（\[【〔「『<〈‘“,.;·、]{0,2}\s*[:：〻￨|;；]|[^가-힣A-Za-z0-9\s:：(（\[【〔「『<〈‘“’”'",.;·、]{1,3}(?=\s|$))|[\[【〔]\s*key\s*-?\s*words?\s*[\]】〕])/i,
   refSub: /^(<\s*)?\d+\s*[.)]\s*(기본\s*자료|자\s*료|단행본|논문|논저|기타|국내|국외|해외|신문|웹|사료|작품|1차|2차|참고\s*자료)/,
@@ -38,11 +38,12 @@ export function recognize(paragraphs, journal) {
   const margins = {}; for (const p of paragraphs) if (trimmed(p).length > 80) { const m = Math.round(p.marginLeft || 0); margins[m] = (margins[m] || 0) + 1; }
   const bodyMargin = +(Object.entries(margins).sort((a, b) => b[1] - a[1])[0] || [0])[0];
   // 점선·쪽번호로 끝나는 목차 줄. 본문 중에는 앞뒤 줄도 그런 꼴이거나, 장 번호로 시작하거나, 점선이 열 개 이상일 때만 목차로 본다(본문 속 짧은 점선 한 줄은 그대로)
-  const dotted = (x) => /(?:[·‧⋅․…⋯.\-─_]\s*){5,}\s*\d{1,4}\s*$/.test(x);
+  const dotted = (x) => /(?:[·‧⋅․…⋯.\-─_]\s*){5,}\s*\d{1,4}\s*$/.test(x) || /[가-힣A-Za-z0-9)\]>]\s*(?:[·‧⋅․…⋯.]\s*){8,}\s*(?:[ⅰ-ⅿⅠ-Ⅻ]{1,4}|[ivxIVX]{1,5})?\s*$/.test(x);   // 쪽 번호가 로마자이거나 없는 점선 줄(앞쪽 쪽번호 정리 뒤)도 목차 줄
   const dottedNear = (k) => { for (const dir of [-1, 1]) { let r = k + dir; for (let seen = 0; paragraphs[r] && seen < 2; r += dir) { const x = trimmed(paragraphs[r]); if (!x) continue; if (dotted(x)) return true; seen++; } } return false; };   // 앞뒤 두 줄(빈 줄 빼고) 안에 목차 줄이 있으면 목차 묶음
   const indented = (p) => (p.marginLeft || 0) >= 8 && (p.marginLeft || 0) >= bodyMargin + 8;
   const sentenceEnd = (t) => /(다|요|함|임|음|까|네|죠)\s*[.．]$/.test(t);
   let state = 'front';     // front → toc → abstractKo → body → references → abstractEn
+  let refSubLast = 0;   // 참고문헌 번호 소분류의 마지막 번호
   let h4Idx = -1;   // 가나다 목록의 마지막 글자 위치(장·절·항이 바뀌면 처음부터)
   let lastRole = ''; let sawTitle = false, sawBody = false, lastWasHeading = false, inQuoteRun = false;
   const headingLike = (t) => RE.h1Num.test(t) || RE.h1Roman.test(t) || RE.h2.test(t) || RE.h3.test(t);
@@ -60,10 +61,12 @@ export function recognize(paragraphs, journal) {
 
     // ── 경계 제목들 (상태 전환)
     if (RE.tocHead.test(t)) { state = 'toc'; push('tocHead', '목차 제목'); continue; }
-    if (state === 'toc' && (RE.refHead.test(t) || RE.abstractEnHead.test(t) || RE.abstractHead.test(t))) { const key = t.replace(/\s+/g, ''); let again = false; for (let q = i + 1; q < paragraphs.length; q++) if (trimmed(paragraphs[q]).replace(/\s+/g, '') === key) { again = true; break; } if (again) { push('toc', '목차 항목(같은 제목이 뒤에 다시 나옴)'); continue; } }   // 목차 속 ‘참고문헌’·‘Abstract’ 항목은 경계 제목이 아니다
+    if (state === 'toc' && (RE.refHead.test(t) || RE.abstractEnHead.test(t) || RE.abstractHead.test(t))) { const hk = (x) => x.replace(/[^가-힣A-Za-z0-9]/g, '').toLowerCase(); const key = hk(t); let again = false; for (let q = i + 1; q < paragraphs.length; q++) if (hk(trimmed(paragraphs[q])) === key) { again = true; break; }
+      if (!again && blocks.some((b) => /^(refHead|abstractHead|abstractEnHead)$/.test(b.role) && hk(trimmed({ text: b.text })) === key)) again = true;   // 앞에 같은 제목이 이미 제목으로 나왔으면 이것은 목차 항목(목차가 초록 뒤에 오는 원고). 비교는 대소문자·기호 무시
+      if (again) { push('toc', '목차 항목(같은 제목이 뒤에 다시 나옴)'); continue; } }   // 목차 속 ‘참고문헌’·‘Abstract’ 항목은 경계 제목이 아니다
     if (RE.abstractHead.test(t) && !/^[Ⅰ-Ⅻ①-⑳㉠-㉭\d]/.test(t) && !(sawBody && blocks.some((b) => b.role === 'abstractHead'))) { state = 'abstractKo'; push('abstractHead', '국문초록 제목'); continue; }   // 번호 매김 기호로 시작하면 초록 머리가 아니다. 본문이 시작된 뒤 두 번째 초록 머리는 보지 않는다
     if (RE.abstractEnHead.test(t)) { state = 'abstractEn'; push('abstractEnHead', 'Abstract 제목'); continue; }
-    if (RE.refHead.test(t)) { state = 'references'; push('refHead', '참고문헌 제목'); continue; }
+    if (RE.refHead.test(t)) { state = 'references'; refSubLast = 0; push('refHead', '참고문헌 제목'); continue; }
     const kwHead = RE.keywords.exec(t) || RE.keywordsEn.exec(t);
     const kwItems = kwHead ? t.slice(kwHead[0].length).replace(/[.．。!?！？]\s*["”’'」』)]*\s*$/, '').split(/[,，、;；·・ㆍ\/]/).map((x) => x.trim()).filter(Boolean) : [];
     const kwPred = (x) => { const w = (x || '').split(/\s+/); const z = w.at(-1) || ''; const jg = z ? (z.charCodeAt(z.length - 1) - 0xAC00) % 28 : -1;   // 서술어로 끝나는 조각: ‘범주이다’·‘범주였다’·‘범주라는 것’·‘고를 것인가’·‘범주를 다룸’·‘다음과 같음’
@@ -82,10 +85,17 @@ export function recognize(paragraphs, journal) {
           if (run.length && chars <= 4000 && run.length <= 100) for (const b of run) { b.role = 'abstract'; b.reason = '주제어 줄 앞 본문(초록 제목 없음)'; }
         }
         push('keywords', '주제어'); if (state === 'abstractKo') state = 'afterAbstract'; } continue; }
-    if (RE.keywordsEn.test(t) && !kwSentence) { push('keywordsEn', 'Keywords'); continue; }
+    if (RE.keywordsEn.test(t) && !kwSentence) {
+      if (state === 'references') {   // Abstract 제목 없이 참고문헌 뒤에 붙은 영문초록: Keywords 줄 바로 앞의 영문 서술 줄(한글·연도·쪽수·URL 표지 없음)을 영문초록으로
+        const enProse = (b) => b.role === 'ref' && RE.latin.test(trimmed({ text: b.text })) && trimmed({ text: b.text }).length >= 3 && !/\b(?:1[5-9]|20)\d{2}\b|\bpp?\.|\bvol\.|\bno\.\s*\d|https?:|doi|\bibid\b/i.test(b.text);
+        let k = blocks.length - 1; const run = [];
+        for (; k >= 0 && (blocks[k].role === 'blank' || enProse(blocks[k])); k--) if (blocks[k].role !== 'blank') run.push(blocks[k]);
+        if (run.length >= 4 && run.reduce((a, b) => a + (b.text || '').length, 0) >= 300) for (const b of run) { b.role = 'abstractEn'; b.reason = 'Keywords 앞 영문 줄(Abstract 제목 없음)'; }
+      }
+      push('keywordsEn', 'Keywords'); continue; }
     if (RE.dates.test(t) && (short || (t.length <= 160 && /(?:19|20)\d{2}\s*[.년\-]/.test(t)))) { push('dates', '투고·심사일'); continue; }
     const dottedToc = state !== 'references' && p.styleName !== 'quote' && !indented(p) && dotted(t) && (state === 'front' || state === 'toc' || lastRole === 'toc' || dottedNear(i) || /(?:[·‧⋅․…⋯.\-─_]\s*){10,}\s*\d{0,4}\s*$/.test(t) || /^(?:[IVXⅠ-Ⅻ\d]{1,3}(?:[.．]\d{1,2})*[.．)]\s|제\s*\d+\s*[장절부]|[가-하][.．)]\s)/.test(t));
-    const tocCont = state !== 'references' && short && next && !dotted(t) && dotted(nt) && (lastRole === 'toc' || lastRole === 'tocHead') && !indented(p) && p.styleName !== 'quote';   // 목차 항목이 두 줄로 나뉜 앞줄(쪽 번호는 뒷줄에)
+    const tocCont = state !== 'references' && t.length <= 140 && next && !dotted(t) && dotted(nt) && (lastRole === 'toc' || lastRole === 'tocHead') && !indented(p) && p.styleName !== 'quote';   // 목차 항목이 두 줄로 나뉜 앞줄(쪽 번호는 뒷줄에)
     if (tocCont) { push('toc', '목차 항목 이어짐(줄바꿈)'); continue; }
     if (RE.caption.test(t) && short && !dottedToc) { push('caption', '표·그림 제목'); continue; }
 
@@ -101,6 +111,7 @@ export function recognize(paragraphs, journal) {
       if (RE.subtitlePrefix.test(t) && short) { push(prev && /En$/.test(prev.role) ? 'subtitleEn' : 'subtitle', '부제 기호로 시작'); continue; }
       if (RE.latin.test(t) && short && !authorEnLike(t) && prev && /^(title|subtitle)$/.test(prev.role)) { push('titleEn', '영문 제목(제목 바로 뒤 라틴 문자)'); continue; }
       if (RE.author.test(t)) { push('author', '이름 형태'); continue; }
+      if (/^[가-힣]\s[가-힣]\s[가-힣]\s*[*＊†‡]*(?:\s*[(（][^)）]{1,40}[)）])?\s*$/.test(t)) { push('author', '이름 형태(글자 사이 공백)'); continue; }
       if (authorEnLike(t) && prev && /En$/.test(prev.role)) { push('authorEn', '영문 이름 형태'); continue; }
       if (/^[*＊]\s*\S|^\*\*/.test(t) && t.length < 120) { push('affiliation', '별표 소속 표기'); continue; }
       if (sawTitle && blocks.some((b) => b.role === 'author') && t.length < 100 && !headingLike(t) && /(대학교?|대학원|연구소|연구원|학과|학부|박사|교수|강사|University|Institute|Department|College)/i.test(t)) { push('affiliation', '소속 표기(이름 뒤)'); continue; }
@@ -123,16 +134,22 @@ export function recognize(paragraphs, journal) {
 
     // ── 국문초록 (장 번호 형태의 줄이 나오면 초록이 끝난 것으로 본다 — 주제어 줄이 없는 원고)
     if (state === 'abstractKo') {
-      if (short && (RE.h1Num.test(t) || RE.h1Roman.test(t)) && !sentenceEnd(t)) state = 'body';
+      if (short && (RE.h1Num.test(t) || RE.h1Roman.test(t)) && !sentenceEnd(t) && !(/^[Ⅰ-Ⅻ]+[가-힣]/.test(t) && t.length > 30)) state = 'body';
       else if (/^[*＊†‡]{1,2}\s*\S/.test(t) && t.length < 160 && /(대학|연구소|연구원|학과|학부|교수|박사|강사|@|University|Institute|Department|교신|e-?mail)/i.test(t)) { push('affiliation', '별표 소속·교신 표기(국문초록부)'); continue; }
-      else { push('abstract', '국문초록 본문'); continue; }
+      else { let ac = 0; for (let k = blocks.length - 1; k >= 0 && /^(abstract|affiliation|blank)$/.test(blocks[k].role); k--) ac += (blocks[k].text || '').length;   // 국문초록이 4500자를 넘으면 본문이 초록으로 빨려 든 것(주제어·장 제목이 없는 원고)
+        if (ac > 4500) state = 'body'; else { push('abstract', '국문초록 본문'); continue; } }
     }
     if (state === 'afterAbstract') { state = 'body'; }
 
     // ── 참고문헌
     if (state === 'references') {
-      if (RE.refSub.test(t) && short) { push('refSub', '참고문헌 분류'); continue; }
-      if (short && /^(\d+\s*[.)]|[<＜]\s*\d|[가-힣A-Za-z]{1,12}\s*$)/.test(t) && !/[,，]/.test(t) && !/^(?:1[5-9]|20)\d{2}\b/.test(t) && !(nt && /^[가-힣A-Za-z]{1,12}$/.test(t) && /^(?:1[5-9]|20)\d{2}\s*[.)．]/.test(nt))) { push('refSub', '참고문헌 분류(짧은 소제목)'); continue; }   // 연도로 시작하는 줄, 바로 뒤가 연도로 시작하는 한 낱말(저자 이름)은 소분류가 아니다
+      const pbk = (() => { let k = blocks.length - 1; while (k >= 0 && blocks[k].role === 'blank') k--; return k >= 0 ? blocks[k] : null; })();
+      const pbt = pbk ? trimmed({ text: pbk.text }) : '';
+      if (RE.refSub.test(t) && short) { refSubLast = +(/\d+/.exec(t) || [0])[0]; push('refSub', '참고문헌 분류'); continue; }
+      const subNum = /^(\d+)\s*[.)]/.exec(t); const subOne = /^[가-힣A-Za-z]{1,12}$/.test(t);   // 줄바꿈 조각(쪽 번호 ‘212.’, 저자 이름·제목 끝 낱말)이 소분류가 되지 않게: 번호는 1 또는 앞 번호+1, 한 낱말은 분류어이거나 앞 줄이 마침표·숫자·닫는 괄호로 끝날 때만
+      const subCat = /^(?:단행본|논문|논저|자료|기타|신문|웹|사료|작품|국내|국외|해외|외국|국문|영문|한국|일본|중국|서양|동양|저서|연구|학위|보고서|잡지|인터넷|기사|문헌|서적|도서|국내서|국외서|동양서|서양서|국내문헌|국외문헌|해외문헌|외국문헌|동양문헌|서양문헌|참고자료|기본자료|Korean|English|Japanese|Chinese|Books?|Articles?|Journals?|Web|Others?|Primary|Secondary|Sources?)$/i.test(t);
+      const subOk = subNum ? (+subNum[1] === 1 || +subNum[1] === refSubLast + 1) : subOne ? (subCat || !pbk || /^(refHead|refSub)$/.test(pbk.role) || /[.。)\]”’"'」』\d]$/.test(pbt)) : true;
+      if (short && subOk && /^(\d+\s*[.)]|[<＜]\s*\d|[가-힣A-Za-z]{1,12}\s*$)/.test(t) && !/[,，]/.test(t) && !/^(?:1[5-9]|20)\d{2}\b/.test(t) && !(nt && /^[가-힣A-Za-z]{1,12}$/.test(t) && /^(?:1[5-9]|20)\d{2}\s*[.)．]/.test(nt))) { if (subNum) refSubLast = +subNum[1]; push('refSub', '참고문헌 분류(짧은 소제목)'); continue; }   // 연도로 시작하는 줄, 바로 뒤가 연도로 시작하는 한 낱말(저자 이름)은 소분류가 아니다
       push('ref', '참고문헌 항목'); continue;
     }
 
@@ -141,7 +158,7 @@ export function recognize(paragraphs, journal) {
       const enBlocks = blocks.slice(blocks.findLastIndex((b) => b.role === 'abstractEnHead') + 1).filter((b) => b.role !== 'blank');
       const hangulRatio = (t.match(/[가-힣]/g) || []).length / Math.max(1, t.replace(/\s/g, '').length);
       const latinChapter = short && /^(\d{1,2}|[IVX]{1,4})[.．]\s+[A-Z]/.test(t) && enBlocks.some((b) => b.role === 'keywordsEn' || b.role === 'abstractEn');   // 영문 논문: Keywords 뒤의 ‘1. Introduction’부터 본문
-      if ((headingLike(t) && short && hasHangul(t) && !sentenceEnd(t)) || latinChapter || (hangulRatio > 0.5 && t.length > 60 && enBlocks.some((b) => b.role === 'abstractEn'))) { state = 'body'; }
+      if ((headingLike(t) && short && hasHangul(t) && !sentenceEnd(t)) || latinChapter || (hangulRatio > 0.5 && t.length > 60 && enBlocks.some((b) => b.role === 'abstractEn')) || (hangulRatio > 0.5 && t.length >= 20 && enBlocks.some((b) => b.role === 'abstractEn') && blocks.some((b) => b.role === 'author') && nt.length >= 10 && ((nt.match(/[가-힣]/g) || []).length / Math.max(1, nt.replace(/\s/g, '').length)) > 0.5)) { state = 'body'; }   // 국문 저자·제목이 이미 나온 원고에서 영문초록 뒤 한글 줄이 두 줄 이어지면(한 줄만 낀 쪽 머리말은 그대로) 본문으로 돌아간다
       else if (hangulRatio > 0.5 && t.length <= 40 && !sentenceEnd(t) && enBlocks.some((b) => b.role === 'keywordsEn' || b.role === 'abstractEn') && !blocks.some((b) => b.role === 'author')) {
         // 영문초록·Keywords 뒤에 한글 줄이 처음 나오면 앞부분(국문 제목·저자)이 시작된 것으로 본다. 앞서 잡은 라틴 문자 제목은 영문 제목으로 돌린다.
         const tb = blocks.find((b) => b.role === 'title'); if (tb && RE.latin.test(trimmed({ text: tb.text }))) { tb.role = 'titleEn'; tb.reason = '영문 제목(국문 제목이 뒤에 옴)'; sawTitle = false; }
@@ -170,7 +187,7 @@ export function recognize(paragraphs, journal) {
     // 각주 본문처럼 보이는 줄("1) 김철수, 「…」, 『…』, 2019, 12쪽.")과 "다. 그러나 …" 같은 줄바꿈 조각은 제목 후보에서 뺀다
     const citationLike = /[「｢『󰡔]/.test(t) || (/\b(1[89]|20)\d{2}\b/.test(t) && /\d\s*(쪽|면)|pp?\.\s*\d/.test(t));
     const noteLike = /https?:\/\/|www\./i.test(t) || /(?:\d|\))\s*(?:쪽|면)\s*[.)]?\s*$/.test(t) || /\bpp?\.\s*[\d\-–~∼\s,]+\.?\s*$/i.test(t) || /(?:앞의|위의|같은|동일한)\s*(?:책|글|논문|논저)|\b(?:ibid|op\.\s*cit)\b/i.test(t) || ((t.match(/[,，]/g) || []).length >= 2 && (/\b(?:1[5-9]|20)\d{2}\b/.test(t) || /[.。]\s*$/.test(t))) || (/^\d{1,2}\s*[)）]/.test(t) && ((/^\d{1,2}\s*[)）]\s*[“"]/.test(t) && t.length >= 40) || (t.match(/[.。]\s+\S/g) || []).length >= 2 || /(?:1[5-9]|20)\d{2}(?:\s*[-–~]\s*\d{1,4})?\s*[.。]\s*$/.test(t)));   // 쪽 끝맺음·URL·‘앞의 책’·쉼표가 많은 서지 꼴 = 각주 글(제목 아님)
-    const headCand = short && !noteLike && !sentenceEnd(t) && !(indented(p) && t.length > 30) && !citationLike;
+    const headCand = short && !noteLike && !sentenceEnd(t) && !(indented(p) && t.length > 30) && !citationLike && !(/^[Ⅰ-Ⅻ]+[가-힣]/.test(t) && t.length > 30);   // ‘Ⅱ장에서는 …’처럼 로마자 바로 뒤에 한글이 붙은 30자 넘는 줄은 문장 조각(초록 속 장 소개)
     if (headCand && RE.h3.test(t)) { push('h3', '항 번호'); continue; }
     if (headCand && RE.h2.test(t)) { push('h2', '절 번호'); continue; }
     if (headCand && (RE.h1Num.test(t) || RE.h1Roman.test(t))) { push('h1', '장 번호'); continue; }
