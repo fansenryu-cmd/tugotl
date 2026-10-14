@@ -1,0 +1,20 @@
+import fs from 'node:fs'; import JSZip from 'jszip';
+import { initSync, HwpDocument } from '../node_modules/@rhwp/core/rhwp.js';
+globalThis.measureTextWidth=(f,t)=>t.length*10;
+initSync({ module: fs.readFileSync(new URL('../node_modules/@rhwp/core/rhwp_bg.wasm', import.meta.url)) });
+const d=new HwpDocument(new Uint8Array(fs.readFileSync('templates/iall.hwp')));
+const bytes = d.exportHwpx();
+const zip = await JSZip.loadAsync(bytes);
+const names = Object.keys(zip.files); console.log('entries', names.length, names.filter(n=>/hpf|section/.test(n)));
+const f = zip.file('Contents/content.hpf'); let x = await f.async('string');
+console.log('before has section1', x.includes('section1'));
+x = x.replace(/<opf:item[^>]*section[1-9]\d*\.xml[^>]*\/>/g, '').replace(/<opf:itemref[^>]*idref="section[1-9]\d*"[^>]*\/>/g, '');
+console.log('after replace has section1', x.includes('section1'));
+zip.file('Contents/content.hpf', x);
+console.log('zip.file after set has section1', (await zip.file('Contents/content.hpf').async('string')).includes('section1'));
+zip.remove('Contents/section1.xml');
+const out = await zip.generateAsync({ type: 'uint8array', compression: 'DEFLATE' });
+const z2 = await JSZip.loadAsync(out);
+console.log('regenerated has section1 in hpf', (await z2.file('Contents/content.hpf').async('string')).includes('section1'), 'entries', Object.keys(z2.files).filter(n=>/hpf|section/.test(n)));
+// 같은 이름이 두 번 들어있는지 원본 zip 중앙 디렉터리 직접 검사
+const buf = Buffer.from(bytes); let cnt=0, pos=0; while ((pos = buf.indexOf('Contents/content.hpf', pos)) !== -1) { cnt++; pos += 5; } console.log('raw occurrences of name', cnt);

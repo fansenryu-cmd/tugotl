@@ -1,0 +1,10 @@
+import fs from 'node:fs'; import JSZip from 'jszip';
+const zip = await JSZip.loadAsync(fs.readFileSync(process.argv[2]));
+const f = zip.file('Contents/content.hpf'); console.log('file?', !!f, f && f.name, 'dir?', f && f.dir);
+const x = await f.async('string'); console.log('len', x.length, 'has section1', x.includes('section1'), 'charCode of first chars', [...x.slice(0,3)].map(c=>c.charCodeAt(0)));
+const y = x.replace(/<opf:item[^>]*section[1-9]\d*\.xml[^>]*\/>/g, '').replace(/<opf:itemref[^>]*idref="section[1-9]\d*"[^>]*\/>/g, '');
+console.log('after replace has section1', y.includes('section1'));
+zip.file('Contents/content.hpf', y);
+const out = await zip.generateAsync({ type: 'uint8array', compression: 'DEFLATE' });
+const z2 = await JSZip.loadAsync(out); console.log('reread has section1', (await z2.file('Contents/content.hpf').async('string')).includes('section1'));
+console.log('entries', Object.keys(z2.files).filter(n=>n.includes('hpf')));

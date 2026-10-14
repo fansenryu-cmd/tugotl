@@ -1,0 +1,20 @@
+# 의존성·빌드
+node_modules/
+dist/
+# 검증 원고·산출물 — 개인 논문과 제3자 저작물이므로 공개 저장소에 올리지 않음
+tests/원고/
+tests/원고_pdf/
+tests/out/
+tests/report*.json
+tests/batch*.log
+tests/audit_*/
+out/
+# 작업 메모
+.claude/
+*.log
+Thumbs.db
+.DS_Store
+
+# 배포본은 release/ 에 올린다(dist는 빌드 작업 폴더)
+# 외부 논문 말뭉치 검증(추출 텍스트·산출물·기록 전부) — 공개 저장소에 올리지 않음
+tests/corpus/

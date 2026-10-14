@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>투고틀 디자인 방향 5안</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600;700&family=Noto+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root { --page: #f4f3ef; --ink: #1a1a1a; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--page); color: var(--ink); font-family: Pretendard, 'Noto Sans KR', system-ui, sans-serif; line-height: 1.55; }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 40px 20px 80px; }
+  h1 { font-family: 'Noto Serif KR', serif; font-weight: 600; font-size: 28px; margin: 0 0 6px; letter-spacing: -0.01em; }
+  .lead { color: #555; margin: 0 0 36px; font-size: 14px; }
+  .sample { margin: 0 0 56px; }
+  .sample > header { display: flex; align-items: baseline; gap: 14px; margin: 0 0 12px; }
+  .sample > header .n { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #888; }
+  .sample > header h2 { margin: 0; font-size: 18px; font-weight: 700; }
+  .sample > header .ref { font-size: 12px; color: #666; }
+  .sample p.why { margin: 0 0 14px; font-size: 13px; color: #444; max-width: 760px; }
+  /* ── 화면 틀(공통 구조, 테마마다 변수만 다름) */
+  .app { --bg: #fff; --side: #3f0e40; --side-ink: #fff; --side-dim: rgba(255,255,255,.6); --ink: #1d1c1d; --dim: #616061; --line: #e5e5e5; --card: #fff; --accent: #007a5a; --accent-ink: #fff; --chip: #f0f0f0; --radius: 8px; --font: Pretendard, 'Noto Sans KR', system-ui, sans-serif; --head: var(--font); --mono: 'IBM Plex Mono', monospace;
+    display: grid; grid-template-columns: 236px 1fr; height: 520px; border: 1px solid #ddd; border-radius: 12px; overflow: hidden; background: var(--bg); color: var(--ink); font-family: var(--font); font-size: 13px; box-shadow: 0 20px 50px -30px rgba(0,0,0,.25); }
+  .side { background: var(--side); color: var(--side-ink); padding: 18px 16px; display: flex; flex-direction: column; gap: 14px; }
+  .brand { font-family: var(--head); font-weight: 700; font-size: 18px; letter-spacing: -0.01em; }
+  .brand small { display: block; font-weight: 400; font-size: 11px; color: var(--side-dim); margin-top: 2px; }
+  .lab { font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--side-dim); }
+  .sel { border: 1px solid rgba(255,255,255,.18); background: rgba(255,255,255,.08); border-radius: 6px; padding: 8px 10px; font-size: 12px; }
+  .menu { display: flex; flex-direction: column; gap: 2px; }
+  .menu div { padding: 7px 10px; border-radius: 6px; font-size: 12px; color: var(--side-dim); }
+  .menu div.on { background: rgba(255,255,255,.14); color: var(--side-ink); font-weight: 600; }
+  .status { margin-top: auto; font-size: 11px; color: var(--side-dim); }
+  .status b { color: var(--side-ink); font-weight: 500; }
+  .main { padding: 22px 26px; display: flex; flex-direction: column; gap: 16px; }
+  .top { display: flex; align-items: center; gap: 10px; }
+  .top h3 { margin: 0; font-family: var(--head); font-size: 17px; font-weight: 700; }
+  .top .sub { color: var(--dim); font-size: 12px; }
+  .top .sp { flex: 1; }
+  .btn { border: 1px solid var(--line); background: var(--card); color: var(--ink); border-radius: var(--radius); padding: 7px 14px; font-size: 12px; font-weight: 600; }
+  .btn.pri { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  .drop { flex: 1; border: 1.5px dashed var(--line); border-radius: var(--radius); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; text-align: center; color: var(--dim); background: var(--card); }
+  .drop b { color: var(--ink); font-size: 15px; font-family: var(--head); }
+  .drop .fmt { font-family: var(--mono); font-size: 11px; letter-spacing: .04em; }
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; }
+  .chip { background: var(--chip); border-radius: 999px; padding: 3px 9px; font-size: 11px; color: var(--dim); }
+  .note { font-size: 11.5px; color: var(--dim); border-top: 1px solid var(--line); padding-top: 10px; }
+  /* ── 1안 종이·서지 */
+  .t-paper { --bg: #f7f4ec; --side: #f1ece0; --side-ink: #2b2620; --side-dim: #7a7266; --ink: #2b2620; --dim: #6f675c; --line: #d9d2c3; --card: #fbf9f4; --accent: #b23a2a; --accent-ink: #fff; --chip: #ebe5d7; --radius: 4px; --head: 'Noto Serif KR', serif; }
+  .t-paper .side { border-right: 1px solid var(--line); }
+  .t-paper .sel { border-color: var(--line); background: #fbf9f4; }
+  .t-paper .menu div.on { background: #e4ddcc; }
+  /* ── 2안 모노크롬 미니멀 */
+  .t-mono { --bg: #fff; --side: #fafafa; --side-ink: #111; --side-dim: #777; --ink: #111; --dim: #666; --line: #e6e6e6; --card: #fff; --accent: #111; --accent-ink: #fff; --chip: #f2f2f2; --radius: 6px; }
+  .t-mono .side { border-right: 1px solid var(--line); }
+  .t-mono .sel { border-color: var(--line); background: #fff; }
+  .t-mono .menu div.on { background: #ededed; }
+  /* ── 3안 다크 스튜디오 */
+  .t-dark { --bg: #141416; --side: #0e0e10; --side-ink: #f2f2f0; --side-dim: #8a8a86; --ink: #ececea; --dim: #9b9b96; --line: #2a2a2e; --card: #1b1b1e; --accent: #e8b14a; --accent-ink: #141416; --chip: #26262a; --radius: 8px; }
+  .t-dark .side { border-right: 1px solid var(--line); }
+  .t-dark .sel { border-color: var(--line); background: #17171a; }
+  .t-dark .menu div.on { background: #222226; }
+  .t-dark .btn { background: #1b1b1e; border-color: #333; color: #ececea; }
+  .t-dark .btn.pri { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  /* ── 4안 네이비·크림 */
+  .t-navy { --bg: #f6f5f0; --side: #1f2a44; --side-ink: #fff; --side-dim: rgba(255,255,255,.55); --ink: #1e2230; --dim: #5f6675; --line: #dcd8cc; --card: #fffdf8; --accent: #1f2a44; --accent-ink: #fff; --chip: #ebe7dc; --radius: 6px; }
+  .t-navy .menu div.on { background: rgba(255,255,255,.12); }
+  .t-navy .lab { color: #c9a961; }
+  /* ── 5안 타이포 편집 */
+  .t-type { --bg: #fff; --side: #fff; --side-ink: #000; --side-dim: #666; --ink: #000; --dim: #555; --line: #000; --card: #fff; --accent: #1b3fe0; --accent-ink: #fff; --chip: #fff; --radius: 0; }
+  .t-type .side { border-right: 2px solid #000; }
+  .t-type .sel { border: 1px solid #000; background: #fff; border-radius: 0; }
+  .t-type .menu div.on { background: #000; color: #fff; }
+  .t-type .btn { border-radius: 0; border: 1px solid #000; }
+  .t-type .chip { border: 1px solid #000; border-radius: 0; color: #000; }
+  .t-type .drop { border: 1px solid #000; }
+  .t-type .brand { font-size: 22px; letter-spacing: -0.03em; }
+  .t-type .top h3 { font-size: 22px; letter-spacing: -0.02em; }
+  .palette { display: flex; gap: 6px; margin: 10px 0 0; }
+  .palette span { width: 26px; height: 18px; border-radius: 3px; border: 1px solid rgba(0,0,0,.12); }
+  .reco { background: #fff; border: 1px solid #ddd; border-radius: 10px; padding: 18px 22px; margin: 0 0 40px; font-size: 13.5px; }
+  .reco h2 { margin: 0 0 8px; font-size: 16px; }
+  .reco ol { margin: 6px 0 0 18px; padding: 0; }
+  .reco li { margin: 4px 0; }
+  @media (max-width: 720px) { .app { grid-template-columns: 1fr; height: auto; } .side { flex-direction: row; flex-wrap: wrap; } .status { margin: 0; width: 100%; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>투고틀 디자인 방향 5안</h1>
+  <p class="lead">같은 화면(투고처 선택 · 원고 놓기 · 적용 · 저장)에 색·글꼴·선만 다르게 입힌 것입니다. nook.ai.kr와 designrefs.com에서 고른 참고 사이트를 각 안에 적었습니다.</p>
+
+  <div class="reco">
+    <h2>공통으로 손볼 것 (어느 안을 고르든)</h2>
+    <ol>
+      <li>사이드바의 진보라(#3f0e40)는 슬랙을 연상시키고 채도가 높습니다. 밝은 중성색이나 어두운 단색 한 가지로 바꾸면 화면이 바로 차분해집니다.</li>
+      <li>버튼은 ‘적용’ 하나만 채운 색, 나머지는 선 버튼으로. 지금은 설정·적용·저장이 비슷한 무게입니다.</li>
+      <li>간격을 8px 배수로 통일하고(8·16·24·32), 카드 안쪽 여백을 늘립니다. 선은 1px 연회색 하나만 씁니다.</li>
+      <li>글자 크기는 네 단계만(제목 17–22, 본문 13–14, 보조 11–12, 라벨 10 대문자 자간). 본문은 Pretendard를 유지하고, 제목에만 명조를 섞을지 결정합니다.</li>
+      <li>상태 표시(‘엔진 준비됨’, 경고 배지)는 색 대신 점·아이콘과 짧은 문장으로. 빨강은 정오표에만 남깁니다.</li>
+      <li>빈 화면(원고를 놓기 전)에 지원 형식과 다음 할 일을 한 줄씩만. 긴 설명은 도움말로 보냅니다.</li>
+    </ol>
+  </div>
+
+  <section class="sample">
+    <header><span class="n">01</span><h2>종이·서지</h2><span class="ref">참고: 이솝(Aesop), Sulki &amp; Min, Minimal Gallery</span></header>
+    <p class="why">문학 학술지라는 성격에 가장 가깝습니다. 미색 바탕과 명조 제목, 붉은 먹색 하나. 사이드바도 종이색이라 화면이 한 장의 원고처럼 읽힙니다. 추천 1순위.</p>
+    <div class="app t-paper" data-mock></div>
+    <div class="palette"><span style="background:#f7f4ec"></span><span style="background:#f1ece0"></span><span style="background:#2b2620"></span><span style="background:#b23a2a"></span><span style="background:#d9d2c3"></span></div>
+  </section>
+
+  <section class="sample">
+    <header><span class="n">02</span><h2>모노크롬 미니멀</h2><span class="ref">참고: Vercel, Levels, Siteinspire</span></header>
+    <p class="why">흰 바탕·검정 글자·연회색 선, 채운 버튼 하나. 도구다운 인상이 가장 또렷하고 구현이 제일 쉽습니다(색 변수만 교체). 추천 2순위.</p>
+    <div class="app t-mono" data-mock></div>
+    <div class="palette"><span style="background:#fff"></span><span style="background:#fafafa"></span><span style="background:#111"></span><span style="background:#e6e6e6"></span><span style="background:#f2f2f2"></span></div>
+  </section>
+
+  <section class="sample">
+    <header><span class="n">03</span><h2>다크 스튜디오</h2><span class="ref">참고: Dark Mode Design, FORMAT</span></header>
+    <p class="why">밤에 오래 작업하는 연구자에게 편한 어두운 화면. 호박색 강조 하나만. 미리보기(흰 쪽)와 대비가 커서 원고가 돋보입니다. 라이트·다크 전환용 2안으로 두면 좋습니다.</p>
+    <div class="app t-dark" data-mock></div>
+    <div class="palette"><span style="background:#141416"></span><span style="background:#0e0e10"></span><span style="background:#ececea"></span><span style="background:#e8b14a"></span><span style="background:#2a2a2e"></span></div>
+  </section>
+
+  <section class="sample">
+    <header><span class="n">04</span><h2>네이비·크림</h2><span class="ref">참고: Altos Ventures, 법무법인 세한, Yellowdog</span></header>
+    <p class="why">지금 구조(진한 사이드바 + 밝은 본문)를 유지하되 보라를 남색으로, 흰색을 크림으로 낮춘 안. 바꾸는 폭이 가장 작으면서 ‘기관 도구’ 느낌이 납니다.</p>
+    <div class="app t-navy" data-mock></div>
+    <div class="palette"><span style="background:#f6f5f0"></span><span style="background:#1f2a44"></span><span style="background:#1e2230"></span><span style="background:#c9a961"></span><span style="background:#dcd8cc"></span></div>
+  </section>
+
+  <section class="sample">
+    <header><span class="n">05</span><h2>타이포 편집</h2><span class="ref">참고: Sulki &amp; Min, Httpster, Typographic Posters</span></header>
+    <p class="why">검은 선과 큰 글자, 코발트 강조 하나. 개성은 가장 강하지만 표·목록이 많은 화면에서는 선이 과해질 수 있어, 이 안을 고르면 선 굵기를 1px로 낮춘 변형이 필요합니다.</p>
+    <div class="app t-type" data-mock></div>
+    <div class="palette"><span style="background:#fff"></span><span style="background:#000"></span><span style="background:#1b3fe0"></span></div>
+  </section>
+</div>
+<template id="mock">
+  <aside class="side">
+    <div class="brand">투고틀<small>논문 양식 변환 · 오프라인</small></div>
+    <div><div class="lab">투고처 선택</div><div class="sel">학회지를 고르세요…</div></div>
+    <div><div class="lab">메뉴</div><div class="menu"><div class="on"># 원고 변환</div><div># 투고 일정</div><div># 학회 추가</div><div>? 사용법·도움말</div></div></div>
+    <div class="status"><b>● 엔진 준비됨</b> · 오프라인 처리<br>원고는 이 브라우저 안에서만 처리됩니다</div>
+  </aside>
+  <main class="main">
+    <div class="top"><h3>원고 변환</h3><span class="sub">왼쪽에서 투고처를 고르세요</span><span class="sp"></span><span class="btn">설정</span><span class="btn pri">적용</span><span class="btn">저장</span></div>
+    <div class="drop"><b>원고 파일을 이 화면에 끌어다 놓으세요</b><span>놓는 즉시 열리고, ‘적용’을 누르면 학회 양식이 입혀진 결과를 미리 봅니다.</span><span class="fmt">HWP · HWPX · DOCX · TXT · MD</span></div>
+    <div class="chips"><span class="chip">국문 제목</span><span class="chip">저자</span><span class="chip">국문초록</span><span class="chip">장 제목</span><span class="chip">본문</span><span class="chip">참고문헌</span><span class="chip">Abstract</span></div>
+    <div class="note">원고 내용은 바꾸지 않습니다. 체재 순서와 쪽수·낫표·서지 표기만 규칙대로 맞춥니다. AI는 쓰지 않습니다.</div>
+  </main>
+</template>
+<script>
+  const t = document.getElementById('mock');
+  for (const el of document.querySelectorAll('[data-mock]')) el.append(t.content.cloneNode(true));
+</script>
+</body>
+</html>

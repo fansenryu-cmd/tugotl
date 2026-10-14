@@ -1,0 +1,12 @@
+import fs from 'node:fs';
+import JSZip from 'jszip';
+import { initSync, HwpDocument } from '../node_modules/@rhwp/core/rhwp.js';
+globalThis.measureTextWidth = (f, t) => t.length * 10;
+initSync({ module: fs.readFileSync(new URL('../node_modules/@rhwp/core/rhwp_bg.wasm', import.meta.url)) });
+const d = new HwpDocument(new Uint8Array(fs.readFileSync(process.argv[2])));
+const z = await JSZip.loadAsync(d.exportHwpx());
+const h = await z.file('Contents/header.xml').async('string');
+const cps = h.match(/<hh:charPr [^>]*>[\s\S]*?<\/hh:charPr>/g);
+console.log('charPr with italic:', (cps.find((x) => /<hh:italic\/>/.test(x)) || '(none)').slice(0, 900));
+console.log('paraPr sample:', (h.match(/<hh:paraPr [^>]*>[\s\S]*?<\/hh:paraPr>/) || [''])[0].slice(0, 500));
+console.log('files:', Object.keys(z.files).join(' '));

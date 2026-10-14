@@ -1,0 +1,24 @@
+// 정오표 검증: node tools/errata_test.mjs <원고> <학회id>
+import fs from 'node:fs';
+import { initEngine, buildDocument } from '../src/engine.js';
+import { parseManuscript } from '../src/parse.js';
+import { recognize, buildToc, reorderSections, applySubstitutions, applyBlanks } from '../src/structure.js';
+import { buildErrata } from '../src/errata.js';
+import { JOURNALS } from '../src/journals.js';
+await initEngine(fs.readFileSync(new URL('../node_modules/@rhwp/core/rhwp_bg.wasm', import.meta.url)));
+const [input, id] = process.argv.slice(2);
+const j = JOURNALS.find((x) => x.id === id);
+const parsed = await parseManuscript(input, new Uint8Array(fs.readFileSync(input)));
+let blocks = recognize(parsed.paragraphs, j); blocks = buildToc(blocks, j).blocks;
+ blocks = reorderSections(blocks, j).blocks;
+const unit = j.footnote?.pageUnit || 'keep'; blocks = applySubstitutions(blocks, j, { pageUnit: unit === 'pp.' ? 'p.' : unit, marks: 'keep' }).blocks;
+const e = buildErrata(blocks, j);
+console.log(JSON.stringify(e.summary));
+for (const x of e.notes.filter((x) => x.status !== 'ok').slice(0, 10)) console.log(`  각주 ${x.no} [${x.status}] ${x.text.replace(/\s+/g, ' ').slice(0, 70)} :: ${x.issues.join(' / ')}`);
+for (const r of e.refs.filter((x) => x.uncited || x.issues.length).slice(0, 10)) console.log(`  참고 [${r.uncited ? '미인용' : ''}${r.issues.join('/')}] ${r.text.slice(0, 80)}`);
+blocks = applyBlanks(blocks, j).blocks;
+const logs = []; const res = await buildDocument({ journal: j, templateBytes: j.template ? new Uint8Array(fs.readFileSync(new URL(`../templates/${j.template.file}.hwp`, import.meta.url))) : null, blocks, onLog: (l) => logs.push(l.msg) });
+console.log(logs.filter((m) => /붉게|각주 \d+개에/.test(m)).join(' | '));
+fs.writeFileSync(new URL(`../tests/out/errata_${id}.hwp`, import.meta.url), res.hwp);
+console.log('reload ok, pages', res.pages);
+res.doc.free();

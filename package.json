@@ -1,0 +1,15 @@
+{
+  "name": "tugotl",
+  "version": "1.2.0",
+  "private": true,
+  "description": "투고틀 — 문학 학회지 논문 양식 변환기 (단일 HTML, 오프라인, AI 비개입)",
+  "type": "module",
+  "dependencies": {
+    "@rhwp/core": "^0.8.7",
+    "jszip": "^3.10.1"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0"
+  },
+  "license": "MIT"
+}
