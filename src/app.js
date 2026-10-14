@@ -135,9 +135,6 @@ function templateInfo(j) {
   try { state.templateInfo[key] = analyzeTemplate(bytes); } catch (e) { state.templateInfo[key] = { error: String(e) }; }
   return state.templateInfo[key];
 }
-const kindOf = (j) => (j.template && templateBytes(j) ? '바탕틀' : (j.format ? '규정값' : '일반'));
-// 화면 표기: 서식을 어디서 가져오는지 사용자 말로
-const kindLabel = (j) => ({ 바탕틀: '학회 양식 파일 그대로', 규정값: '학회 규정의 수치로 서식', 일반: '일반 서식(학회 양식 미공개)' })[kindOf(j)];
 
 // ───────── 일정 ─────────
 // 사용자가 넣은 마감(localStorage) — 꼴이 어긋난 항목은 무시한다
@@ -162,6 +159,12 @@ function nextDeadlines(j, today = new Date()) {
 }
 const daysLeft = (d) => Math.ceil((new Date(d) - new Date(fmtDate(new Date()))) / 86400000);
 
+// 학회 데이터의 메모 중 자료 수집·개발 과정 이야기(양식 파일을 어떻게 썼는지 등)는 사용자에게 필요 없으므로 화면에서 거른다
+const DEV_NOTE = /바탕틀|규정값|일반 양식|견본|양식 파일|변환 시|측정값|docs\/|작가가|스타일 기반|템플릿|\(최종\)|→ 일반|스타일 입은 문서|자료실 zip/;
+const userNotes = (arr) => (Array.isArray(arr) ? arr : []).filter((x) => typeof x === 'string' && !DEV_NOTE.test(x));
+const cleanLayout = (x) => (typeof x === 'string' ? x.replace(/\s*[—–-]\s*일반 양식[^,;·]*?(적용|$)/g, '').replace(/\s*\((바탕틀|예시 hwp|샘플)\)/g, '').replace(/^바탕틀 스타일$/, '학회 양식의 스타일') : x);
+const cleanSource = (x) => (typeof x === 'string' ? x.replace(/\(견본화\)/g, '') : x);
+
 // ───────── 사이드바 ─────────
 function setStatus(text, cls) { $('#status-text').textContent = text; $('#status').className = 'mast-status ' + (cls || ''); }
 function renderSide() {
@@ -177,7 +180,7 @@ function renderSide() {
   const j = journal(); const meta = $('#jmeta'); const sub = $('#jsub'); meta.replaceChildren(); sub.replaceChildren();
   if (j) {
     const nd = nextDeadlines(j)[0]; const left = nd ? daysLeft(nd.date) : null;
-    meta.append(h('div', {}, h('b', {}, j.grade || '등급 미기재'), ` · ${kindLabel(j)}`), nd ? h('div', {}, `다음 마감 ${nd.deadline}${left !== null ? (left >= 0 ? ` · D-${left}` : ' · 지남') : ''}`) : h('div', {}, '마감은 공지로 확인'));
+    meta.append(h('div', {}, h('b', {}, j.grade || '등급 미기재')), nd ? h('div', {}, `다음 마감 ${nd.deadline}${left !== null ? (left >= 0 ? ` · D-${left}` : ' · 지남') : ''}`) : h('div', {}, '마감은 공지로 확인'));
     sub.append(h('button', { type: 'button', class: state.view === 'journal' ? 'on' : '', onclick: () => { state.view = 'journal'; render(); } }, h('span', { class: 'ico', 'aria-hidden': 'true' }, '§'), '투고 양식 및 규정 확인'));
     if (safeUrl(j.submit?.url)) sub.append(h('a', { class: 'ext', href: safeUrl(j.submit.url), target: '_blank', rel: 'noopener noreferrer' }, h('span', { class: 'ico', 'aria-hidden': 'true' }, '↗'), `투고처 이동 (${j.submit.system || '사이트'})`));
     else sub.append(h('button', { type: 'button', disabled: '' }, h('span', { class: 'ico', 'aria-hidden': 'true' }, '↗'), '투고처 주소 없음'));
@@ -489,10 +492,10 @@ function parseCallText(text) {
 function renderJournal(main) {
   const j = journal();
   if (!j) { main.append(h('div', { class: 'topbar' }, h('h1', {}, '투고 양식 및 규정')), h('p', { class: 'hero' }, '왼쪽에서 투고처를 고르세요.')); return; }
-  main.append(h('div', { class: 'topbar' }, h('h1', {}, j.journal), h('span', { class: 'sub' }, `${j.society} · ${j.grade || ''} · ${kindLabel(j)}`), h('span', { class: 'grow' }),
+  main.append(h('div', { class: 'topbar' }, h('h1', {}, j.journal), h('span', { class: 'sub' }, `${j.society} · ${j.grade || ''}`), h('span', { class: 'grow' }),
     safeUrl(j.submit?.url) ? h('a', { class: 'btn', href: safeUrl(j.submit.url), target: '_blank', rel: 'noopener noreferrer' }, `투고처 이동 ↗`) : null,
     h('button', { class: 'btn ghost', onclick: () => { state.view = 'convert'; render(); } }, '원고 변환으로')));
-  const tabs = [['docs', '투고 서류·양식'], ['overview', '개요·투고'], ['schedule', '일정'], ['layout', '편집 양식'], ['cite', '각주·참고문헌'], ['template', '바탕틀·역할']];
+  const tabs = [['docs', '투고 서류·양식'], ['overview', '개요·투고'], ['schedule', '일정'], ['layout', '편집 양식'], ['cite', '각주·참고문헌']];
   const el = h('div', { class: 'card detail' });
   el.append(h('div', { class: 'tabs', role: 'tablist' }, ...tabs.map(([k, l]) => h('button', { type: 'button', role: 'tab', 'aria-selected': k === state.jtab ? 'true' : 'false', class: k === state.jtab ? 'on' : '', onclick: () => { state.jtab = k; render(); } }, l))));
   const body = h('div', {}); el.append(body); main.append(el);
@@ -511,11 +514,11 @@ function renderJournal(main) {
     if (links.length) { body.append(h('h3', {}, '규정 원문·안내 주소')); body.append(h('ul', {}, ...links.filter(safeUrl).map((u) => h('li', {}, h('a', { href: u, target: '_blank', rel: 'noopener noreferrer' }, u))))); }
     body.append(h('h3', {}, '체재')); body.append(h('p', {}, j.structureText || (j.structure || []).map((g) => SECTION_LABELS[g]).join(' → ')));
     body.append(h('h3', {}, '분량·초록')); body.append(kv([['분량', j.length?.text], ['국문초록', j.abstract?.ko], ['영문초록', j.abstract?.en], ['주제어', j.abstract?.keywords], ['익명화', j.anonymize]]));
-    if (j.notes?.length) { body.append(h('h3', {}, '메모')); body.append(li(j.notes)); }
+    if (userNotes(j.notes).length) { body.append(h('h3', {}, '메모')); body.append(li(userNotes(j.notes))); }
   } else if (t === 'overview') {
     body.append(kv([['분야', j.fields], ['자격', j.eligibility], ['심사', j.review], ['저작권', j.copyright]]));
     body.append(h('h3', {}, '비용')); body.append(kv([['심사료', j.fees?.review], ['게재료', j.fees?.publication]]));
-    body.append(h('p', { class: 'small muted', style: 'margin-top:14px' }, `출처: ${(j.sources || []).join(' · ')} · 갱신 ${j.updated || ''}`));
+    body.append(h('p', { class: 'small muted', style: 'margin-top:14px' }, `출처: ${(j.sources || []).map(cleanSource).join(' · ')} · 갱신 ${j.updated || ''}`));
   } else if (t === 'schedule') {
     const s = j.schedule || {};
     body.append(kv([['연간 발행', s.perYear ? `${s.perYear}회 — ${(s.publish || []).join(' · ')}` : ''], ['정기 마감', (s.deadlines || []).join(' · ') || '공지로 정함'], ['비고', s.rule]]));
@@ -536,22 +539,21 @@ function renderJournal(main) {
       h('tbody', {}, ...nd.map((d) => { const left = daysLeft(d.date); return h('tr', { class: left < 0 ? 'past' : (left <= 14 ? 'soon' : '') }, h('td', { class: 'due' }, `${d.deadline} (${DOW[d.date.getDay()]})`), h('td', {}, d.issue, d.user ? h('span', { class: 'tag ok', style: 'margin-left:6px' }, '내 입력') : null), h('td', {}, d.publish || ''), h('td', {}, left < 0 ? '지남' : `D-${left}`), h('td', { class: 'small muted' }, d.note || '')); }))));
   } else if (t === 'layout') {
     const L = j.layout || {};
-    body.append(kv([['용지', L.paper], ['여백', L.margins], ['본문', L.body], ['인용문', L.quote], ['각주', L.footnote], ['장절 번호', L.headings], ['제목·기타', L.title], ['캡션', L.caption], ['비고', L.note]]));
+    body.append(kv([['용지', cleanLayout(L.paper)], ['여백', cleanLayout(L.margins)], ['본문', cleanLayout(L.body)], ['인용문', cleanLayout(L.quote)], ['각주', cleanLayout(L.footnote)], ['장절 번호', cleanLayout(L.headings)], ['제목·기타', cleanLayout(L.title)], ['캡션', L.caption], ['비고', DEV_NOTE.test(L.note || '') ? '' : cleanLayout(L.note)]]));
     const ti = templateInfo(j);
-    if (ti && !ti.error) { body.append(h('h3', {}, '바탕틀에서 읽은 값')); body.append(kv([['용지', ti.pageText], ['여백', ti.marginText], ['글꼴', ti.fonts.join(', ')], ['스타일', `${ti.styles.length}개`], ['쪽수', `${ti.pages}쪽, 문단 ${ti.paragraphs.length}개, 각주 ${ti.footnoteCount}개`]])); }
-    if (j.format) { body.append(h('h3', {}, '적용되는 규정값')); body.append(formatTable(j.format)); const fonts = [...new Set([j.format.font, ...Object.values(j.format.roles || {}).map((r) => r.font)].filter(Boolean))]; body.append(kv([['필요 글꼴', fonts.join(', ') + ' — 없으면 설치하지 않아도 됩니다(글꼴 이름은 파일에 그대로 기록). 도움말의 ‘글꼴’ 참조']])); }
-    else if (!j.template) { body.append(h('h3', {}, '일반 양식(학회 양식 미공개 시)')); body.append(formatTable(GENERIC_FORMAT)); }
+    if (ti && !ti.error) { body.append(h('h3', {}, '적용 서식')); body.append(kv([['용지', ti.pageText], ['여백', ti.marginText], ['글꼴', ti.fonts.join(', ')], ['스타일', `${ti.styles.length}개`], ['쪽수', `${ti.pages}쪽, 문단 ${ti.paragraphs.length}개, 각주 ${ti.footnoteCount}개`]])); }
+    if (j.format) { body.append(h('h3', {}, '적용 서식')); body.append(formatTable(j.format)); const fonts = [...new Set([j.format.font, ...Object.values(j.format.roles || {}).map((r) => r.font)].filter(Boolean))]; body.append(kv([['필요 글꼴', fonts.join(', ') + ' — 없으면 설치하지 않아도 됩니다(글꼴 이름은 파일에 그대로 기록). 도움말의 ‘글꼴’ 참조']])); }
+    else if (!j.template) { body.append(h('h3', {}, '적용 서식')); body.append(formatTable(GENERIC_FORMAT)); }
     body.append(h('h3', {}, '기호')); body.append(kv([['논문·작품', j.marks?.paper], ['저서·학술지', j.marks?.book], ['작품명', j.marks?.work], ['강조·인용', j.marks?.emph]]));
   } else if (t === 'cite') {
     body.append(h('h3', {}, `각주 — 쪽수 표기 ‘${j.footnote?.pageUnit || ''}’`)); body.append(h('p', {}, j.footnote?.example || '')); body.append(li(j.footnote?.rules));
     body.append(h('h3', {}, '참고문헌')); body.append(h('p', {}, j.references?.order || '')); body.append(li(j.references?.rules));
   } else if (t === 'template') {
-    if (!j.template) body.append(h('p', { class: 'muted' }, '이 학회는 바탕틀 파일이 없습니다. ' + (j.format ? '규정의 수치로 서식을 만듭니다.' : '일반 양식으로 서식을 만듭니다.')));
-    else {
+    if (j.template) {
       const ti = templateInfo(j); const bytes = templateBytes(j);
       body.append(h('p', {}, `파일: ${j.template.name || j.template.file}`, bytes ? '' : h('span', { class: 'warn' }, ' — 바탕틀 데이터가 없습니다')));
       if (ti && !ti.error) {
-        body.append(h('h3', {}, '역할 ↔ 바탕틀 매핑'));
+        body.append(h('h3', {}, '역할별 서식'));
         const rows = Object.entries(j.template.roles || {}).map(([role, spec]) => {
           let desc = '';
           if (spec.para !== undefined) { const p = (spec.sec ? null : ti.paragraphs[spec.para]); desc = spec.sec ? `구역 ${spec.sec} 문단 ${spec.para}` : (p ? `문단 ${spec.para} · ${p.font} ${(p.size || 0) / 100}pt${p.bold ? ' 굵게' : ''} · ${p.align} · ${p.lineSpacing}% — “${p.text.slice(0, 36)}”` : `문단 ${spec.para}`); }
@@ -559,8 +561,8 @@ function renderJournal(main) {
           else if (spec.like) desc = `‘${roleLabel(spec.like)}’와 같게`;
           return h('tr', {}, h('td', {}, role), h('td', {}, roleLabel(role)), h('td', {}, desc));
         });
-        body.append(h('table', { class: 'rolemap' }, h('thead', {}, h('tr', {}, h('th', {}, '역할'), h('th', {}, '뜻'), h('th', {}, '바탕틀에서 가져오는 서식'))), h('tbody', {}, ...rows)));
-        body.append(h('h3', {}, '바탕틀 미리보기 (1쪽)'));
+        body.append(h('table', { class: 'rolemap' }, h('thead', {}, h('tr', {}, h('th', {}, '역할'), h('th', {}, '뜻'), h('th', {}, '가져오는 서식'))), h('tbody', {}, ...rows)));
+        body.append(h('h3', {}, '양식 미리보기 (1쪽)'));
         try { const { svg } = renderTemplatePage(bytes, 0); const w = h('div', { class: 'preview' }); const d = h('div', {}); d.innerHTML = svg; w.append(d.firstElementChild); body.append(w); } catch (e) { body.append(h('p', { class: 'err' }, '미리보기 실패 ' + e)); }
       } else if (ti?.error) body.append(h('p', { class: 'err' }, ti.error));
     }
@@ -644,7 +646,7 @@ function renderHelp(main) {
       '학회 규정 그대로: 글꼴·크기·여백·줄간격·체재 순서·쪽수 단위는 각 학회의 양식 파일과 규정 수치를 그대로 씁니다. 프로그램이 임의로 고르지 않습니다.',
       '구성: 왼쪽에서 투고처를 고르고, 오른쪽에 원고를 놓고, 적용해 미리보고, 저장합니다. 투고처별 규정·서류·일정은 같은 화면에서 봅니다.')));
   main.append(sec('기본 흐름',
-    ol([h('b', {}, '투고처 선택'), ' — 왼쪽 위에서 학회지를 고릅니다. 목록은 등재지·등재후보지 순, 학술지 이름 가나다순입니다. 학회가 공개한 양식 파일을 그대로 쓰는지(학회 양식 파일 그대로), 규정에 적힌 글꼴·크기·여백 수치로 만드는지(학회 규정의 수치로 서식), 둘 다 없어 일반 서식을 쓰는지 학회 정보 아래에 표시됩니다.'],
+    ol([h('b', {}, '투고처 선택'), ' — 왼쪽 위에서 학회지를 고릅니다. 목록은 등재지·등재후보지 순, 학술지 이름 가나다순입니다. 고른 학회의 양식과 규정에 맞춰 서식을 입힙니다.'],
       [h('b', {}, '원고 놓기'), ' — HWP·HWPX·DOCX·TXT·MD 원고를 화면에 끌어다 놓거나 ‘파일 선택’을 누릅니다. 놓는 즉시 열리고, 왼쪽에 문단별 역할(제목·초록·장 제목·본문·인용·참고문헌·영문초록)이 인식되어 나옵니다. TXT·MD 원고는 각주를 [^1] … [^1]: 내용 꼴로, 강조를 *기울임*·**굵게**(낱말 경계에서만, 저자 이름 뒤 * 표시는 글자로 남음)로, 장 제목을 # 로, 인용을 > 로 읽습니다. 각주 정의 아래 네 칸 들여 쓴 줄은 같은 각주의 다음 문단입니다.'],
       [h('b', {}, '역할 확인'), ' — 잘못 잡힌 역할은 목록에서 직접 바꿉니다. 역할은 서식을 정하는 기준이므로 제목·참고문헌·영문초록이 맞게 잡혔는지 먼저 보세요.'],
       [h('b', {}, '적용'), ' — 학회 양식이 입혀진 쪽을 오른쪽 ‘미리보기’에서 보고, ‘변경 사항’에서 무엇이 바뀌었는지(체재 재배열, 쪽수·서지 표기, 빈 줄) 확인합니다. 저장 전에 설정이나 역할을 고쳤다면 ‘다시 적용’을 누릅니다. 각주가 많은 쪽은 미리보기에서 본문과 각주가 겹쳐 보일 수 있습니다(쪽 아래에 노란 표시). 미리보기 엔진의 한계일 뿐이며, 저장한 HWP는 한글이 열 때 다시 배치하므로 겹치지 않습니다.'],
@@ -687,7 +689,7 @@ function renderHelp(main) {
     ul([h('b', {}, '투고틀 소스 코드'), ' — MIT 라이선스, ⓒ 2026 이융희. 자유롭게 쓰고 고치고 나눌 수 있으며 보증은 없습니다. 투고 전 학회 공지와 산출 파일은 반드시 직접 확인하세요.'],
       [h('b', {}, 'HWP 엔진 rhwp'), ' (Edward Kim, MIT) — 이 파일 안에서 HWP를 읽고 쓰는 핵심입니다. ', h('a', { href: 'https://github.com/edwardkim/rhwp', target: '_blank', rel: 'noopener noreferrer' }, 'github.com/edwardkim/rhwp')],
       [h('b', {}, 'JSZip'), ' (Stuart Knightley 외, MIT/GPL 이중 라이선스 중 MIT) — DOCX 읽기와 HWPX 패키지 처리.'],
-      [h('b', {}, '학회 바탕틀·투고 서식·규정'), ' — 각 학회·연구소가 투고자에게 공개 배포한 자료를 투고 편의를 위해 원본 그대로 넣었습니다. 저작권은 각 학회에 있고, 해당 학회 투고 용도로만 쓰세요. 권리자가 요청하면 즉시 제거합니다.'],
+      [h('b', {}, '학회 바탕틀·투고 서식·규정'), ' — 각 학회·연구소가 투고자에게 공개 배포한 자료를 투고 편의를 위해 넣었습니다. 논문 양식 파일은 견본 논문 글자를 지우고 서식만 남겼습니다. 저작권은 각 학회에 있고, 해당 학회 투고 용도로만 쓰세요. 권리자가 요청하면 즉시 제거합니다.'],
       '글꼴은 이 파일에 들어 있지 않습니다. 화면은 PC의 시스템 글꼴을, 산출물은 학회 양식의 글꼴 이름을 그대로 씁니다.',
       ['전문과 목록: 저장소의 ', h('a', { href: 'https://github.com/fansenryu-cmd/tugotl/blob/main/LICENSE', target: '_blank', rel: 'noopener noreferrer' }, 'LICENSE'), ', ', h('a', { href: 'https://github.com/fansenryu-cmd/tugotl/blob/main/THIRD_PARTY_NOTICES.md', target: '_blank', rel: 'noopener noreferrer' }, 'THIRD_PARTY_NOTICES.md'), '. 새 버전과 소스: ', h('a', { href: 'https://github.com/fansenryu-cmd/tugotl', target: '_blank', rel: 'noopener noreferrer' }, 'github.com/fansenryu-cmd/tugotl')]),
     h('details', { style: 'margin-top:10px' }, h('summary', { style: 'cursor:pointer' }, '제3자 소프트웨어 라이선스 전문 (MIT)'), ...THIRD_PARTY_LICENSES.map((l) => h('div', { style: 'margin-top:8px' }, h('b', {}, l.name), h('pre', { style: 'white-space:pre-wrap;font-size:11px;line-height:1.5;margin:4px 0 0' }, l.text)))),
