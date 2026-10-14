@@ -35,14 +35,20 @@ async function parseHwp(bytes, ext) {
     const info = J(d.getDocumentInfo()) || {};
     const controls = J(d.getControls()) || [];
     // 각주의 번호 유무(autoNum)·‘새 번호 지정’·강조 런은 rhwp API가 주지 않으므로 HWPX로 한 번 내보내 문서 순서대로 읽어 둔다(글이 맞는 각주에만 붙인다)
-    let fnMeta = []; let fnCursor = 0; let endnotes = 0;
-    if (controls.some((c) => c.ctrlId === 'fn' || c.ctrlId === 'en')) { try { fnMeta = await hwpxFootnoteMeta(d); } catch { fnMeta = []; } }
+    let fnMeta = []; let fnCursor = 0; let endnotes = 0; let tblFn = null;
+    // 표 칸 안의 각주(제목·저자를 표로 짠 원고의 ‘*’ 소속 각주 등)는 rhwp API로 읽을 수 없어 HWPX에서 표별로 모아 둔다
+    if (controls.some((c) => c.ctrlId === 'fn' || c.ctrlId === 'en')) { try { const m = await hwpxFootnoteMeta(d); fnMeta = m.body; tblFn = m.tables; } catch { fnMeta = []; tblFn = null; } }
     const paragraphs = [];
     const sections = d.getSectionCount();
-    let tables = 0, pictures = 0, fnTotal = 0, lostMarks = 0;
+    let tables = 0, pictures = 0, fnTotal = 0, lostMarks = 0, tblFnMoved = 0, tblFnLost = 0;
     for (let s = 0; s < sections; s++) {
       const n = d.getParagraphCount(s);
       let base = 0; for (let k = 0; k < s; k++) base += d.getParagraphCount(k);
+      // 이 구역의 본문 표 수가 HWPX에서 센 표 수와 같을 때만 k번째 표 ↔ k번째 표의 각주로 짝짓는다
+      const secTbls = controls.filter((c) => c.list === 0 && c.ctrlId === 'tbl' && c.para >= base && c.para < base + n).length;
+      const secTblFn = tblFn && tblFn[s] && tblFn[s].length === secTbls ? tblFn[s] : null;
+      if (tblFn && tblFn[s] && !secTblFn) tblFnLost += tblFn[s].reduce((a, x) => a + x.length, 0);
+      let tblK = 0;
       if (paragraphs.length + n > MAX_PARAS) throw new Error(`문단이 ${MAX_PARAS.toLocaleString()}개를 넘는 원고는 열 수 없습니다.`);
       for (let i = 0; i < n; i++) {
         const len = d.getParagraphLength(s, i);
@@ -72,7 +78,15 @@ async function parseHwp(bytes, ext) {
           // getControls()의 para는 구역을 이어 붙인 번호라 구역 시작 문단 수(base)를 더해 비교한다
           if (c.list !== 0 || c.para !== base + i) continue;
           const kth = ctrlK++;
-          if (c.ctrlId === 'tbl') tables++;
+          if (c.ctrlId === 'tbl') {
+            tables++;
+            const inner = secTblFn ? secTblFn[tblK] : null; tblK++;
+            // 표는 옮기지 않지만 표 안 각주는 버리지 않는다 — 표가 있던 자리(그 문단)에 각주로 붙인다
+            if (inner && inner.length) {
+              const offset = ctrlPos && typeof ctrlPos[kth] === 'number' && ctrlPos[kth] >= 0 ? to16(ctrlPos[kth]) : text.length;
+              for (const m of inner) { footnotes.push(metaFootnote(m, offset)); fnTotal++; tblFnMoved++; }
+            }
+          }
           else if (c.ctrlId === 'gso' || c.ctrlId === '$pic' || c.ctrlId === 'pic') pictures++;
           else if (c.ctrlId === 'fn' || c.ctrlId === 'en') {
             if (c.ctrlId === 'en') endnotes++;
@@ -94,6 +108,8 @@ async function parseHwp(bytes, ext) {
             const numAt = meta ? meta.numAt : ((fnLines.length > 0 && fnLines[0].length > 0 && !fnLines[0].startsWith(' ')) ? -1 : 0);   // 번호(autoNum)가 있는 문단 번호, 없으면 -1
             const noNumber = numAt < 0;
             if (!noNumber && fnLines[numAt] && fnLines[numAt].startsWith(' ')) fnLines[numAt] = fnLines[numAt].slice(1);
+            // rhwp는 묶음 빈칸(nbSpace)을 보통 빈칸으로 주므로, 빈칸 종류만 다른 HWPX 글이 있으면 그쪽을 쓴다
+            if (meta) for (let k = 0; k < fnLines.length; k++) { const mp = meta.paras[k]; if (mp && mp.text !== fnLines[k] && mp.text.replace(/[\u00a0\u2007]/g, ' ') === fnLines[k]) fnLines[k] = mp.text; }
             const paras = fnLines.map((t, k) => { const mp = meta && meta.paras[k]; const ok = mp && mp.runs.length && mp.runs.map((r) => r.text).join('') === t; return { text: t, runs: ok ? mp.runs : [] }; });
             footnotes.push({ offset, text: fnLines.join('\n'), paras, ...(noNumber ? { noNumber: true } : {}), ...(numAt > 0 ? { numAt } : {}), ...(meta && meta.restart ? { restart: meta.restart } : {}) });
             fnTotal++;
@@ -105,6 +121,8 @@ async function parseHwp(bytes, ext) {
     }
     if (sections > 1) warnings.push(`구역 ${sections}개를 하나로 이어 붙였습니다.`);
     if (endnotes) warnings.push(`미주 ${endnotes}개를 각주로 옮겼습니다.`);
+    if (tblFnMoved) warnings.push(`표 안에 있던 각주 ${tblFnMoved}개는 표 자리의 문단에 붙였습니다. 변환 후 각주 위치를 확인하세요.`);
+    if (tblFnLost) warnings.push(`표 안의 각주 ${tblFnLost}개는 위치를 찾지 못해 옮기지 못했습니다. 변환 후 한글에서 직접 넣으세요.`);
     if (tables) warnings.push(`표 ${tables}개는 변환되지 않습니다. 변환 후 한글에서 직접 옮겨 넣으세요.`);
     if (pictures) warnings.push(`그림·개체 ${pictures}개는 변환되지 않습니다.`);
     if (lostMarks) warnings.push(`강조점·취소선·아래첨자 ${lostMarks}자는 옮기지 않습니다(학회 서식에 없는 장식). 변환 후 한글에서 확인하세요.`);
@@ -125,6 +143,16 @@ function hwpxLongestParagraph(sec) {
   return longest;
 }
 
+// HWPX에서만 읽은 각주(표 안 각주)를 앱의 각주 꼴로: 번호 문단 첫머리의 빈칸은 rhwp 경로와 같게 한 칸 뗀다
+function metaFootnote(m, offset) {
+  const noNumber = !m.hasAutoNum; const numAt = noNumber ? -1 : m.numAt;
+  const paras = m.paras.map((q, k) => {
+    if (k === numAt && q.text.startsWith(' ')) { const runs = q.runs.map((r) => ({ ...r })); if (runs[0]) runs[0].text = runs[0].text.slice(1); return { text: q.text.slice(1), runs: runs.filter((r) => r.text) }; }
+    return { text: q.text, runs: q.runs };
+  });
+  return { offset, text: paras.map((q) => q.text).join('\n'), paras, ...(noNumber ? { noNumber: true } : {}), ...(numAt > 0 ? { numAt } : {}), ...(m.restart ? { restart: m.restart } : {}), inTable: true };
+}
+
 // HWPX(내보내기)의 각주·미주를 문서 순서대로 읽는다: 문단별 글·강조 런, 번호(autoNum) 유무, 바로 앞의 ‘새 번호 지정’
 async function hwpxFootnoteMeta(d) {
   const zip = await JSZip.loadAsync(d.exportHwpx());
@@ -134,22 +162,27 @@ async function hwpxFootnoteMeta(d) {
   const dec = (x) => x.replace(/<hp:lineBreak\/>/g, '\n').replace(/<hp:tab\b[^>]*\/>/g, '\t').replace(/<hp:nbSpace\/>/g, '\u00a0').replace(/<hp:fwSpace\/>/g, '\u2007').replace(/<[^>]+>/g, '');
   const tText = (run) => decodeXml([...run.matchAll(/<hp:t\b[^>]*>([\s\S]*?)<\/hp:t>/g)].map((m) => dec(m[1])).join(''));
   const names = Object.keys(zip.files).filter((k) => /^Contents\/section\d+\.xml$/.test(k)).sort((a, b) => +a.match(/\d+/)[0] - +b.match(/\d+/)[0]);
-  const out = []; let restart = 0;
+  const out = []; const tables = []; let restart = 0;
   for (const name of names) {
     const sec = await zip.file(name).async('string');
-    const tbl = []; { const st = []; for (const t of sec.matchAll(/<(\/?)hp:tbl\b/g)) { if (!t[1]) st.push(t.index); else { const a = st.pop(); if (!st.length && a !== undefined) tbl.push([a, t.index]); } } }
-    const inTbl = (i) => tbl.some(([a, b]) => i > a && i < b);   // 표 안 각주는 앱이 읽지 않으므로 짝짓기에서도 뺀다
+    // 머리말·꼬리말·글상자·각주 안의 표는 본문 표(getControls의 list 0)가 아니므로 표 세기에서 뺀다
+    const box = []; for (const t of sec.matchAll(/<hp:(header|footer|drawText|footNote|endNote)\b[\s\S]*?<\/hp:\1>/g)) box.push([t.index, t.index + t[0].length]);
+    const inBox = (i) => box.some(([a, b]) => i > a && i < b);
+    const tbl = []; { const st = []; for (const t of sec.matchAll(/<(\/?)hp:tbl\b/g)) { if (!t[1]) st.push(t.index); else { const a = st.pop(); if (!st.length && a !== undefined && !inBox(a)) tbl.push([a, t.index]); } } }
+    const tblOf = (i) => tbl.findIndex(([a, b]) => i > a && i < b);
+    const secTables = tbl.map(() => []); tables.push(secTables);
     for (const m of sec.matchAll(/<hp:newNum num="(\d+)" numType="FOOTNOTE"\/>|<hp:(footNote|endNote)\b[^>]*>([\s\S]*?)<\/hp:\2>/g)) {
-      if (inTbl(m.index)) continue;
       if (m[1] !== undefined) { restart = +m[1]; continue; }
+      const ti = tblOf(m.index);
       const paras = [...m[3].matchAll(/<hp:p\b[^>]*>([\s\S]*?)<\/hp:p>/g)].map((pm) => {
         const runs = [...pm[1].matchAll(/<hp:run charPrIDRef="(\d+)"[^>]*>([\s\S]*?)<\/hp:run>/g)].map((rm) => ({ text: tText(rm[2]), ...(charPr[rm[1]] || {}) })).filter((r) => r.text);
         return { text: runs.map((r) => r.text).join(''), runs, hasAutoNum: /<hp:autoNum\b/.test(pm[1]) };
       });
-      out.push({ paras, hasAutoNum: paras.some((q) => q.hasAutoNum), numAt: paras.findIndex((q) => q.hasAutoNum), restart }); restart = 0;
+      const fm = { paras, hasAutoNum: paras.some((q) => q.hasAutoNum), numAt: paras.findIndex((q) => q.hasAutoNum), restart }; restart = 0;
+      (ti >= 0 ? secTables[ti] : out).push(fm);
     }
   }
-  return out;
+  return { body: out, tables };
 }
 
 // ───────── DOCX ─────────

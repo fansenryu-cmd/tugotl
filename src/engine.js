@@ -311,7 +311,7 @@ export async function buildDocument({ journal, templateBytes, blocks, onLog }) {
   }
   const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   // 글 조각 → <hp:t>; 줄바꿈(\n)은 <hp:lineBreak/>로(한글의 Shift+Enter)
-  const tx = (t) => t.split('\n').map((p) => `<hp:t>${esc(p)}</hp:t>`).join('<hp:lineBreak/>');
+  const tx = (t) => t.split('\n').map((p) => `<hp:t>${esc(p).replace(/\u00a0/g, '<hp:nbSpace/>').replace(/\u2007/g, '<hp:fwSpace/>')}</hp:t>`).join('<hp:lineBreak/>');   // 묶음 빈칸·고정폭 빈칸은 한글 요소로
 
   // 글자 모양 변형(굵게·기울임·밑줄·위첨자·붉은색)은 바탕 charPr을 복제해 header.xml에 추가한다
   const charPrCache = new Map();
