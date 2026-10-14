@@ -64,6 +64,8 @@ export function recognize(paragraphs, journal) {
     if (state === 'toc' && (RE.refHead.test(t) || RE.abstractEnHead.test(t) || RE.abstractHead.test(t))) { const hk = (x) => x.replace(/[^가-힣A-Za-z0-9]/g, '').toLowerCase(); const key = hk(t); let again = false; for (let q = i + 1; q < paragraphs.length; q++) if (hk(trimmed(paragraphs[q])) === key) { again = true; break; }
       if (!again && blocks.some((b) => /^(refHead|abstractHead|abstractEnHead)$/.test(b.role) && hk(trimmed({ text: b.text })) === key)) again = true;   // 앞에 같은 제목이 이미 제목으로 나왔으면 이것은 목차 항목(목차가 초록 뒤에 오는 원고). 비교는 대소문자·기호 무시
       if (again) { push('toc', '목차 항목(같은 제목이 뒤에 다시 나옴)'); continue; } }   // 목차 속 ‘참고문헌’·‘Abstract’ 항목은 경계 제목이 아니다
+    // 목차 맨 끝의 ‘참고문헌’·‘Abstract’ 항목(뒤에 장 제목·다른 끝 항목이 바로 옴)은 목차 항목이다. ‘초록’ 제목은 목차 바로 뒤 구조화된 초록과 헷갈릴 수 있어 여기서 다루지 않는다
+    if (state === 'toc' && short && (RE.refHead.test(t) || RE.abstractEnHead.test(t)) && nt && nt.length <= 40 && (headingLike(nt) || RE.refHead.test(nt) || RE.abstractEnHead.test(nt) || /^[가-힣](?:\s[가-힣]){1,5}$/.test(nt))) { push('toc', '목차 항목(끝 제목)'); continue; }
     if (RE.abstractHead.test(t) && !/^[Ⅰ-Ⅻ①-⑳㉠-㉭\d]/.test(t) && !(sawBody && blocks.some((b) => b.role === 'abstractHead'))) { state = 'abstractKo'; push('abstractHead', '국문초록 제목'); continue; }   // 번호 매김 기호로 시작하면 초록 머리가 아니다. 본문이 시작된 뒤 두 번째 초록 머리는 보지 않는다
     if (RE.abstractEnHead.test(t)) { state = 'abstractEn'; push('abstractEnHead', 'Abstract 제목'); continue; }
     if (RE.refHead.test(t)) { state = 'references'; refSubLast = 0; push('refHead', '참고문헌 제목'); continue; }
