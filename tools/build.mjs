@@ -1,4 +1,4 @@
-// 빌드: src → dist/투고틀.html (WASM·바탕틀 전부 내장, 오프라인 단일 파일) 및 dist/dev.html (외부 파일 참조)
+// 빌드: src → dist/투고틀.html·dist/tugotl.html(같은 파일, Release 첨부용) (WASM·바탕틀 전부 내장, 오프라인 단일 파일) 및 dist/dev.html (외부 파일 참조)
 import fs from 'node:fs';
 import path from 'node:path';
 import { build } from 'esbuild';
@@ -37,6 +37,7 @@ function assemble({ inlineWasm }) {
 
 const prod = assemble({ inlineWasm: true });
 fs.writeFileSync(path.join(dist, '투고틀.html'), prod);
+fs.writeFileSync(path.join(dist, 'tugotl.html'), prod);   // GitHub Release 첨부용(영문 이름이어야 releases/latest/download/tugotl.html 링크가 이어진다)
 // 배포본 무결성: 받은 파일이 원본인지 확인할 수 있도록 SHA-256을 따로 적는다 (릴리스 노트에 함께 올린다)
 const { createHash } = await import('node:crypto');
 const sha = createHash('sha256').update(prod).digest('hex');

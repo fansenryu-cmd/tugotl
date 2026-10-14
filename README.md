@@ -146,7 +146,8 @@
 
 ```bash
 npm install
-node tools/build.mjs            # dist/투고틀.html (배포본, CSP·SHA-256) + dist/dev.html (외부 파일 참조, 개발용)
+node tools/build.mjs            # dist/투고틀.html·dist/tugotl.html (같은 배포본, CSP·SHA-256) + dist/dev.html (외부 파일 참조, 개발용)
+node tools/usage.mjs            # Release 내려받기 횟수
 node tools/pipeline_test.mjs    # 46건 회귀: 파싱→인식→생성→재로드
 node tools/convert.mjs <원고> <학회id,...> --quiet   # 실원고 대조(누락 문단·각주·강조)
 node tools/batch.mjs --out tests/report.json          # 원고 × 학회 대량 집계
@@ -159,6 +160,8 @@ node tools/verify_matrix.mjs --md docs/검증매트릭스.md      # 원고 × �
 node tools/font_inventory.mjs --md docs/글꼴안내.md          # 학회별 필요 글꼴 표
 python -m http.server 8787      # dev.html은 서버에서 열어야 함
 ```
+
+새 판 배포: 태그를 붙인 뒤 GitHub Releases에 `dist/tugotl.html`을 첨부합니다. 첨부 이름이 `tugotl.html`이면 소개 페이지·README의 내려받기 링크(`releases/latest/download/tugotl.html`)가 바뀌지 않고 새 판을 가리킵니다. 한글 이름으로 올리면 GitHub가 `default.html`로 바꿔 링크가 끊깁니다.
 
 ```
 src/journals.js   학회 82곳 데이터, 역할 정의, 일반 양식
