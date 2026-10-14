@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>투고틀 — 문학 학회지 논문 양식 변환기</title>
+<meta name="description" content="원고(HWP·HWPX·DOCX·TXT·MD)를 올리고 학회지를 고르면 그 학회의 양식에 맞춘 HWP를 만듭니다. 브라우저 안에서만 처리되고 원고는 전송되지 않습니다.">
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #141414; --fg: #ececea; --card: #1c1c1c; --muted-fg: #9b9b96; --border: #2c2c2c;
+    --primary: #ffffff; --primary-fg: #111111; --accent: #e8b14a; --accent-bg: #2a2110; --accent-border: #5a4616;
+    --sans: "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", "맑은 고딕", "Noto Sans KR", system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--sans); line-height: 1.6; }
+  main { max-width: 760px; margin: 0 auto; padding: 56px 16px 40px; }
+  .eyebrow { color: var(--accent); font-size: 13px; letter-spacing: .08em; }
+  h1 { font-size: clamp(34px, 7vw, 52px); margin: 6px 0 10px; letter-spacing: -0.02em; line-height: 1.15; }
+  .lead { font-size: 17px; color: var(--fg); margin: 0 0 28px; }
+  .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; }
+  .btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 18px; border-radius: 10px; font-weight: 600; text-decoration: none; border: 1px solid var(--border); color: var(--fg); background: var(--card); }
+  .btn.primary { background: var(--primary); color: var(--primary-fg); border-color: var(--primary); }
+  .btn:hover { filter: brightness(1.08); }
+  .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .note { font-size: 13px; color: var(--muted-fg); margin: 0 0 36px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; margin-bottom: 36px; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+  .card b { display: block; margin-bottom: 4px; }
+  .card span { font-size: 14px; color: var(--muted-fg); }
+  .privacy { border: 1px solid var(--accent-border); background: var(--accent-bg); border-radius: 12px; padding: 14px 16px; font-size: 14px; margin-bottom: 28px; }
+  footer { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; justify-content: space-between; border-top: 1px solid var(--border); padding-top: 16px; font-size: 13px; color: var(--muted-fg); }
+  footer a { color: var(--accent); }
+  .hits { height: 20px; vertical-align: middle; }
+</style>
+</head>
+<body>
+<main>
+  <div class="eyebrow">문학 학회지 논문 양식 변환기</div>
+  <h1>투고틀</h1>
+  <p class="lead">원고를 올리고 학회지를 고르면, 그 학회의 바탕틀과 규정에 맞춘 HWP를 만듭니다. 내장 학회 82곳, AI 없이 규칙으로만 동작합니다.</p>
+  <div class="actions">
+    <a class="btn primary" href="투고틀.html">웹에서 바로 열기</a>
+    <a class="btn" href="https://github.com/fansenryu-cmd/tugotl/releases/latest/download/tugotl.html">내려받기 (오프라인용 HTML 한 개)</a>
+  </div>
+  <p class="note">약 30 MB. 열어 둔 뒤 인터넷을 끊어도 동작합니다. 내려받은 파일은 더블클릭으로 브라우저에서 엽니다.</p>
+
+  <div class="grid">
+    <div class="card"><b>입력</b><span>HWP · HWPX · DOCX · TXT · MD 원고</span></div>
+    <div class="card"><b>출력</b><span>학회 양식 HWP · HWPX, 체크리스트와 정오표</span></div>
+    <div class="card"><b>학회 82곳</b><span>KCI 등재지 79곳, 등재후보지 3곳</span></div>
+    <div class="card"><b>각주·참고문헌</b><span>쪽·면·p./pp.와 범위 기호를 학회 예시대로</span></div>
+  </div>
+
+  <div class="privacy"><b>원고는 밖으로 나가지 않습니다.</b> 변환기는 브라우저 안에서만 처리하고 서버·외부 전송·AI 호출이 없습니다. 이 소개 페이지만 방문 수를 셉니다(쿠키 없음, hits.sh 집계 이미지 한 개).</div>
+
+  <footer>
+    <span>만든 사람 이융희 · <a href="https://github.com/fansenryu-cmd/tugotl">GitHub 저장소</a> · <a href="https://github.com/fansenryu-cmd/tugotl/releases">변경 내역</a></span>
+    <img class="hits" src="https://hits.sh/fansenryu-cmd.github.io/tugotl.svg?label=%EB%B0%A9%EB%AC%B8&color=e8b14a&labelColor=2a2a2a" alt="방문 수" referrerpolicy="no-referrer">
+  </footer>
+</main>
+</body>
+</html>

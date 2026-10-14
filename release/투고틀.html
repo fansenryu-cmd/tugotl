@@ -262,7 +262,7 @@ main.over .dropline { display: block; }
       <div class="mast-status" id="status" role="status" aria-live="polite"><span class="dot" aria-hidden="true"></span><span id="status-text">엔진 준비 중…</span></div>
       <div class="skins" id="skins" role="radiogroup" aria-label="화면 스킨"><span class="sk-label">스킨</span><button type="button" class="sw sw-default" data-skin="" role="radio" aria-label="다크 스튜디오(기본)" title="다크 스튜디오(기본)"></button><button type="button" class="sw sw-paper" data-skin="paper" role="radio" aria-label="종이·서지" title="종이·서지"></button><button type="button" class="sw sw-mono" data-skin="mono" role="radio" aria-label="모노크롬 미니멀" title="모노크롬 미니멀"></button><button type="button" class="sw sw-navy" data-skin="navy" role="radio" aria-label="네이비·크림" title="네이비·크림"></button><button type="button" class="sw sw-type" data-skin="type" role="radio" aria-label="타이포 편집" title="타이포 편집"></button><button type="button" class="sw sw-slack" data-skin="slack" role="radio" aria-label="보라(슬랙식, 이전 기본)" title="보라(슬랙식, 이전 기본)"></button><button type="button" class="sw sw-violet" data-skin="violet" role="radio" aria-label="바이올렛" title="바이올렛"></button></div>
       <div class="mast-note" id="status-note" hidden>본 투고 양식 편집은 프로그램 규칙에 따른 것으로 완벽한 편집이 아닙니다. 저장한 원고는 투고 전에 반드시 저자가 직접 확인해 주세요.</div>
-      <div class="side-fine">원고는 이 브라우저 안에서만 처리되며 전송되지 않습니다 · <a href="https://github.com/edwardkim/rhwp" target="_blank" rel="noopener">rhwp</a> · v1.2 · 빌드 2026-10-14 10:09</div>
+      <div class="side-fine">원고는 이 브라우저 안에서만 처리되며 전송되지 않습니다 · <a href="https://github.com/edwardkim/rhwp" target="_blank" rel="noopener">rhwp</a> · v1.2 · 빌드 2026-10-14 10:31</div>
     </div>
   </aside>
   <main id="main" tabindex="-1"></main>
@@ -22349,6 +22349,7 @@ main.over .dropline { display: block; }
     return state.templateInfo[key];
   }
   var kindOf = (j) => j.template && templateBytes(j) ? "\uBC14\uD0D5\uD2C0" : j.format ? "\uADDC\uC815\uAC12" : "\uC77C\uBC18";
+  var kindLabel = (j) => ({ \uBC14\uD0D5\uD2C0: "\uD559\uD68C \uC591\uC2DD \uD30C\uC77C \uADF8\uB300\uB85C", \uADDC\uC815\uAC12: "\uD559\uD68C \uADDC\uC815\uC758 \uC218\uCE58\uB85C \uC11C\uC2DD", \uC77C\uBC18: "\uC77C\uBC18 \uC11C\uC2DD(\uD559\uD68C \uC591\uC2DD \uBBF8\uACF5\uAC1C)" })[kindOf(j)];
   var safeSchedMap = () => {
     const a = lsGet(LS.schedule, {});
     return a && typeof a === "object" && !Array.isArray(a) ? a : {};
@@ -22389,9 +22390,11 @@ main.over .dropline { display: block; }
   function renderSide() {
     const sel = $("#jsel");
     sel.replaceChildren(h("option", { value: "" }, "\uD559\uD68C\uC9C0\uB97C \uACE0\uB974\uC138\uC694\u2026"));
-    const groups = [["\uBC14\uD0D5\uD2C0", (j2) => kindOf(j2) === "\uBC14\uD0D5\uD2C0"], ["\uADDC\uC815\uAC12", (j2) => kindOf(j2) === "\uADDC\uC815\uAC12"], ["\uC77C\uBC18 \uC591\uC2DD", (j2) => kindOf(j2) === "\uC77C\uBC18"]];
+    const tier = (j2) => /후보/.test(j2.grade || "") ? 1 : /등재/.test(j2.grade || "") ? 0 : 2;
+    const byName = (a, b) => (a.journal || "").localeCompare(b.journal || "", "ko");
+    const groups = [["\uB4F1\uC7AC\uC9C0", (j2) => tier(j2) === 0], ["\uB4F1\uC7AC\uD6C4\uBCF4\uC9C0", (j2) => tier(j2) === 1], ["\uADF8 \uBC16\uC758 \uD559\uD68C", (j2) => tier(j2) === 2]];
     for (const [label, test] of groups) {
-      const items = state.journals.filter(test);
+      const items = state.journals.filter(test).sort(byName);
       if (!items.length) continue;
       sel.append(h("optgroup", { label: `${label} (${items.length})` }, ...items.map((j2) => h("option", { value: j2.id, selected: j2.id === state.journalId ? "" : null }, `${j2.journal} \u2014 ${j2.society}${j2.custom ? " (\uC0AC\uC6A9\uC790)" : ""}`))));
     }
@@ -22403,7 +22406,7 @@ main.over .dropline { display: block; }
     if (j) {
       const nd = nextDeadlines(j)[0];
       const left = nd ? daysLeft(nd.date) : null;
-      meta.append(h("div", {}, h("b", {}, kindOf(j)), ` \xB7 ${j.grade || ""}`), nd ? h("div", {}, `\uB2E4\uC74C \uB9C8\uAC10 ${nd.deadline}${left !== null ? left >= 0 ? ` \xB7 D-${left}` : " \xB7 \uC9C0\uB0A8" : ""}`) : h("div", {}, "\uB9C8\uAC10\uC740 \uACF5\uC9C0\uB85C \uD655\uC778"));
+      meta.append(h("div", {}, h("b", {}, j.grade || "\uB4F1\uAE09 \uBBF8\uAE30\uC7AC"), ` \xB7 ${kindLabel(j)}`), nd ? h("div", {}, `\uB2E4\uC74C \uB9C8\uAC10 ${nd.deadline}${left !== null ? left >= 0 ? ` \xB7 D-${left}` : " \xB7 \uC9C0\uB0A8" : ""}`) : h("div", {}, "\uB9C8\uAC10\uC740 \uACF5\uC9C0\uB85C \uD655\uC778"));
       sub.append(h("button", { type: "button", class: state.view === "journal" ? "on" : "", onclick: () => {
         state.view = "journal";
         render();
@@ -22924,7 +22927,7 @@ ${b.text}` }, b.text, b.footnotes?.length ? h("span", { class: "fn" }, `\uAC01\u
       "div",
       { class: "topbar" },
       h("h1", {}, j.journal),
-      h("span", { class: "sub" }, `${j.society} \xB7 ${j.grade || ""} \xB7 ${kindOf(j)}`),
+      h("span", { class: "sub" }, `${j.society} \xB7 ${j.grade || ""} \xB7 ${kindLabel(j)}`),
       h("span", { class: "grow" }),
       safeUrl(j.submit?.url) ? h("a", { class: "btn", href: safeUrl(j.submit.url), target: "_blank", rel: "noopener noreferrer" }, `\uD22C\uACE0\uCC98 \uC774\uB3D9 \u2197`) : null,
       h("button", { class: "btn ghost", onclick: () => {
@@ -23385,7 +23388,7 @@ ${b.text}` }, b.text, b.footnotes?.length ? h("span", { class: "fn" }, `\uAC01\u
     main.append(sec(
       "\uAE30\uBCF8 \uD750\uB984",
       ol(
-        [h("b", {}, "\uD22C\uACE0\uCC98 \uC120\uD0DD"), " \u2014 \uC67C\uCABD \uC704\uC5D0\uC11C \uD559\uD68C\uC9C0\uB97C \uACE0\uB985\uB2C8\uB2E4. \uBC14\uD0D5\uD2C0(\uD559\uD68C \uC591\uC2DD \uD30C\uC77C)\xB7\uADDC\uC815\uAC12(\uADDC\uC815\uC758 \uC218\uCE58)\xB7\uC77C\uBC18 \uC591\uC2DD \uC911 \uC5B4\uB290 \uBC29\uC2DD\uC73C\uB85C \uB9CC\uB4DC\uB294\uC9C0 \uC774\uB984 \uC606\uC5D0 \uD45C\uC2DC\uB429\uB2C8\uB2E4."],
+        [h("b", {}, "\uD22C\uACE0\uCC98 \uC120\uD0DD"), " \u2014 \uC67C\uCABD \uC704\uC5D0\uC11C \uD559\uD68C\uC9C0\uB97C \uACE0\uB985\uB2C8\uB2E4. \uBAA9\uB85D\uC740 \uB4F1\uC7AC\uC9C0\xB7\uB4F1\uC7AC\uD6C4\uBCF4\uC9C0 \uC21C, \uD559\uC220\uC9C0 \uC774\uB984 \uAC00\uB098\uB2E4\uC21C\uC785\uB2C8\uB2E4. \uD559\uD68C\uAC00 \uACF5\uAC1C\uD55C \uC591\uC2DD \uD30C\uC77C\uC744 \uADF8\uB300\uB85C \uC4F0\uB294\uC9C0(\uD559\uD68C \uC591\uC2DD \uD30C\uC77C \uADF8\uB300\uB85C), \uADDC\uC815\uC5D0 \uC801\uD78C \uAE00\uAF34\xB7\uD06C\uAE30\xB7\uC5EC\uBC31 \uC218\uCE58\uB85C \uB9CC\uB4DC\uB294\uC9C0(\uD559\uD68C \uADDC\uC815\uC758 \uC218\uCE58\uB85C \uC11C\uC2DD), \uB458 \uB2E4 \uC5C6\uC5B4 \uC77C\uBC18 \uC11C\uC2DD\uC744 \uC4F0\uB294\uC9C0 \uD559\uD68C \uC815\uBCF4 \uC544\uB798\uC5D0 \uD45C\uC2DC\uB429\uB2C8\uB2E4."],
         [h("b", {}, "\uC6D0\uACE0 \uB193\uAE30"), " \u2014 HWP\xB7HWPX\xB7DOCX\xB7TXT\xB7MD \uC6D0\uACE0\uB97C \uD654\uBA74\uC5D0 \uB04C\uC5B4\uB2E4 \uB193\uAC70\uB098 \u2018\uD30C\uC77C \uC120\uD0DD\u2019\uC744 \uB204\uB985\uB2C8\uB2E4. \uB193\uB294 \uC989\uC2DC \uC5F4\uB9AC\uACE0, \uC67C\uCABD\uC5D0 \uBB38\uB2E8\uBCC4 \uC5ED\uD560(\uC81C\uBAA9\xB7\uCD08\uB85D\xB7\uC7A5 \uC81C\uBAA9\xB7\uBCF8\uBB38\xB7\uC778\uC6A9\xB7\uCC38\uACE0\uBB38\uD5CC\xB7\uC601\uBB38\uCD08\uB85D)\uC774 \uC778\uC2DD\uB418\uC5B4 \uB098\uC635\uB2C8\uB2E4. TXT\xB7MD \uC6D0\uACE0\uB294 \uAC01\uC8FC\uB97C [^1] \u2026 [^1]: \uB0B4\uC6A9 \uAF34\uB85C, \uAC15\uC870\uB97C *\uAE30\uC6B8\uC784*\xB7**\uAD75\uAC8C**(\uB0B1\uB9D0 \uACBD\uACC4\uC5D0\uC11C\uB9CC, \uC800\uC790 \uC774\uB984 \uB4A4 * \uD45C\uC2DC\uB294 \uAE00\uC790\uB85C \uB0A8\uC74C)\uB85C, \uC7A5 \uC81C\uBAA9\uC744 # \uB85C, \uC778\uC6A9\uC744 > \uB85C \uC77D\uC2B5\uB2C8\uB2E4. \uAC01\uC8FC \uC815\uC758 \uC544\uB798 \uB124 \uCE78 \uB4E4\uC5EC \uC4F4 \uC904\uC740 \uAC19\uC740 \uAC01\uC8FC\uC758 \uB2E4\uC74C \uBB38\uB2E8\uC785\uB2C8\uB2E4."],
         [h("b", {}, "\uC5ED\uD560 \uD655\uC778"), " \u2014 \uC798\uBABB \uC7A1\uD78C \uC5ED\uD560\uC740 \uBAA9\uB85D\uC5D0\uC11C \uC9C1\uC811 \uBC14\uAFC9\uB2C8\uB2E4. \uC5ED\uD560\uC740 \uC11C\uC2DD\uC744 \uC815\uD558\uB294 \uAE30\uC900\uC774\uBBC0\uB85C \uC81C\uBAA9\xB7\uCC38\uACE0\uBB38\uD5CC\xB7\uC601\uBB38\uCD08\uB85D\uC774 \uB9DE\uAC8C \uC7A1\uD614\uB294\uC9C0 \uBA3C\uC800 \uBCF4\uC138\uC694."],
         [h("b", {}, "\uC801\uC6A9"), " \u2014 \uD559\uD68C \uC591\uC2DD\uC774 \uC785\uD600\uC9C4 \uCABD\uC744 \uC624\uB978\uCABD \u2018\uBBF8\uB9AC\uBCF4\uAE30\u2019\uC5D0\uC11C \uBCF4\uACE0, \u2018\uBCC0\uACBD \uC0AC\uD56D\u2019\uC5D0\uC11C \uBB34\uC5C7\uC774 \uBC14\uB00C\uC5C8\uB294\uC9C0(\uCCB4\uC7AC \uC7AC\uBC30\uC5F4, \uCABD\uC218\xB7\uC11C\uC9C0 \uD45C\uAE30, \uBE48 \uC904) \uD655\uC778\uD569\uB2C8\uB2E4. \uC800\uC7A5 \uC804\uC5D0 \uC124\uC815\uC774\uB098 \uC5ED\uD560\uC744 \uACE0\uCCE4\uB2E4\uBA74 \u2018\uB2E4\uC2DC \uC801\uC6A9\u2019\uC744 \uB204\uB985\uB2C8\uB2E4. \uAC01\uC8FC\uAC00 \uB9CE\uC740 \uCABD\uC740 \uBBF8\uB9AC\uBCF4\uAE30\uC5D0\uC11C \uBCF8\uBB38\uACFC \uAC01\uC8FC\uAC00 \uACB9\uCCD0 \uBCF4\uC77C \uC218 \uC788\uC2B5\uB2C8\uB2E4(\uCABD \uC544\uB798\uC5D0 \uB178\uB780 \uD45C\uC2DC). \uBBF8\uB9AC\uBCF4\uAE30 \uC5D4\uC9C4\uC758 \uD55C\uACC4\uC77C \uBFD0\uC774\uBA70, \uC800\uC7A5\uD55C HWP\uB294 \uD55C\uAE00\uC774 \uC5F4 \uB54C \uB2E4\uC2DC \uBC30\uCE58\uD558\uBBC0\uB85C \uACB9\uCE58\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4."],

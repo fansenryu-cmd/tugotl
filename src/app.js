@@ -136,6 +136,8 @@ function templateInfo(j) {
   return state.templateInfo[key];
 }
 const kindOf = (j) => (j.template && templateBytes(j) ? '바탕틀' : (j.format ? '규정값' : '일반'));
+// 화면 표기: 서식을 어디서 가져오는지 사용자 말로
+const kindLabel = (j) => ({ 바탕틀: '학회 양식 파일 그대로', 규정값: '학회 규정의 수치로 서식', 일반: '일반 서식(학회 양식 미공개)' })[kindOf(j)];
 
 // ───────── 일정 ─────────
 // 사용자가 넣은 마감(localStorage) — 꼴이 어긋난 항목은 무시한다
@@ -164,15 +166,18 @@ const daysLeft = (d) => Math.ceil((new Date(d) - new Date(fmtDate(new Date()))) 
 function setStatus(text, cls) { $('#status-text').textContent = text; $('#status').className = 'mast-status ' + (cls || ''); }
 function renderSide() {
   const sel = $('#jsel'); sel.replaceChildren(h('option', { value: '' }, '학회지를 고르세요…'));
-  const groups = [['바탕틀', (j) => kindOf(j) === '바탕틀'], ['규정값', (j) => kindOf(j) === '규정값'], ['일반 양식', (j) => kindOf(j) === '일반']];
+  // 등재지 → 등재후보지 → 그 밖(등급 미기재·사용자 학회) 순, 묶음 안은 학술지 이름 가나다순
+  const tier = (j) => (/후보/.test(j.grade || '') ? 1 : /등재/.test(j.grade || '') ? 0 : 2);
+  const byName = (a, b) => (a.journal || '').localeCompare(b.journal || '', 'ko');
+  const groups = [['등재지', (j) => tier(j) === 0], ['등재후보지', (j) => tier(j) === 1], ['그 밖의 학회', (j) => tier(j) === 2]];
   for (const [label, test] of groups) {
-    const items = state.journals.filter(test); if (!items.length) continue;
+    const items = state.journals.filter(test).sort(byName); if (!items.length) continue;
     sel.append(h('optgroup', { label: `${label} (${items.length})` }, ...items.map((j) => h('option', { value: j.id, selected: j.id === state.journalId ? '' : null }, `${j.journal} — ${j.society}${j.custom ? ' (사용자)' : ''}`))));
   }
   const j = journal(); const meta = $('#jmeta'); const sub = $('#jsub'); meta.replaceChildren(); sub.replaceChildren();
   if (j) {
     const nd = nextDeadlines(j)[0]; const left = nd ? daysLeft(nd.date) : null;
-    meta.append(h('div', {}, h('b', {}, kindOf(j)), ` · ${j.grade || ''}`), nd ? h('div', {}, `다음 마감 ${nd.deadline}${left !== null ? (left >= 0 ? ` · D-${left}` : ' · 지남') : ''}`) : h('div', {}, '마감은 공지로 확인'));
+    meta.append(h('div', {}, h('b', {}, j.grade || '등급 미기재'), ` · ${kindLabel(j)}`), nd ? h('div', {}, `다음 마감 ${nd.deadline}${left !== null ? (left >= 0 ? ` · D-${left}` : ' · 지남') : ''}`) : h('div', {}, '마감은 공지로 확인'));
     sub.append(h('button', { type: 'button', class: state.view === 'journal' ? 'on' : '', onclick: () => { state.view = 'journal'; render(); } }, h('span', { class: 'ico', 'aria-hidden': 'true' }, '§'), '투고 양식 및 규정 확인'));
     if (safeUrl(j.submit?.url)) sub.append(h('a', { class: 'ext', href: safeUrl(j.submit.url), target: '_blank', rel: 'noopener noreferrer' }, h('span', { class: 'ico', 'aria-hidden': 'true' }, '↗'), `투고처 이동 (${j.submit.system || '사이트'})`));
     else sub.append(h('button', { type: 'button', disabled: '' }, h('span', { class: 'ico', 'aria-hidden': 'true' }, '↗'), '투고처 주소 없음'));
@@ -484,7 +489,7 @@ function parseCallText(text) {
 function renderJournal(main) {
   const j = journal();
   if (!j) { main.append(h('div', { class: 'topbar' }, h('h1', {}, '투고 양식 및 규정')), h('p', { class: 'hero' }, '왼쪽에서 투고처를 고르세요.')); return; }
-  main.append(h('div', { class: 'topbar' }, h('h1', {}, j.journal), h('span', { class: 'sub' }, `${j.society} · ${j.grade || ''} · ${kindOf(j)}`), h('span', { class: 'grow' }),
+  main.append(h('div', { class: 'topbar' }, h('h1', {}, j.journal), h('span', { class: 'sub' }, `${j.society} · ${j.grade || ''} · ${kindLabel(j)}`), h('span', { class: 'grow' }),
     safeUrl(j.submit?.url) ? h('a', { class: 'btn', href: safeUrl(j.submit.url), target: '_blank', rel: 'noopener noreferrer' }, `투고처 이동 ↗`) : null,
     h('button', { class: 'btn ghost', onclick: () => { state.view = 'convert'; render(); } }, '원고 변환으로')));
   const tabs = [['docs', '투고 서류·양식'], ['overview', '개요·투고'], ['schedule', '일정'], ['layout', '편집 양식'], ['cite', '각주·참고문헌'], ['template', '바탕틀·역할']];
@@ -639,7 +644,7 @@ function renderHelp(main) {
       '학회 규정 그대로: 글꼴·크기·여백·줄간격·체재 순서·쪽수 단위는 각 학회의 양식 파일과 규정 수치를 그대로 씁니다. 프로그램이 임의로 고르지 않습니다.',
       '구성: 왼쪽에서 투고처를 고르고, 오른쪽에 원고를 놓고, 적용해 미리보고, 저장합니다. 투고처별 규정·서류·일정은 같은 화면에서 봅니다.')));
   main.append(sec('기본 흐름',
-    ol([h('b', {}, '투고처 선택'), ' — 왼쪽 위에서 학회지를 고릅니다. 바탕틀(학회 양식 파일)·규정값(규정의 수치)·일반 양식 중 어느 방식으로 만드는지 이름 옆에 표시됩니다.'],
+    ol([h('b', {}, '투고처 선택'), ' — 왼쪽 위에서 학회지를 고릅니다. 목록은 등재지·등재후보지 순, 학술지 이름 가나다순입니다. 학회가 공개한 양식 파일을 그대로 쓰는지(학회 양식 파일 그대로), 규정에 적힌 글꼴·크기·여백 수치로 만드는지(학회 규정의 수치로 서식), 둘 다 없어 일반 서식을 쓰는지 학회 정보 아래에 표시됩니다.'],
       [h('b', {}, '원고 놓기'), ' — HWP·HWPX·DOCX·TXT·MD 원고를 화면에 끌어다 놓거나 ‘파일 선택’을 누릅니다. 놓는 즉시 열리고, 왼쪽에 문단별 역할(제목·초록·장 제목·본문·인용·참고문헌·영문초록)이 인식되어 나옵니다. TXT·MD 원고는 각주를 [^1] … [^1]: 내용 꼴로, 강조를 *기울임*·**굵게**(낱말 경계에서만, 저자 이름 뒤 * 표시는 글자로 남음)로, 장 제목을 # 로, 인용을 > 로 읽습니다. 각주 정의 아래 네 칸 들여 쓴 줄은 같은 각주의 다음 문단입니다.'],
       [h('b', {}, '역할 확인'), ' — 잘못 잡힌 역할은 목록에서 직접 바꿉니다. 역할은 서식을 정하는 기준이므로 제목·참고문헌·영문초록이 맞게 잡혔는지 먼저 보세요.'],
       [h('b', {}, '적용'), ' — 학회 양식이 입혀진 쪽을 오른쪽 ‘미리보기’에서 보고, ‘변경 사항’에서 무엇이 바뀌었는지(체재 재배열, 쪽수·서지 표기, 빈 줄) 확인합니다. 저장 전에 설정이나 역할을 고쳤다면 ‘다시 적용’을 누릅니다. 각주가 많은 쪽은 미리보기에서 본문과 각주가 겹쳐 보일 수 있습니다(쪽 아래에 노란 표시). 미리보기 엔진의 한계일 뿐이며, 저장한 HWP는 한글이 열 때 다시 배치하므로 겹치지 않습니다.'],
