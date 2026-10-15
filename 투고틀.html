@@ -118,6 +118,7 @@ main.over .dropline { display: block; }
 .struct td.txt.blank { color: var(--subtle); font-style: italic; }
 .struct select { min-height: 28px; padding: 1px 24px 1px 8px; font-size: 12.5px; width: 100%; }
 .struct .fn { display: inline-block; color: var(--accent); font-size: 11px; margin-left: 6px; background: var(--accent-bg); padding: 0 6px; border-radius: 999px; }
+.struct .fn.obj { color: var(--fg); background: var(--muted); border: 1px solid var(--border); margin-left: 0; margin-right: 6px; }
 .struct tr.h1 td.txt, .struct tr.title td.txt, .struct tr.refHead td.txt, .struct tr.abstractHead td.txt, .struct tr.abstractEnHead td.txt { font-weight: 600; }
 .struct tr.h2 td.txt, .struct tr.h3 td.txt { font-weight: 500; }
 .struct tr.quote td.txt, .struct tr.source td.txt { color: var(--muted-fg); padding-left: 24px; }
@@ -262,7 +263,7 @@ main.over .dropline { display: block; }
       <div class="mast-status" id="status" role="status" aria-live="polite"><span class="dot" aria-hidden="true"></span><span id="status-text">엔진 준비 중…</span></div>
       <div class="skins" id="skins" role="radiogroup" aria-label="화면 스킨"><span class="sk-label">스킨</span><button type="button" class="sw sw-default" data-skin="" role="radio" aria-label="다크 스튜디오(기본)" title="다크 스튜디오(기본)"></button><button type="button" class="sw sw-paper" data-skin="paper" role="radio" aria-label="종이·서지" title="종이·서지"></button><button type="button" class="sw sw-mono" data-skin="mono" role="radio" aria-label="모노크롬 미니멀" title="모노크롬 미니멀"></button><button type="button" class="sw sw-navy" data-skin="navy" role="radio" aria-label="네이비·크림" title="네이비·크림"></button><button type="button" class="sw sw-type" data-skin="type" role="radio" aria-label="타이포 편집" title="타이포 편집"></button><button type="button" class="sw sw-slack" data-skin="slack" role="radio" aria-label="보라(슬랙식, 이전 기본)" title="보라(슬랙식, 이전 기본)"></button><button type="button" class="sw sw-violet" data-skin="violet" role="radio" aria-label="바이올렛" title="바이올렛"></button></div>
       <div class="mast-note" id="status-note" hidden>본 투고 양식 편집은 프로그램 규칙에 따른 것으로 완벽한 편집이 아닙니다. 저장한 원고는 투고 전에 반드시 저자가 직접 확인해 주세요.</div>
-      <div class="side-fine">원고는 이 브라우저 안에서만 처리되며 전송되지 않습니다 · <a href="https://github.com/edwardkim/rhwp" target="_blank" rel="noopener">rhwp</a> · v1.3 · 빌드 2026-10-15 00:14</div>
+      <div class="side-fine">원고는 이 브라우저 안에서만 처리되며 전송되지 않습니다 · <a href="https://github.com/edwardkim/rhwp" target="_blank" rel="noopener">rhwp</a> · v1.3 · 빌드 2026-10-15 01:20</div>
     </div>
   </aside>
   <main id="main" tabindex="-1"></main>
@@ -2738,6 +2739,8 @@ main.over .dropline { display: block; }
     { id: "quote", label: "\uC778\uC6A9\uBB38", group: "body" },
     { id: "source", label: "\uCD9C\uC804 \uD45C\uAE30", group: "body" },
     { id: "caption", label: "\uD45C\xB7\uADF8\uB9BC \uC81C\uBAA9", group: "body" },
+    { id: "object", label: "\uD45C\xB7\uADF8\uB9BC", group: "body" },
+    { id: "objNote", label: "\uD45C\xB7\uADF8\uB9BC \uC8FC\uC11D(\uC790\uB8CC\xB7\uC8FC)", group: "body" },
     { id: "blank", label: "\uBE48 \uC904", group: "body" },
     { id: "refHead", label: "\uCC38\uACE0\uBB38\uD5CC \uC81C\uBAA9", group: "references" },
     { id: "refSub", label: "\uCC38\uACE0\uBB38\uD5CC \uBD84\uB958", group: "references" },
@@ -2750,6 +2753,7 @@ main.over .dropline { display: block; }
     { id: "dates", label: "\uD22C\uACE0\xB7\uC2EC\uC0AC\uC77C", group: "tail" },
     { id: "skip", label: "(\uC81C\uC678)", group: "none" }
   ];
+  var FLOAT_ROLES = /* @__PURE__ */ new Set(["object", "objNote", "caption"]);
   var ROLE_FALLBACK = {
     subtitle: ["title"],
     titleEn: ["title"],
@@ -2767,6 +2771,8 @@ main.over .dropline { display: block; }
     quote: ["body"],
     source: ["quote", "body"],
     caption: ["body"],
+    object: ["caption", "body"],
+    objNote: ["caption", "body"],
     blank: ["body"],
     refHead: ["abstractHead", "h1"],
     refSub: ["refHead", "h2"],
@@ -2808,6 +2814,8 @@ main.over .dropline { display: block; }
       quote: { size: 9, align: "justify", lineSpacing: 150, marginLeft: 20, marginRight: 10, spacingBefore: 6, spacingAfter: 6 },
       source: { size: 9, align: "right", lineSpacing: 150, marginRight: 10 },
       caption: { size: 9, bold: true, align: "center", lineSpacing: 150, spacingBefore: 4, spacingAfter: 4 },
+      object: { size: 10, align: "center", lineSpacing: 100, spacingBefore: 4, spacingAfter: 4 },
+      objNote: { size: 9, align: "left", lineSpacing: 150, spacingAfter: 4 },
       refHead: { size: 12, bold: true, align: "left", lineSpacing: 160, spacingBefore: 24, spacingAfter: 8 },
       refSub: { size: 10.5, bold: true, align: "left", lineSpacing: 160, spacingBefore: 8, spacingAfter: 2 },
       ref: { size: 10, align: "justify", lineSpacing: 160, indent: -20, marginLeft: 20 },
@@ -19832,6 +19840,240 @@ main.over .dropline { display: block; }
 
   // src/engine.js
   var import_jszip = __toESM(require_jszip_min(), 1);
+
+  // src/objects.js
+  var OBJ_TAGS = ["tbl", "pic", "container", "rect", "ellipse", "line", "arc", "polygon", "curve", "connectLine", "equation", "ole", "textart", "chart", "video"];
+  var OBJ_CTRL = /* @__PURE__ */ new Set(["tbl", "gso", "eqed", "$pic", "pic", "$ole", "ole", "$con", "chart"]);
+  var OBJ_OPEN = new RegExp(`<hp:(subList|newNum|${OBJ_TAGS.join("|")})\\b`, "g");
+  var kindOf = (tag) => tag === "tbl" ? "table" : tag === "pic" ? "picture" : tag === "equation" ? "equation" : "shape";
+  function elementEnd(xml, start, tag) {
+    const re = new RegExp(`<(/?)hp:${tag}\\b[^>]*?(/?)>`, "g");
+    re.lastIndex = start;
+    let depth = 0, m;
+    while (m = re.exec(xml)) {
+      if (m[2]) {
+        if (depth === 0) return re.lastIndex;
+        continue;
+      }
+      depth += m[1] ? -1 : 1;
+      if (depth === 0) return re.lastIndex;
+    }
+    return -1;
+  }
+  function scanSection(sec) {
+    const paras = [];
+    let depth = 0;
+    const re = /<(\/?)hp:(p|subList)\b[^>]*?(\/?)>/g;
+    let m;
+    let open = -1;
+    while (m = re.exec(sec)) {
+      if (m[3]) {
+        if (m[2] === "p" && depth === 0) paras.push({ start: m.index, end: re.lastIndex, objects: [] });
+        continue;
+      }
+      if (m[2] === "subList") {
+        depth += m[1] ? -1 : 1;
+        continue;
+      }
+      if (depth !== 0) continue;
+      if (!m[1]) open = m.index;
+      else if (open >= 0) {
+        paras.push({ start: open, end: re.lastIndex, objects: [] });
+        open = -1;
+      }
+    }
+    let pending = "";
+    for (const p of paras) {
+      OBJ_OPEN.lastIndex = p.start;
+      let o;
+      while ((o = OBJ_OPEN.exec(sec)) && o.index < p.end) {
+        if (o[1] === "newNum") {
+          const tag = /^<hp:newNum\b[^>]*\/>/.exec(sec.slice(o.index, o.index + 200));
+          if (tag && /numType="(PICTURE|TABLE|EQUATION)"/.test(tag[0])) pending += `<hp:ctrl>${tag[0]}</hp:ctrl>`;
+          continue;
+        }
+        const end = elementEnd(sec, o.index, o[1]);
+        if (end < 0) break;
+        if (o[1] !== "subList") {
+          p.objects.push({ tag: o[1], start: o.index, end, pre: pending });
+          pending = "";
+        }
+        OBJ_OPEN.lastIndex = end;
+      }
+    }
+    return paras;
+  }
+  function textOffsetBefore(sec, pStart, at, decode) {
+    let x = sec.slice(pStart, at);
+    let k;
+    while ((k = x.search(/<hp:subList\b/)) >= 0) {
+      const e = elementEnd(x, k, "subList");
+      x = e < 0 ? x.slice(0, k) : x.slice(0, k) + x.slice(e);
+    }
+    return [...x.matchAll(/<hp:t\b[^>]*>([\s\S]*?)<\/hp:t>/g)].map((t) => decode(t[1])).join("").length;
+  }
+  function describeObject(xml, tag) {
+    const num = (re) => {
+      const m = re.exec(xml);
+      return m ? +m[1] : 0;
+    };
+    const cap = /<hp:caption\b[\s\S]*?<\/hp:caption>/.exec(xml);
+    const caption = cap ? [...cap[0].matchAll(/<hp:t\b[^>]*>([\s\S]*?)<\/hp:t>/g)].map((t) => t[1].replace(/<[^>]+>/g, "")).join("").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&amp;/g, "&").trim() : "";
+    const w = num(/<hp:sz width="(\d+)"/), h2 = num(/<hp:sz width="\d+"[^>]*height="(\d+)"/);
+    return { rows: tag === "tbl" ? num(/rowCnt="(\d+)"/) : 0, cols: tag === "tbl" ? num(/colCnt="(\d+)"/) : 0, width: w, height: h2, caption };
+  }
+  var LIST = { charPr: "charProperties", paraPr: "paraProperties", borderFill: "borderFills", tabPr: "tabProperties", numbering: "numberings", bullet: "bullets" };
+  var ORDER = ["fontfaces", "borderFills", "charProperties", "tabProperties", "numberings", "bullets", "paraProperties", "styles"];
+  var items = (header, el) => {
+    const out = {};
+    const re = new RegExp(`<hh:${el} id="(\\d+)"[^>]*?(?:/>|>[\\s\\S]*?</hh:${el}>)`, "g");
+    for (const m of header.matchAll(re)) out[m[1]] = m[0];
+    return out;
+  };
+  var setId = (x, id) => x.replace(/ id="\d+"/, ` id="${id}"`);
+  function makeImporter(opts) {
+    const srcH = opts.src.header || "";
+    const S = { charPr: items(srcH, "charPr"), paraPr: items(srcH, "paraPr"), borderFill: items(srcH, "borderFill"), tabPr: items(srcH, "tabPr"), numbering: items(srcH, "numbering"), bullet: items(srcH, "bullet") };
+    const next = {};
+    const count = {};
+    for (const k of Object.keys(LIST)) {
+      const ids = Object.keys(items(opts.header, k)).map(Number);
+      next[k] = ids.length ? Math.max(...ids) + 1 : /^(borderFill|numbering|bullet)$/.test(k) ? 1 : 0;
+      count[k] = ids.length;
+    }
+    const added = { paraPr: [], borderFill: [], tabPr: [], numbering: [], bullet: [] };
+    const cache = {};
+    const bins = [];
+    const binMap = {};
+    const stats = { objects: 0, tables: 0, pictures: 0, shapes: 0, scaled: 0, moved: 0, footnotes: 0 };
+    const memo = (kind, id, fn) => {
+      const key = `${kind}:${id}`;
+      if (!(key in cache)) cache[key] = fn();
+      return cache[key];
+    };
+    const importBin = (id) => memo("bin", id, () => {
+      const b = opts.src.bins && opts.src.bins[id];
+      if (!b) return id;
+      const nid = `tgbin${bins.length + 1}`;
+      const ext = (/\.([A-Za-z0-9]+)$/.exec(b.href) || [null, "bin"])[1];
+      bins.push({ id: nid, path: `BinData/${nid}.${ext}`, type: b.type, bytes: b.bytes });
+      binMap[id] = nid;
+      return nid;
+    });
+    const importBorderFill = (id) => memo("bf", id, () => {
+      const x = S.borderFill[id];
+      if (!x) return 1;
+      const nid = next.borderFill++;
+      added.borderFill.push(setId(x, nid).replace(/binaryItemIDRef="([^"]+)"/g, (m0, b) => `binaryItemIDRef="${importBin(b)}"`));
+      return nid;
+    });
+    const importCharPr = (id) => memo("cs", id, () => {
+      const x = S.charPr[id];
+      if (!x) return 0;
+      let y = x.replace(/borderFillIDRef="(\d+)"/, (m0, b) => `borderFillIDRef="${importBorderFill(b)}"`);
+      if (opts.bodyFontRef) y = y.replace(/<hh:fontRef\b[^>]*\/>/, opts.bodyFontRef);
+      return opts.allocCharPr(y);
+    });
+    const importTabPr = (id) => memo("tab", id, () => {
+      const x = S.tabPr[id];
+      if (!x || +id === 0) return 0;
+      const nid = next.tabPr++;
+      added.tabPr.push(setId(x, nid));
+      return nid;
+    });
+    const importNumbering = (kind, id) => memo(kind, id, () => {
+      const x = S[kind][id];
+      if (!x) return null;
+      const nid = next[kind]++;
+      added[kind].push(setId(x, nid).replace(/charPrIDRef="(\d+)"/g, (m0, c) => c === "4294967295" ? m0 : `charPrIDRef="${importCharPr(c)}"`));
+      return nid;
+    });
+    const importParaPr = (id) => memo("ps", id, () => {
+      const x = S.paraPr[id];
+      if (!x) return 0;
+      let y = x.replace(/tabPrIDRef="(\d+)"/, (m0, t) => `tabPrIDRef="${importTabPr(t)}"`).replace(/borderFillIDRef="(\d+)"/g, (m0, b) => `borderFillIDRef="${importBorderFill(b)}"`);
+      y = y.replace(/<hh:heading type="(\w+)" idRef="(\d+)"/, (m0, type, ref) => {
+        if (type === "NUMBER" || type === "BULLET") {
+          const n = importNumbering(type === "NUMBER" ? "numbering" : "bullet", ref);
+          if (n !== null) return `<hh:heading type="${type}" idRef="${n}"`;
+        }
+        return '<hh:heading type="NONE" idRef="0"';
+      });
+      const nid = next.paraPr++;
+      added.paraPr.push(setId(y, nid));
+      return nid;
+    });
+    function importObject(obj, footnoteXml, limit) {
+      let x = obj.xml;
+      stats.objects++;
+      stats[obj.kind === "table" ? "tables" : obj.kind === "picture" ? "pictures" : "shapes"]++;
+      const cap = opts.captionShape;
+      if (cap) x = x.replace(/<hp:caption\b[\s\S]*?<\/hp:caption>/g, (c) => c.replace(/paraPrIDRef="\d+"/g, `paraPrIDRef="#${cap.ps}"`).replace(/charPrIDRef="\d+"/g, `charPrIDRef="#${cap.cs}"`).replace(/styleIDRef="\d+"/g, `styleIDRef="#${cap.styleId ?? 0}"`));
+      x = x.replace(/<hp:linesegarray>[\s\S]*?<\/hp:linesegarray>/g, "");
+      x = x.replace(/(charPrIDRef|paraPrIDRef|borderFillIDRef|styleIDRef)="(\d+)"/g, (m0, k2, v) => {
+        if (k2 === "charPrIDRef") return v === "4294967295" ? m0 : `${k2}="#${importCharPr(v)}"`;
+        if (k2 === "paraPrIDRef") return `${k2}="#${importParaPr(v)}"`;
+        if (k2 === "borderFillIDRef") return `${k2}="#${importBorderFill(v)}"`;
+        return `${k2}="#0"`;
+      }).replace(/(charPrIDRef|paraPrIDRef|borderFillIDRef|styleIDRef)="#(\d+)"/g, '$1="$2"');
+      x = x.replace(/binaryItemIDRef="([^"]+)"/g, (m0, b) => `binaryItemIDRef="${importBin(b)}"`);
+      x = x.replace(/<hp:p id="\d+"/g, () => `<hp:p id="${opts.nextPid()}"`);
+      let k = 0;
+      x = x.replace(/<hp:ctrl><!--tgfn--><\/hp:ctrl>/g, () => {
+        stats.footnotes++;
+        return footnoteXml(k++);
+      });
+      x = x.replace(/<hp:pos\b[^>]*\/>/, (p) => {
+        if (/treatAsChar="1"/.test(p) || !/(vertRelTo|horzRelTo)="(PAPER|PAGE)"/.test(p)) return p;
+        stats.moved++;
+        return p.replace(/vertRelTo="\w+"/, 'vertRelTo="PARA"').replace(/horzRelTo="\w+"/, 'horzRelTo="COLUMN"').replace(/vertOffset="-?\d+"/, 'vertOffset="0"').replace(/horzOffset="-?\d+"/, 'horzOffset="0"').replace(/horzAlign="\w+"/, 'horzAlign="CENTER"').replace(/vertAlign="\w+"/, 'vertAlign="TOP"');
+      });
+      x = fitWidth(x, obj.tag, limit || opts.textWidth);
+      return (obj.pre || "") + x;
+    }
+    function fitWidth(x, tag, limit) {
+      const m = /<hp:sz width="(\d+)"([^>]*?)height="(\d+)"/.exec(x);
+      if (!m || !limit) return x;
+      const om = /<hp:outMargin left="(\d+)" right="(\d+)"/.exec(x);
+      const margin = om ? +om[1] + +om[2] : 0;
+      const w = +m[1];
+      if (w + margin <= limit) return x;
+      const f = Math.max(0.05, (limit - margin) / w);
+      stats.scaled++;
+      const sc = (v) => Math.max(1, Math.round(v * f));
+      if (tag === "tbl") {
+        return x.replace(/<hp:sz width="(\d+)"/g, (m0, v) => `<hp:sz width="${sc(v)}"`).replace(/<hp:cellSz width="(\d+)"/g, (m0, v) => `<hp:cellSz width="${sc(v)}"`).replace(/<hp:curSz width="(\d+)" height="(\d+)"/g, (m0, a, b) => `<hp:curSz width="${sc(a)}" height="${sc(b)}"`);
+      }
+      if (tag === "pic") {
+        return x.replace(/<hp:sz width="(\d+)"([^>]*?)height="(\d+)"/, (m0, a, mid, b) => `<hp:sz width="${sc(a)}"${mid}height="${sc(b)}"`).replace(/<hp:curSz width="(\d+)" height="(\d+)"/, (m0, a, b) => `<hp:curSz width="${sc(a)}" height="${sc(b)}"`).replace(/<hc:scaMatrix e1="([\d.]+)"([^>]*?)e5="([\d.]+)"/, (m0, a, mid, b) => `<hc:scaMatrix e1="${(+a * f).toFixed(8)}"${mid}e5="${(+b * f).toFixed(8)}"`).replace(/<hp:rotationInfo angle="(-?\d+)" centerX="(\d+)" centerY="(\d+)"/, (m0, a, cx, cy) => `<hp:rotationInfo angle="${a}" centerX="${sc(cx)}" centerY="${sc(cy)}"`).replace(/lastWidth="(\d+)"/, (m0, v) => `lastWidth="${sc(v)}"`);
+      }
+      return x.replace(/<hp:sz width="(\d+)"([^>]*?)height="(\d+)"/, (m0, a, mid, b) => `<hp:sz width="${sc(a)}"${mid}height="${sc(b)}"`);
+    }
+    function applyHeader(header) {
+      let h2 = header;
+      for (const [k, arr] of Object.entries(added)) {
+        if (!arr.length) continue;
+        const list = LIST[k];
+        const cnt = count[k] + arr.length;
+        const selfClosed = new RegExp(`<hh:${list} itemCnt="\\d+"\\s*/>`);
+        if (selfClosed.test(h2)) h2 = h2.replace(selfClosed, () => `<hh:${list} itemCnt="${cnt}">${arr.join("")}</hh:${list}>`);
+        else if (new RegExp(`<hh:${list} itemCnt="\\d+"`).test(h2)) h2 = h2.replace(new RegExp(`<hh:${list} itemCnt="\\d+"`), `<hh:${list} itemCnt="${cnt}"`).replace(`</hh:${list}>`, () => `${arr.join("")}</hh:${list}>`);
+        else {
+          const after = ORDER.slice(ORDER.indexOf(list) + 1).find((n) => h2.includes(`<hh:${n} `));
+          const block = `<hh:${list} itemCnt="${cnt}">${arr.join("")}</hh:${list}>`;
+          h2 = after ? h2.replace(`<hh:${after} `, () => `${block}<hh:${after} `) : h2.replace("</hh:refList>", () => `${block}</hh:refList>`);
+        }
+      }
+      return h2;
+    }
+    function applyManifest(hpf) {
+      if (!bins.length) return hpf;
+      return hpf.replace("</opf:manifest>", () => `${bins.map((b) => `<opf:item id="${b.id}" href="${b.path}" media-type="${b.type}" isEmbeded="1"/>`).join("")}</opf:manifest>`);
+    }
+    return { importObject, applyHeader, applyManifest, bins, stats };
+  }
+
+  // src/engine.js
   var ROLE_GROUP = Object.fromEntries(ROLE_DEFS.map((r) => [r.id, r.group]));
   var U = {
     mm: (v) => Math.round(v * 7200 / 25.4),
@@ -19997,7 +20239,7 @@ main.over .dropline { display: block; }
     const byName = Object.fromEntries(styles.map((s) => [s.name.trim(), s]));
     const n0 = doc.getParagraphCount(0);
     const shapes = {};
-    const need = ["title", "subtitle", "titleEn", "subtitleEn", "author", "affiliation", "tocHead", "toc", "abstractHead", "abstract", "keywords", "h1", "h2", "h3", "h4", "body", "bodyFirst", "quote", "source", "caption", "blank", "refHead", "refSub", "ref", "abstractEnHead", "titleEn2", "authorEn", "abstractEn", "keywordsEn", "dates"];
+    const need = ["title", "subtitle", "titleEn", "subtitleEn", "author", "affiliation", "tocHead", "toc", "abstractHead", "abstract", "keywords", "h1", "h2", "h3", "h4", "body", "bodyFirst", "quote", "source", "caption", "object", "objNote", "blank", "refHead", "refSub", "ref", "abstractEnHead", "titleEn2", "authorEn", "abstractEn", "keywordsEn", "dates"];
     const scratch = [];
     const fromFormat = (role, f) => {
       const last = doc.getParagraphCount(0) - 1;
@@ -20042,11 +20284,11 @@ main.over .dropline { display: block; }
             }
           }
         }
-        got = { ps: pp.paraShapeId, cs: cp.charShapeId, ...valueCs !== void 0 ? { valueCs } : {}, sample: txt.trim(), src: `\uBC14\uD0D5\uD2C0 ${sec ? `\uAD6C\uC5ED ${sec} ` : ""}\uBB38\uB2E8 ${i} (${cp.fontFamily} ${(cp.fontSize || 0) / 100}pt${cp.bold ? " \uAD75\uAC8C" : ""}, ${pp.alignment}, ${pp.lineSpacing}%)` };
+        got = { ps: pp.paraShapeId, cs: cp.charShapeId, font: cp.fontFamily, size: cp.fontSize, ...valueCs !== void 0 ? { valueCs } : {}, sample: txt.trim(), src: `\uBC14\uD0D5\uD2C0 ${sec ? `\uAD6C\uC5ED ${sec} ` : ""}\uBB38\uB2E8 ${i} (${cp.fontFamily} ${(cp.fontSize || 0) / 100}pt${cp.bold ? " \uAD75\uAC8C" : ""}, ${pp.alignment}, ${pp.lineSpacing}%)` };
       } else if (spec && spec.style && byName[spec.style]) {
         const s = byName[spec.style];
         const det = J(doc.getStyleDetail(s.id)) || {};
-        got = { ps: s.paraShapeId, cs: s.charShapeId, styleId: s.id, src: `\uBC14\uD0D5\uD2C0 \uC2A4\uD0C0\uC77C \u2018${s.name}\u2019 (${det.charProps?.fontFamily || ""} ${(det.charProps?.fontSize || 0) / 100}pt)` };
+        got = { ps: s.paraShapeId, cs: s.charShapeId, styleId: s.id, font: det.charProps?.fontFamily, size: det.charProps?.fontSize, src: `\uBC14\uD0D5\uD2C0 \uC2A4\uD0C0\uC77C \u2018${s.name}\u2019 (${det.charProps?.fontFamily || ""} ${(det.charProps?.fontSize || 0) / 100}pt)` };
       } else if (spec && spec.format) {
         got = fromFormat(role, spec.format);
       } else if (fmt && fmt.roles && fmt.roles[role]) {
@@ -20055,6 +20297,10 @@ main.over .dropline { display: block; }
       if (got) shapes[role] = got;
       else if (spec && spec.like) shapes[role] = { like: spec.like };
     }
+    const bodyFont = shapes.body && shapes.body.font || fmt && fmt.font;
+    const bodyPt = shapes.body && shapes.body.size ? shapes.body.size / 100 : fmt && fmt.roles && fmt.roles.body && fmt.roles.body.size || 10;
+    if (!shapes.object && !(roles.object && roles.object.like)) shapes.object = fromFormat("object", { ...GENERIC_FORMAT.roles.object, size: bodyPt, font: bodyFont });
+    if (!shapes.objNote && !(roles.objNote && roles.objNote.like)) shapes.objNote = fromFormat("objNote", { ...GENERIC_FORMAT.roles.objNote, size: Math.max(7, Math.round((bodyPt - 1) * 10) / 10), font: bodyFont });
     for (const role of need) {
       if (shapes[role] && !shapes[role].like) continue;
       const chain = shapes[role]?.like ? [shapes[role].like, ...ROLE_FALLBACK[role] || []] : ROLE_FALLBACK[role] || ["body"];
@@ -20259,8 +20505,8 @@ main.over .dropline { display: block; }
       for (const r of pbRoles) pbGroups.add(ROLE_GROUP[r] || "body");
       if (pbRoles.length) log(`\uBC14\uD0D5\uD2C0\uC758 \uCABD \uB098\uB214\uC744 \uB530\uB984 \u2014 ${pbRoles.join(", ")} (${[...pbGroups].join(", ")} \uBB36\uC74C \uC2DC\uC791) \uC55E\uC5D0\uC11C \uC0C8 \uCABD`);
     }
-    const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    const tx = (t) => t.split("\n").map((p) => `<hp:t>${esc(p).replace(/\u00a0/g, "<hp:nbSpace/>").replace(/\u2007/g, "<hp:fwSpace/>")}</hp:t>`).join("<hp:lineBreak/>");
+    const esc2 = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    const tx = (t) => t.split("\n").map((p) => `<hp:t>${esc2(p).replace(/\u00a0/g, "<hp:nbSpace/>").replace(/\u2007/g, "<hp:fwSpace/>")}</hp:t>`).join("<hp:lineBreak/>");
     const charPrCache = /* @__PURE__ */ new Map();
     const charPrById = (id) => {
       if (!charPrCache.has(id)) charPrCache.set(id, (new RegExp(`<hh:charPr id="${id}"[^>]*>[\\s\\S]*?<\\/hh:charPr>`).exec(header) || [null])[0]);
@@ -20301,7 +20547,41 @@ main.over .dropline { display: block; }
     let charCount = 0;
     let redParas = 0;
     let redFns = 0;
+    let objLost = 0;
     const roleCount = {};
+    const pageW = (() => {
+      const pm2 = /<hp:pagePr\b[^>]*?landscape="(\w+)"[^>]*?width="(\d+)"[^>]*?height="(\d+)"/.exec(sec);
+      const mm = /<hp:margin\b[^>]*\/>/.exec(sec);
+      if (!pm2 || !mm) return 0;
+      const at = (k) => +(new RegExp(`${k}="(\\d+)"`).exec(mm[0]) || [0, 0])[1];
+      const cols = +(/<hp:colPr\b[^>]*colCount="(\d+)"/.exec(sec) || [0, 1])[1] || 1;
+      const gap = +(/<hp:colPr\b[^>]*sameGap="(\d+)"/.exec(sec) || [0, 0])[1] || 0;
+      const w = (pm2[1] === "NARROWLY" ? +pm2[3] : +pm2[2]) - at("left") - at("right") - at("gutter");
+      return Math.max(0, Math.floor((w - gap * (cols - 1)) / cols));
+    })();
+    const importers = /* @__PURE__ */ new Map();
+    const bodyFontRef = (() => {
+      const x = charPrById(shapes.body ? shapes.body.cs : 0) || "";
+      const m = /<hh:fontRef\b[^>]*\/>/.exec(x);
+      return m ? m[0] : null;
+    })();
+    const importerFor = (res) => {
+      if (!res) return null;
+      if (!importers.has(res)) importers.set(res, makeImporter({
+        header,
+        src: res,
+        textWidth: pageW,
+        captionShape: shapes.caption || null,
+        bodyFontRef,
+        allocCharPr: (xml) => {
+          const id = nextCs++;
+          added.push(xml.replace(/ id="\d+"/, ` id="${id}"`));
+          return id;
+        },
+        nextPid: () => pid++
+      }));
+      return importers.get(res);
+    };
     const makeFootnote = (f) => {
       fnCount++;
       const red = f.flag === "red";
@@ -20333,7 +20613,7 @@ main.over .dropline { display: block; }
       }).join("");
       return `${prefix}<hp:ctrl><hp:footNote number="${f.noNumber ? fnNum + 1 : fnNum}" suffixChar="${suffixCode}" instId="${fnCount}"><hp:subList id="" textDirection="HORIZONTAL" lineWrap="BREAK" vertAlign="TOP" linkListIDRef="0" linkListNextIDRef="0" textWidth="0" textHeight="0" hasTextRef="0" hasNumRef="0">${xml}</hp:subList></hp:footNote></hp:ctrl>`;
     };
-    const runsXml = (b, text, cs) => {
+    const runsXml2 = (b, text, cs) => {
       const red = b.flag === "red";
       let segs = [];
       if (text && b.runs && b.runs.length) {
@@ -20354,14 +20634,31 @@ main.over .dropline { display: block; }
       const L = kmL ? kmL[1].length : -1;
       if (L > 0 && L < text.length) segs = segs.flatMap((g) => g.s < L && g.e > L ? [{ ...g, e: L }, { ...g, s: L }] : [g]);
       const csAt = (s) => sh0 && sh0.valueCs !== void 0 && /^keywords/.test(b.role) && (L <= 0 || s >= L) ? sh0.valueCs : cs;
-      const fns = [...b.footnotes || []].map((f) => ({ ...f, at: Math.max(0, Math.min(text.length, f.offset ?? text.length)) })).sort((a, c) => a.at - c.at);
+      const at = (o) => Math.max(0, Math.min(text.length, o.offset ?? text.length));
+      const objs = (b.objects || []).map((o) => ({ o, imp: importerFor(o.res) }));
+      const placed = new Set(objs.filter((x) => x.imp).map((x) => x.o.id));
+      const fnItems = (b.footnotes || []).filter((f) => !(f.objId && placed.has(f.objId))).map((f) => ({ f, at: at(f) }));
+      const objItems = objs.filter((x) => x.imp).map((x) => ({ obj: x.o, imp: x.imp, at: at(x.o) }));
+      const fns = [...fnItems, ...objItems].map((it, k) => ({ ...it, k })).sort((a, c) => a.at - c.at || (a.obj ? 1 : 0) - (c.obj ? 1 : 0) || a.k - c.k);
+      if (objs.some((x) => !x.imp)) objLost += objs.filter((x) => !x.imp).length;
+      const inlineW = (o) => /<hp:pos\b[^>]*treatAsChar="1"/.test(o.xml) && o.info ? o.info.width + +(/<hp:outMargin left="(\d+)" right="(\d+)"/.exec(o.xml) || [0, 0, 0]).slice(1).reduce((a, v) => a + +v, 0) : 0;
+      const inl = objItems.map((it) => inlineW(it.obj));
+      const inlSum = inl.reduce((a, v) => a + v, 0);
+      const share = inl.filter((v) => v > 0).length > 1 && pageW && inlSum > pageW * 0.98 ? (o) => Math.floor(pageW * 0.94 * inlineW(o) / inlSum) : () => 0;
+      const place = (it) => {
+        if (!it.obj) return makeFootnote(it.f);
+        const inner = (b.footnotes || []).filter((f) => f.objId === it.obj.id && !f.objCaption);
+        const capFns = (b.footnotes || []).filter((f) => f.objId === it.obj.id && f.objCaption);
+        const x = it.imp.importObject(it.obj, (k) => inner[k] ? makeFootnote(inner[k]) : "", share(it.obj)) + capFns.map(makeFootnote).join("");
+        return !text && it.obj.tag !== "tbl" ? x + "<hp:t> </hp:t>" : x;
+      };
       let out2 = "";
       let fi = 0;
       for (const sg of segs) {
         let x = `<hp:run charPrIDRef="${variantCs(csAt(sg.s), sg.v)}">`;
         let pos = sg.s;
         while (fi < fns.length && fns[fi].at <= sg.e && (fns[fi].at < sg.e || sg === segs[segs.length - 1])) {
-          x += `${tx(text.slice(pos, fns[fi].at))}${makeFootnote(fns[fi])}`;
+          x += `${tx(text.slice(pos, fns[fi].at))}${place(fns[fi])}`;
           pos = fns[fi].at;
           fi++;
         }
@@ -20369,7 +20666,7 @@ main.over .dropline { display: block; }
         out2 += x;
       }
       while (fi < fns.length) {
-        out2 += `<hp:run charPrIDRef="${cs}"><hp:t></hp:t>${makeFootnote(fns[fi])}<hp:t></hp:t></hp:run>`;
+        out2 += `<hp:run charPrIDRef="${cs}"><hp:t></hp:t>${place(fns[fi])}<hp:t></hp:t></hp:run>`;
         fi++;
       }
       if (!text && !fns.length) out2 = `<hp:run charPrIDRef="${cs}"><hp:t></hp:t></hp:run>`;
@@ -20392,10 +20689,11 @@ main.over .dropline { display: block; }
       }
       if (cutNew) runs.unshift({ text: t.slice(0, cutNew) });
       const okRuns = (b.runs || []).length > 0 && runs.reduce((a, r) => a + r.text.length, 0) === t.length;
-      return { ...b, text: t, runs: okRuns ? runs : [], footnotes: (b.footnotes || []).map((f) => {
-        const o = f.offset ?? old.length;
-        return { ...f, offset: o >= cutOld ? o - cutOld + cutNew : Math.min(o, cutNew) };
-      }) };
+      const mv = (x) => {
+        const o = x.offset ?? old.length;
+        return { ...x, offset: o >= cutOld ? o - cutOld + cutNew : Math.min(o, cutNew) };
+      };
+      return { ...b, text: t, runs: okRuns ? runs : [], footnotes: (b.footnotes || []).map(mv), ...b.objects ? { objects: b.objects.map(mv) } : {} };
     });
     if (relabel.count) log(`\uD45C\uC9C0 \uBB38\uAD6C\uB97C \uBC14\uD0D5\uD2C0\uB300\uB85C \u2014 ${relabel.notes.slice(0, 4).join(", ")}${relabel.count > 4 ? ` \uC678 ${relabel.count - 4}\uACF3` : ""}`);
     const bodyParas = [];
@@ -20404,7 +20702,7 @@ main.over .dropline { display: block; }
     let prevGroup = null;
     for (const b of blocks) {
       if (b.role === "skip") continue;
-      const group = b.role === "blank" ? prevGroup : ROLE_GROUP[b.role] || "body";
+      const group = b.role === "blank" || FLOAT_ROLES.has(b.role) && prevGroup ? prevGroup : ROLE_GROUP[b.role] || "body";
       const groupStart = b.role !== "blank" && group !== prevGroup && pbGroups.has(group) && prevGroup !== null;
       if (b.role !== "blank") prevGroup = group;
       const text = b.role === "blank" ? "" : sanitize(b.text);
@@ -20412,7 +20710,7 @@ main.over .dropline { display: block; }
       const sh = shapes[b.role] || shapes.body || { ps: 0, cs: 0 };
       if (b.flag === "red" && text) redParas++;
       const attrs = `paraPrIDRef="${sh.ps}" styleIDRef="${sh.styleId ?? 0}" pageBreak="${b.pageBreakBefore || groupStart || sh.pageBreakBefore && group === "body" ? 1 : 0}" columnBreak="0" merged="0"`;
-      const runs = runsXml(b, text, sh.cs);
+      const runs = runsXml2(b, text, sh.cs);
       roleCount[b.role] = (roleCount[b.role] || 0) + 1;
       if (firstAttrs === null) {
         firstAttrs = attrs;
@@ -20421,7 +20719,7 @@ main.over .dropline { display: block; }
       }
       bodyParas.push(`<hp:p id="${pid++}" ${attrs}>${runs}</hp:p>`);
     }
-    const elementEnd = (xml, start, tag) => {
+    const elementEnd2 = (xml, start, tag) => {
       const re = new RegExp(`<(/?)hp:${tag}\\b[^>]*?(/?)>`, "g");
       re.lastIndex = start;
       let depth = 0, m;
@@ -20437,7 +20735,7 @@ main.over .dropline { display: block; }
       const re = new RegExp(`<hp:${tag}\\b`, "g");
       let m;
       while (m = re.exec(xml)) {
-        const e = elementEnd(xml, m.index, tag);
+        const e = elementEnd2(xml, m.index, tag);
         if (e < 0) break;
         out2.push(xml.slice(m.index, e));
         re.lastIndex = e;
@@ -20445,13 +20743,23 @@ main.over .dropline { display: block; }
       return out2;
     };
     const pStart = sec.search(/<hp:p\b/);
-    const pEnd = pStart >= 0 ? elementEnd(sec, pStart, "p") : -1;
+    const pEnd = pStart >= 0 ? elementEnd2(sec, pStart, "p") : -1;
     if (pStart < 0 || pEnd < 0) throw new Error("\uBC14\uD0D5\uD2C0 \uAD6C\uC5ED\uC5D0\uC11C \uCCAB \uBB38\uB2E8\uC744 \uCC3E\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4");
     const pm = { index: pStart };
     const firstP = sec.slice(pStart, pEnd);
     const ctrlRuns = topLevel(firstP.slice(firstP.indexOf(">") + 1), "run").filter((r) => /<hp:secPr|<hp:ctrl>/.test(r)).map((r) => r.replace(/<hp:t>[\s\S]*?<\/hp:t>/g, ""));
     const newFirst = `<hp:p id="0" ${firstAttrs || 'paraPrIDRef="0" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0"'}>${ctrlRuns.join("")}${firstRuns || ""}</hp:p>`;
     sec = sec.slice(0, pm.index) + newFirst + bodyParas.join("") + sec.slice(sec.lastIndexOf("</hs:sec>"));
+    const objStats = { objects: 0, tables: 0, pictures: 0, shapes: 0, scaled: 0, moved: 0, footnotes: 0, bins: 0 };
+    for (const imp of importers.values()) {
+      header = imp.applyHeader(header);
+      for (const [k, v] of Object.entries(imp.stats)) objStats[k] += v;
+      for (const bf of imp.bins) {
+        zip.file(bf.path, bf.bytes);
+        objStats.bins++;
+      }
+      if (imp.bins.length) await patchText("Contents/content.hpf", (x) => imp.applyManifest(x));
+    }
     if (added.length) header = header.replace(/<hh:charProperties itemCnt="\d+"/, () => `<hh:charProperties itemCnt="${nextCs}"`).replace(/<\/hh:charProperties>/, () => `${added.join("")}</hh:charProperties>`);
     zip.file("Contents/section0.xml", enc.encode(sec));
     zip.file("Contents/header.xml", enc.encode(header));
@@ -20460,6 +20768,8 @@ main.over .dropline { display: block; }
     if (runCount) log(`\uAC15\uC870 \uC11C\uC2DD(\uAD75\uAC8C\xB7\uAE30\uC6B8\uC784 \uB4F1) ${runCount}\uACF3 \uC720\uC9C0`);
     if (fnCount) log(`\uAC01\uC8FC ${fnCount}\uAC1C \uC0BD\uC785${footnote ? ` (\uAC01\uC8FC \uC11C\uC2DD \u2190 ${footnote.src})` : ""}`);
     if (redParas || redFns) log(`\uC815\uC624\uD45C \uD45C\uC2DC \u2014 \uCC38\uACE0\uBB38\uD5CC ${redParas}\uAC1C, \uAC01\uC8FC ${redFns}\uAC1C \uBD89\uAC8C`);
+    if (objStats.objects) log(`\uD45C ${objStats.tables}\uAC1C\xB7\uADF8\uB9BC ${objStats.pictures}\uAC1C${objStats.shapes ? `\xB7\uB3C4\uD615 ${objStats.shapes}\uAC1C` : ""} \uC62E\uAE40${objStats.bins ? ` (\uADF8\uB9BC \uD30C\uC77C ${objStats.bins}\uAC1C)` : ""}${objStats.footnotes ? ` \u2014 \uC548\uC758 \uAC01\uC8FC ${objStats.footnotes}\uAC1C\uB294 \uBCF8\uBB38 \uAC01\uC8FC\uC640 \uBC88\uD638\uB97C \uC774\uC5B4 \uB9E4\uAE40` : ""}${objStats.scaled ? ` \u2014 \uD310\uBA74\uBCF4\uB2E4 \uB113\uC740 ${objStats.scaled}\uAC1C\uB294 \uD3ED\uC744 \uC904\uC784` : ""}${objStats.moved ? ` \u2014 \uCABD \uAE30\uC900\uC73C\uB85C \uB5A0 \uC788\uB358 ${objStats.moved}\uAC1C\uB294 \uBB38\uB2E8 \uAE30\uC900\uC73C\uB85C \uC62E\uAE40` : ""}`);
+    if (objLost) log(`\uD45C\xB7\uADF8\uB9BC ${objLost}\uAC1C\uB294 \uC6D0\uACE0 \uC790\uC6D0\uC744 \uCC3E\uC9C0 \uBABB\uD574 \uC62E\uAE30\uC9C0 \uBABB\uD568(\uC548\uC758 \uAC01\uC8FC\uB294 \uADF8 \uC790\uB9AC \uBCF8\uBB38 \uAC01\uC8FC\uB85C)`, "warn");
     const hwpxBytes = await zip.generateAsync({ type: "uint8array", compression: "DEFLATE" });
     const doc2 = new HwpDocument(hwpxBytes);
     const reflowed = reflow(doc2);
@@ -20479,6 +20789,257 @@ main.over .dropline { display: block; }
 
   // src/parse.js
   var import_jszip2 = __toESM(require_jszip_min(), 1);
+
+  // src/docxobj.js
+  var EMU = 127;
+  var TWIP = 5;
+  var esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  var LANGS = ["hangul", "latin", "hanja", "japanese", "other", "symbol", "user"];
+  var all = (v) => LANGS.map((l) => `${l}="${v}"`).join(" ");
+  var SUBLIST = (va) => `<hp:subList id="" textDirection="HORIZONTAL" lineWrap="BREAK" vertAlign="${va}" linkListIDRef="0" linkListNextIDRef="0" textWidth="0" textHeight="0" hasTextRef="0" hasNumRef="0">`;
+  var uid = 19e8;
+  function imageSize(b) {
+    if (!b || b.length < 24) return null;
+    if (b[0] === 137 && b[1] === 80) return { w: b[16] << 24 | b[17] << 16 | b[18] << 8 | b[19], h: b[20] << 24 | b[21] << 16 | b[22] << 8 | b[23] };
+    if (b[0] === 71 && b[1] === 73) return { w: b[6] | b[7] << 8, h: b[8] | b[9] << 8 };
+    if (b[0] === 66 && b[1] === 77) return { w: b[18] | b[19] << 8 | b[20] << 16, h: Math.abs(b[22] | b[23] << 8 | b[24] << 16 | b[25] << 24 | 0) };
+    if (b[0] === 255 && b[1] === 216) {
+      let i = 2;
+      while (i + 9 < b.length) {
+        if (b[i] !== 255) {
+          i++;
+          continue;
+        }
+        const m = b[i + 1];
+        const len = b[i + 2] << 8 | b[i + 3];
+        if (m >= 192 && m <= 207 && m !== 196 && m !== 200 && m !== 204) return { h: b[i + 5] << 8 | b[i + 6], w: b[i + 7] << 8 | b[i + 8] };
+        i += 2 + len;
+      }
+    }
+    return null;
+  }
+  var MIME = { png: "image/png", jpg: "image/jpeg", jpeg: "image/jpeg", gif: "image/gif", bmp: "image/bmp", emf: "image/x-emf", wmf: "image/x-wmf", tif: "image/tiff", tiff: "image/tiff" };
+  function makeDocxRes() {
+    const res = { header: "", bins: {} };
+    const cs = /* @__PURE__ */ new Map();
+    const ps = /* @__PURE__ */ new Map();
+    const bf = /* @__PURE__ */ new Map();
+    const csXml = [];
+    const psXml = [];
+    const bfXml = [];
+    const borderFill = (lines, color) => {
+      const key = `${["left", "right", "top", "bottom"].map((s) => lines[s] ? 1 : 0).join("")}|${color || ""}`;
+      if (bf.has(key)) return bf.get(key);
+      const id = bfXml.length + 1;
+      bf.set(key, id);
+      bfXml.push(`<hh:borderFill id="${id}" threeD="0" shadow="0" centerLine="NONE" breakCellSeparateLine="0"><hh:slash type="NONE" Crooked="0" isCounter="0"/><hh:backSlash type="NONE" Crooked="0" isCounter="0"/>${["left", "right", "top", "bottom"].map((s) => `<hh:${s}Border type="${lines[s] ? "SOLID" : "NONE"}" width="0.12 mm" color="#000000"/>`).join("")}<hh:diagonal type="SOLID" width="0.1 mm" color="#000000"/>${color ? `<hc:fillBrush><hc:winBrush faceColor="${color}" hatchColor="#999999" alpha="0"/></hc:fillBrush>` : ""}</hh:borderFill>`);
+      return id;
+    };
+    borderFill({}, null);
+    const charShape = (v) => {
+      const size = v.size && v.size >= 400 && v.size <= 4e3 ? Math.round(v.size) : 1e3;
+      const key = `${v.bold ? "b" : ""}${v.italic ? "i" : ""}${v.underline ? "u" : ""}${v.superscript ? "s" : ""}|${size}`;
+      if (cs.has(key)) return cs.get(key);
+      const id = csXml.length;
+      cs.set(key, id);
+      csXml.push(`<hh:charPr id="${id}" height="${size}" textColor="#000000" shadeColor="none" useFontSpace="0" useKerning="0" symMark="NONE" borderFillIDRef="1"><hh:fontRef ${all(0)}/><hh:ratio ${all(100)}/><hh:spacing ${all(0)}/><hh:relSz ${all(100)}/><hh:offset ${all(0)}/>${v.bold ? "<hh:bold/>" : ""}${v.italic ? "<hh:italic/>" : ""}<hh:underline type="${v.underline ? "BOTTOM" : "NONE"}" shape="SOLID" color="#000000"/><hh:strikeout shape="NONE" color="#000000"/><hh:outline type="NONE"/><hh:shadow type="NONE" color="#C0C0C0" offsetX="10" offsetY="10"/>${v.superscript ? "<hh:supscript/>" : ""}</hh:charPr>`);
+      return id;
+    };
+    const paraShape = (align) => {
+      const A = { center: "CENTER", right: "RIGHT", justify: "JUSTIFY", left: "LEFT" }[align] || "LEFT";
+      if (ps.has(A)) return ps.get(A);
+      const id = psXml.length;
+      ps.set(A, id);
+      const margin = '<hh:margin><hc:intent value="0" unit="HWPUNIT"/><hc:left value="0" unit="HWPUNIT"/><hc:right value="0" unit="HWPUNIT"/><hc:prev value="0" unit="HWPUNIT"/><hc:next value="0" unit="HWPUNIT"/></hh:margin><hh:lineSpacing type="PERCENT" value="130" unit="HWPUNIT"/>';
+      psXml.push(`<hh:paraPr id="${id}" tabPrIDRef="0" condense="0" fontLineHeight="0" snapToGrid="1" suppressLineNumbers="0" checked="0"><hh:align horizontal="${A}" vertical="BASELINE"/><hh:heading type="NONE" idRef="0" level="0"/><hh:breakSetting breakLatinWord="KEEP_WORD" breakNonLatinWord="KEEP_WORD" widowOrphan="0" keepWithNext="0" keepLines="0" pageBreakBefore="0" lineWrap="BREAK"/><hh:autoSpacing eAsianEng="0" eAsianNum="0"/><hp:switch><hp:case hp:required-namespace="http://www.hancom.co.kr/hwpml/2016/HwpUnitChar">${margin}</hp:case><hp:default>${margin}</hp:default></hp:switch><hh:border borderFillIDRef="1" offsetLeft="0" offsetRight="0" offsetTop="0" offsetBottom="0" connect="0" ignoreMargin="0"/></hh:paraPr>`);
+      return id;
+    };
+    let binN = 0;
+    const addBin = (bytes, ext) => {
+      const e = (ext || "png").toLowerCase();
+      const id = `dimg${++binN}`;
+      res.bins[id] = { href: `BinData/${id}.${e}`, type: MIME[e] || "application/octet-stream", bytes };
+      return id;
+    };
+    const finish = () => {
+      res.header = `<hh:head><hh:refList><hh:borderFills itemCnt="${bfXml.length}">${bfXml.join("")}</hh:borderFills><hh:charProperties itemCnt="${csXml.length}">${csXml.join("")}</hh:charProperties><hh:paraProperties itemCnt="${psXml.length}">${psXml.join("")}</hh:paraProperties></hh:refList></hh:head>`;
+      return res;
+    };
+    return { res, borderFill, charShape, paraShape, addBin, finish };
+  }
+  function picXml(binId, w, h2, px) {
+    const W = Math.max(1, Math.round(w)), H = Math.max(1, Math.round(h2));
+    const dw = px ? px.w * 75 : W, dh = px ? px.h * 75 : H;
+    const id = uid++;
+    return `<hp:pic id="${id}" zOrder="0" numberingType="PICTURE" textWrap="TOP_AND_BOTTOM" textFlow="BOTH_SIDES" lock="0" dropcapstyle="None" href="" groupLevel="0" instid="${id + 1}" reverse="0"><hp:offset x="0" y="0"/><hp:orgSz width="${W}" height="${H}"/><hp:curSz width="${W}" height="${H}"/><hp:flip horizontal="0" vertical="0"/><hp:rotationInfo angle="0" centerX="${Math.round(W / 2)}" centerY="${Math.round(H / 2)}" rotateimage="1"/><hp:renderingInfo><hc:transMatrix e1="1" e2="0" e3="0" e4="0" e5="1" e6="0"/><hc:scaMatrix e1="1" e2="0" e3="0" e4="0" e5="1" e6="0"/><hc:rotMatrix e1="1" e2="0" e3="0" e4="0" e5="1" e6="0"/></hp:renderingInfo><hp:imgRect><hc:pt0 x="0" y="0"/><hc:pt1 x="${W}" y="0"/><hc:pt2 x="${W}" y="${H}"/><hc:pt3 x="0" y="${H}"/></hp:imgRect><hp:imgClip left="0" right="${dw}" top="0" bottom="${dh}"/><hp:inMargin left="0" right="0" top="0" bottom="0"/><hp:imgDim dimwidth="${dw}" dimheight="${dh}"/><hc:img binaryItemIDRef="${binId}" bright="0" contrast="0" effect="REAL_PIC" alpha="0"/><hp:effects></hp:effects><hp:sz width="${W}" widthRelTo="ABSOLUTE" height="${H}" heightRelTo="ABSOLUTE" protect="0"/><hp:pos treatAsChar="1" affectLSpacing="0" flowWithText="1" allowOverlap="0" holdAnchorAndSO="0" vertRelTo="PARA" horzRelTo="COLUMN" vertAlign="TOP" horzAlign="LEFT" vertOffset="0" horzOffset="0"/><hp:outMargin left="0" right="0" top="0" bottom="0"/></hp:pic>`;
+  }
+  function runsXml(R, runs, inserts) {
+    const ins = [...inserts].sort((a, b) => a.at - b.at);
+    let k = 0;
+    let out = "";
+    let off = 0;
+    const segs = runs.length ? runs : [{ text: "" }];
+    segs.forEach((r, ri) => {
+      const cs = R.charShape(r);
+      let x = `<hp:run charPrIDRef="${cs}">`;
+      let pos = 0;
+      const t = r.text || "";
+      const last = ri === segs.length - 1;
+      while (k < ins.length && (ins[k].at < off + t.length || last && ins[k].at <= off + t.length)) {
+        const at = Math.max(0, ins[k].at - off);
+        x += `<hp:t>${esc(t.slice(pos, at)).replace(/\t/g, '</hp:t><hp:tab width="4000" leader="0" type="1"/><hp:t>').replace(/\n/g, "</hp:t><hp:lineBreak/><hp:t>")}</hp:t>${ins[k].xml}`;
+        pos = at;
+        k++;
+      }
+      x += `<hp:t>${esc(t.slice(pos)).replace(/\t/g, '</hp:t><hp:tab width="4000" leader="0" type="1"/><hp:t>').replace(/\n/g, "</hp:t><hp:lineBreak/><hp:t>")}</hp:t></hp:run>`;
+      out += x;
+      off += t.length;
+    });
+    while (k < ins.length) {
+      out += `<hp:run charPrIDRef="${R.charShape({})}">${ins[k].xml}<hp:t></hp:t></hp:run>`;
+      k++;
+    }
+    return out;
+  }
+  function tableXml(R, tbl, api) {
+    const { elements, attr: attr2 } = api;
+    const tblPr = (elements(tbl, "w:tblPr")[0] || { body: "" }).body;
+    const grid = elements(tbl, "w:tblGrid")[0];
+    const cols = grid ? elements(grid.body, "w:gridCol").map((g) => +(attr2(g.attrs, "w:w") || 0) * TWIP) : [];
+    const sideOn = (xml2, side) => {
+      const m = new RegExp(`<w:${side}\\b([^>]*)/?>`).exec(xml2 || "");
+      if (!m) return void 0;
+      const v = (attr2(m[1], "w:val") || "").toLowerCase();
+      return !(v === "nil" || v === "none" || v === "");
+    };
+    const styleId = attr2((/<w:tblStyle\b[^>]*\/>/.exec(tblPr) || [""])[0], "w:val");
+    const tb = (elements(tblPr, "w:tblBorders")[0] || { body: "" }).body || api.tableStyleBorders(styleId) || "";
+    const tbOn = (side) => sideOn(tb, side) || side === "left" && sideOn(tb, "start") || side === "right" && sideOn(tb, "end") || false;
+    const rows = elements(tbl, "w:tr");
+    const cells = [];
+    const occupied = [];
+    rows.forEach((tr, r) => {
+      const trPr = (elements(tr.body, "w:trPr")[0] || { body: "" }).body;
+      let c = +(attr2((/<w:gridBefore\b[^>]*\/>/.exec(trPr) || [""])[0], "w:val") || 0);
+      const hRule = /<w:trHeight\b[^>]*\/>/.exec(trPr);
+      const minH = hRule ? +(attr2(hRule[0], "w:val") || 0) * TWIP : 0;
+      for (const tc of elements(tr.body, "w:tc")) {
+        const tcPr = (elements(tc.body, "w:tcPr")[0] || { body: "" }).body;
+        const span = Math.max(1, +(attr2((/<w:gridSpan\b[^>]*\/>/.exec(tcPr) || [""])[0], "w:val") || 1));
+        const vm = /<w:vMerge\b([^>]*)\/?>/.exec(tcPr);
+        const vmVal = vm ? attr2(vm[1], "w:val") || "continue" : null;
+        const tcW = +(attr2((/<w:tcW\b[^>]*\/>/.exec(tcPr) || [""])[0], "w:w") || 0) * TWIP;
+        if (vmVal === "continue") {
+          const up = cells.filter((x) => x.c === c && x.r + x.rs === r).pop();
+          if (up) up.rs++;
+          c += span;
+          continue;
+        }
+        cells.push({ r, c, cs: span, rs: 1, tc, tcPr, tcW, minH });
+        c += span;
+      }
+      occupied.push(c);
+    });
+    const nCols = Math.max(cols.length, ...occupied, 1);
+    const total = cols.reduce((a, v) => a + v, 0);
+    const colW = (c, span, tcW) => {
+      if (cols.length >= c + span) return cols.slice(c, c + span).reduce((a, v) => a + v, 0) || tcW || 8e3;
+      return tcW || Math.round((total || 42e3) / nCols) * span;
+    };
+    let tw = 0;
+    for (let c = 0; c < nCols; c++) tw += colW(c, 1, 0);
+    const rowH = rows.map((_, r) => Math.max(1700, ...cells.filter((x) => x.r === r).map((x) => x.minH || 0)));
+    const footnotes = [];
+    const trs = rows.map((_, r) => {
+      const tcs = cells.filter((x) => x.r === r).map((x) => {
+        const shd = /<w:shd\b[^>]*\/>/.exec(x.tcPr);
+        const fill = shd ? attr2(shd[0], "w:fill") || "" : "";
+        const color = /^[0-9A-Fa-f]{6}$/.test(fill) && fill.toUpperCase() !== "FFFFFF" ? `#${fill.toUpperCase()}` : null;
+        const tcb = (elements(x.tcPr, "w:tcBorders")[0] || { body: "" }).body;
+        const side = (s, def) => {
+          const v = sideOn(tcb, s);
+          return v === void 0 ? def : v;
+        };
+        const lines = { left: side("left", x.c === 0 ? tbOn("left") : tbOn("insideV")), right: side("right", x.c + x.cs >= nCols ? tbOn("right") : tbOn("insideV")), top: side("top", x.r === 0 ? tbOn("top") : tbOn("insideH")), bottom: side("bottom", x.r + x.rs >= rows.length ? tbOn("bottom") : tbOn("insideH")) };
+        const bfId = R.borderFill(lines, color);
+        const va = { center: "CENTER", bottom: "BOTTOM" }[(attr2((/<w:vAlign\b[^>]*\/>/.exec(x.tcPr) || [""])[0], "w:val") || "").toLowerCase()] || "TOP";
+        const parts = [];
+        const body = x.tc.body.replace(/<w:tcPr\b[\s\S]*?<\/w:tcPr>/, "");
+        const nested = elements(body, "w:tbl");
+        let pos = 0;
+        const chunks = [];
+        for (const nt of nested) {
+          chunks.push(body.slice(pos, nt.start));
+          chunks.push({ tbl: nt });
+          pos = body.indexOf("</w:tbl>", nt.start) >= 0 ? nt.start + `<w:tbl${nt.attrs}>${nt.body}</w:tbl>`.length : body.length;
+        }
+        chunks.push(body.slice(pos));
+        for (const ch of chunks) {
+          if (typeof ch === "string") {
+            for (const p of elements(ch, "w:p")) {
+              const cp = api.cellPara(p.body, footnotes);
+              parts.push(`<hp:p id="0" paraPrIDRef="${R.paraShape(cp.align)}" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0">${runsXml(R, cp.runs, cp.inserts)}</hp:p>`);
+            }
+          } else {
+            const inner = tableXml(R, `${ch.tbl.body}`, api);
+            for (const f of inner.footnotes) footnotes.push(f);
+            parts.push(`<hp:p id="0" paraPrIDRef="${R.paraShape("left")}" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0"><hp:run charPrIDRef="${R.charShape({})}">${inner.xml}<hp:t></hp:t></hp:run></hp:p>`);
+          }
+        }
+        if (!parts.length) parts.push(`<hp:p id="0" paraPrIDRef="${R.paraShape("left")}" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0"><hp:run charPrIDRef="${R.charShape({})}"><hp:t></hp:t></hp:run></hp:p>`);
+        const w = colW(x.c, x.cs, x.tcW);
+        const h2 = rowH.slice(x.r, x.r + x.rs).reduce((a, v) => a + v, 0);
+        return `<hp:tc name="" header="0" hasMargin="0" protect="0" editable="0" dirty="0" borderFillIDRef="${bfId}">${SUBLIST(va)}${parts.join("")}</hp:subList><hp:cellAddr colAddr="${x.c}" rowAddr="${x.r}"/><hp:cellSpan colSpan="${x.cs}" rowSpan="${x.rs}"/><hp:cellSz width="${w}" height="${h2}"/><hp:cellMargin left="510" right="510" top="141" bottom="141"/></hp:tc>`;
+      });
+      return `<hp:tr>${tcs.join("")}</hp:tr>`;
+    });
+    const th = rowH.reduce((a, v) => a + v, 0);
+    const id = uid++;
+    const xml = `<hp:tbl id="${id}" zOrder="0" numberingType="TABLE" textWrap="TOP_AND_BOTTOM" textFlow="BOTH_SIDES" lock="0" dropcapstyle="None" pageBreak="CELL" repeatHeader="1" rowCnt="${rows.length}" colCnt="${nCols}" cellSpacing="0" borderFillIDRef="1" noAdjust="0"><hp:sz width="${tw}" widthRelTo="ABSOLUTE" height="${th}" heightRelTo="ABSOLUTE" protect="0"/><hp:pos treatAsChar="1" affectLSpacing="0" flowWithText="1" allowOverlap="0" holdAnchorAndSO="0" vertRelTo="PARA" horzRelTo="PARA" vertAlign="TOP" horzAlign="LEFT" vertOffset="0" horzOffset="0"/><hp:outMargin left="283" right="283" top="283" bottom="283"/><hp:inMargin left="510" right="510" top="141" bottom="141"/>${trs.join("")}</hp:tbl>`;
+    return { xml, footnotes, rows: rows.length, cols: nCols, width: tw, height: th };
+  }
+  function drawingXml(R, run, api) {
+    const out = [];
+    for (const m of run.matchAll(/<wp:(inline|anchor)\b[\s\S]*?<\/wp:\1>/g)) {
+      const ext = /<wp:extent\b[^>]*cx="(\d+)"[^>]*cy="(\d+)"/.exec(m[0]);
+      const blip = /<a:blip\b[^>]*r:embed="([^"]+)"/.exec(m[0]);
+      if (!blip || !ext) {
+        out.push({ lost: /<c:chart\b/.test(m[0]) ? "chart" : /wps:txbx|<w:txbxContent/.test(m[0]) ? "textbox" : "shape" });
+        continue;
+      }
+      const f = api.rel(blip[1]);
+      if (!f) {
+        out.push({ lost: "image" });
+        continue;
+      }
+      const binId = R.addBin(f.bytes, f.ext);
+      out.push({ xml: picXml(binId, +ext[1] / EMU, +ext[2] / EMU, imageSize(f.bytes)), w: +ext[1] / EMU, h: +ext[2] / EMU });
+    }
+    for (const m of run.matchAll(/<w:pict\b[\s\S]*?<\/w:pict>/g)) {
+      const im = /<v:imagedata\b[^>]*r:id="([^"]+)"/.exec(m[0]);
+      if (!im) {
+        out.push({ lost: "shape" });
+        continue;
+      }
+      const st = /style="([^"]*)"/.exec(m[0]);
+      const dim = (k) => {
+        const x = st && new RegExp(`${k}:([\\d.]+)(pt|in|px)`).exec(st[1]);
+        return x ? +x[1] * (x[2] === "in" ? 7200 : x[2] === "px" ? 75 : 100) : 0;
+      };
+      const f = api.rel(im[1]);
+      if (!f) {
+        out.push({ lost: "image" });
+        continue;
+      }
+      const px = imageSize(f.bytes);
+      const w = dim("width") || (px ? px.w * 75 : 2e4);
+      const h2 = dim("height") || (px ? px.h * 75 : 15e3);
+      out.push({ xml: picXml(R.addBin(f.bytes, f.ext), w, h2, px), w, h: h2 });
+    }
+    return out;
+  }
+
+  // src/parse.js
   var fixJson = (s) => s.replace(/"(?:[^"\\]|\\.)*"/g, (lit) => lit.replace(/[\u0000-\u001f]/g, (c) => c === "\n" ? "\\n" : c === "\r" ? "\\r" : c === "	" ? "\\t" : ""));
   var J2 = (s) => {
     if (typeof s !== "string") return s ?? null;
@@ -20534,28 +21095,25 @@ main.over .dropline { display: block; }
       let fnMeta = [];
       let fnCursor = 0;
       let endnotes = 0;
-      let tblFn = null;
-      if (controls.some((c) => c.ctrlId === "fn" || c.ctrlId === "en")) {
+      let scan = null;
+      if (controls.some((c) => c.ctrlId === "fn" || c.ctrlId === "en" || c.list === 0 && OBJ_CTRL.has(c.ctrlId))) {
         try {
-          const m = await hwpxFootnoteMeta(d);
-          fnMeta = m.body;
-          tblFn = m.tables;
+          scan = await hwpxScan(d);
+          fnMeta = scan.body;
         } catch {
           fnMeta = [];
-          tblFn = null;
+          scan = null;
         }
       }
+      const objRes = scan ? { header: scan.header, bins: scan.bins } : null;
       const paragraphs = [];
       const sections = d.getSectionCount();
-      let tables = 0, pictures = 0, fnTotal = 0, lostMarks = 0, tblFnMoved = 0, tblFnLost = 0;
+      let tables = 0, pictures = 0, shapes = 0, fnTotal = 0, lostMarks = 0, objMoved = 0, objLost = 0, objFn = 0, objSeq = 0, capFn = 0;
       for (let s = 0; s < sections; s++) {
         const n = d.getParagraphCount(s);
         let base = 0;
         for (let k = 0; k < s; k++) base += d.getParagraphCount(k);
-        const secTbls = controls.filter((c) => c.list === 0 && c.ctrlId === "tbl" && c.para >= base && c.para < base + n).length;
-        const secTblFn = tblFn && tblFn[s] && tblFn[s].length === secTbls ? tblFn[s] : null;
-        if (tblFn && tblFn[s] && !secTblFn) tblFnLost += tblFn[s].reduce((a, x) => a + x.length, 0);
-        let tblK = 0;
+        const xmlParas = scan && scan.sections[s] && scan.sections[s].length === n ? scan.sections[s] : null;
         if (paragraphs.length + n > MAX_PARAS) throw new Error(`\uBB38\uB2E8\uC774 ${MAX_PARAS.toLocaleString()}\uAC1C\uB97C \uB118\uB294 \uC6D0\uACE0\uB294 \uC5F4 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4.`);
         for (let i = 0; i < n; i++) {
           const len = d.getParagraphLength(s, i);
@@ -20584,23 +21142,34 @@ main.over .dropline { display: block; }
           } catch {
           }
           let ctrlK = 0;
+          const objects = [];
+          const xo = xmlParas ? xmlParas[i].objects : [];
+          const objCtrls = controls.filter((c) => c.list === 0 && c.para === base + i && OBJ_CTRL.has(c.ctrlId)).length;
+          let objK = 0;
           for (const c of controls) {
             if (c.list !== 0 || c.para !== base + i) continue;
             const kth = ctrlK++;
-            if (c.ctrlId === "tbl") {
-              tables++;
-              const inner = secTblFn ? secTblFn[tblK] : null;
-              tblK++;
-              if (inner && inner.length) {
-                const offset = ctrlPos && typeof ctrlPos[kth] === "number" && ctrlPos[kth] >= 0 ? to16(ctrlPos[kth]) : text.length;
-                for (const m of inner) {
-                  footnotes.push(metaFootnote(m, offset));
-                  fnTotal++;
-                  tblFnMoved++;
-                }
+            if (OBJ_CTRL.has(c.ctrlId)) {
+              const o = xo.length === objCtrls ? xo[objK] : null;
+              objK++;
+              if (!o) {
+                objLost++;
+                continue;
               }
-            } else if (c.ctrlId === "gso" || c.ctrlId === "$pic" || c.ctrlId === "pic") pictures++;
-            else if (c.ctrlId === "fn" || c.ctrlId === "en") {
+              const offset = ctrlPos && typeof ctrlPos[kth] === "number" && ctrlPos[kth] >= 0 ? to16(ctrlPos[kth]) : Math.min(text.length, o.xmlOffset);
+              const id = `o${++objSeq}`;
+              objects.push({ id, tag: o.tag, kind: o.kind, xml: o.xml, pre: o.pre, offset, info: o.info, res: objRes });
+              if (o.kind === "table") tables++;
+              else if (o.kind === "picture") pictures++;
+              else shapes++;
+              objMoved++;
+              for (const m of o.footnotes) {
+                footnotes.push({ ...metaFootnote(m, offset), objId: id, ...m.inCaption ? { objCaption: true } : {} });
+                fnTotal++;
+                objFn++;
+                if (m.inCaption) capFn++;
+              }
+            } else if (c.ctrlId === "fn" || c.ctrlId === "en") {
               if (c.ctrlId === "en") endnotes++;
               const fi = J2(d.getFootnoteInfo(s, i, c.controlIndex));
               let offset = text.length;
@@ -20651,6 +21220,7 @@ main.over .dropline { display: block; }
             text,
             runs,
             footnotes,
+            ...objects.length ? { objects } : {},
             align: pp.alignment,
             indent: U.pxToPt(pp.indent || 0),
             marginLeft: U.pxToPt(pp.marginLeft || 0),
@@ -20663,12 +21233,11 @@ main.over .dropline { display: block; }
       }
       if (sections > 1) warnings.push(`\uAD6C\uC5ED ${sections}\uAC1C\uB97C \uD558\uB098\uB85C \uC774\uC5B4 \uBD99\uC600\uC2B5\uB2C8\uB2E4.`);
       if (endnotes) warnings.push(`\uBBF8\uC8FC ${endnotes}\uAC1C\uB97C \uAC01\uC8FC\uB85C \uC62E\uACBC\uC2B5\uB2C8\uB2E4.`);
-      if (tblFnMoved) warnings.push(`\uD45C \uC548\uC5D0 \uC788\uB358 \uAC01\uC8FC ${tblFnMoved}\uAC1C\uB294 \uD45C \uC790\uB9AC\uC758 \uBB38\uB2E8\uC5D0 \uBD99\uC600\uC2B5\uB2C8\uB2E4. \uBCC0\uD658 \uD6C4 \uAC01\uC8FC \uC704\uCE58\uB97C \uD655\uC778\uD558\uC138\uC694.`);
-      if (tblFnLost) warnings.push(`\uD45C \uC548\uC758 \uAC01\uC8FC ${tblFnLost}\uAC1C\uB294 \uC704\uCE58\uB97C \uCC3E\uC9C0 \uBABB\uD574 \uC62E\uAE30\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4. \uBCC0\uD658 \uD6C4 \uD55C\uAE00\uC5D0\uC11C \uC9C1\uC811 \uB123\uC73C\uC138\uC694.`);
-      if (tables) warnings.push(`\uD45C ${tables}\uAC1C\uB294 \uBCC0\uD658\uB418\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4. \uBCC0\uD658 \uD6C4 \uD55C\uAE00\uC5D0\uC11C \uC9C1\uC811 \uC62E\uACA8 \uB123\uC73C\uC138\uC694.`);
-      if (pictures) warnings.push(`\uADF8\uB9BC\xB7\uAC1C\uCCB4 ${pictures}\uAC1C\uB294 \uBCC0\uD658\uB418\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.`);
+      if (objMoved) warnings.push(`\uD45C ${tables}\uAC1C\xB7\uADF8\uB9BC ${pictures}\uAC1C${shapes ? `\xB7\uB3C4\uD615 ${shapes}\uAC1C` : ""}\uB97C \uC62E\uAE41\uB2C8\uB2E4${objFn ? `(\uD45C\xB7\uADF8\uB9BC \uC548 \uAC01\uC8FC ${objFn}\uAC1C\uB294 \uBCF8\uBB38 \uAC01\uC8FC\uC640 \uBC88\uD638\uB97C \uC774\uC5B4 \uB9E4\uAE40)` : ""}. \uCE78 \uC548 \uAE00\uC740 \uD559\uD68C \uBCF8\uBB38 \uAE00\uAF34\uB85C, \uCEA1\uC158\uC740 \uD559\uD68C\uC758 \uD45C\xB7\uADF8\uB9BC \uC81C\uBAA9 \uBAA8\uC591\uC73C\uB85C \uBC14\uAFC9\uB2C8\uB2E4. \uBCC0\uD658 \uD6C4 \uD45C\xB7\uADF8\uB9BC \uC704\uCE58\uB97C \uD655\uC778\uD558\uC138\uC694.`);
+      if (objLost) warnings.push(`\uD45C\xB7\uADF8\uB9BC ${objLost}\uAC1C\uB294 \uC6D0\uACE0 \uAD6C\uC870\uB97C \uC77D\uC9C0 \uBABB\uD574 \uC62E\uAE30\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4(\uC548\uC758 \uAC01\uC8FC \uD3EC\uD568). \uBCC0\uD658 \uD6C4 \uD55C\uAE00\uC5D0\uC11C \uC9C1\uC811 \uC62E\uACA8 \uB123\uC73C\uC138\uC694.`);
+      if (capFn) warnings.push(`\uD45C\xB7\uADF8\uB9BC \uCEA1\uC158 \uC548\uC758 \uAC01\uC8FC ${capFn}\uAC1C\uB294 \uD45C\xB7\uADF8\uB9BC \uBC14\uB85C \uB4A4\uB85C \uC62E\uAE41\uB2C8\uB2E4. \uD55C\uAE00\uC740 \uCEA1\uC158 \uC548 \uAC01\uC8FC\uC5D0 \uB530\uB85C \uBC88\uD638\uB97C \uB9E4\uAE30\uACE0 \uCABD \uC544\uB798 \uAE00\uC744 \uCC0D\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.`);
       if (lostMarks) warnings.push(`\uAC15\uC870\uC810\xB7\uCDE8\uC18C\uC120\xB7\uC544\uB798\uCCA8\uC790 ${lostMarks}\uC790\uB294 \uC62E\uAE30\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4(\uD559\uD68C \uC11C\uC2DD\uC5D0 \uC5C6\uB294 \uC7A5\uC2DD). \uBCC0\uD658 \uD6C4 \uD55C\uAE00\uC5D0\uC11C \uD655\uC778\uD558\uC138\uC694.`);
-      return { format: ext.toUpperCase(), paragraphs, warnings, counts: { tables, pictures, footnotes: fnTotal, pages: info.pageCount }, fonts: info.fontsUsed || [] };
+      return { format: ext.toUpperCase(), paragraphs, warnings, counts: { tables, pictures, shapes, objects: objMoved, objectsLost: objLost, footnotes: fnTotal, pages: info.pageCount }, fonts: info.fontsUsed || [], ...objMoved && objRes ? { objectRes: objRes } : {} };
     } finally {
       d.free();
     }
@@ -20708,9 +21277,9 @@ main.over .dropline { display: block; }
       }
       return { text: q.text, runs: q.runs };
     });
-    return { offset, text: paras.map((q) => q.text).join("\n"), paras, ...noNumber ? { noNumber: true } : {}, ...numAt > 0 ? { numAt } : {}, ...m.restart ? { restart: m.restart } : {}, inTable: true };
+    return { offset, text: paras.map((q) => q.text).join("\n"), paras, ...noNumber ? { noNumber: true } : {}, ...numAt > 0 ? { numAt } : {}, ...m.restart ? { restart: m.restart } : {} };
   }
-  async function hwpxFootnoteMeta(d) {
+  async function hwpxScan(d) {
     const zip = await import_jszip2.default.loadAsync(d.exportHwpx());
     const header = zip.file("Contents/header.xml") ? await zip.file("Contents/header.xml").async("string") : "";
     const charPr = {};
@@ -20719,43 +21288,66 @@ main.over .dropline { display: block; }
     const tText = (run) => decodeXml([...run.matchAll(/<hp:t\b[^>]*>([\s\S]*?)<\/hp:t>/g)].map((m) => dec(m[1])).join(""));
     const names = Object.keys(zip.files).filter((k) => /^Contents\/section\d+\.xml$/.test(k)).sort((a, b) => +a.match(/\d+/)[0] - +b.match(/\d+/)[0]);
     const out = [];
-    const tables = [];
+    const sections = [];
     let restart = 0;
+    const binIds = /* @__PURE__ */ new Set();
     for (const name of names) {
       const sec = await zip.file(name).async("string");
-      const box = [];
-      for (const t of sec.matchAll(/<hp:(header|footer|drawText|footNote|endNote)\b[\s\S]*?<\/hp:\1>/g)) box.push([t.index, t.index + t[0].length]);
-      const inBox = (i) => box.some(([a, b]) => i > a && i < b);
-      const tbl = [];
-      {
-        const st = [];
-        for (const t of sec.matchAll(/<(\/?)hp:tbl\b/g)) {
-          if (!t[1]) st.push(t.index);
-          else {
-            const a = st.pop();
-            if (!st.length && a !== void 0 && !inBox(a)) tbl.push([a, t.index]);
-          }
+      const paras = scanSection(sec);
+      const objs = paras.flatMap((p) => p.objects.map((o) => {
+        o.footnotes = [];
+        return o;
+      }));
+      const objOf = (i) => {
+        let lo = 0, hi = objs.length - 1;
+        while (lo <= hi) {
+          const mid = lo + hi >> 1;
+          const o = objs[mid];
+          if (i < o.start) hi = mid - 1;
+          else if (i >= o.end) lo = mid + 1;
+          else return mid;
         }
-      }
-      const tblOf = (i) => tbl.findIndex(([a, b]) => i > a && i < b);
-      const secTables = tbl.map(() => []);
-      tables.push(secTables);
+        return -1;
+      };
       for (const m of sec.matchAll(/<hp:newNum num="(\d+)" numType="FOOTNOTE"\/>|<hp:(footNote|endNote)\b[^>]*>([\s\S]*?)<\/hp:\2>/g)) {
         if (m[1] !== void 0) {
           restart = +m[1];
           continue;
         }
-        const ti = tblOf(m.index);
-        const paras = [...m[3].matchAll(/<hp:p\b[^>]*>([\s\S]*?)<\/hp:p>/g)].map((pm) => {
+        const ti = objOf(m.index);
+        const paras2 = [...m[3].matchAll(/<hp:p\b[^>]*>([\s\S]*?)<\/hp:p>/g)].map((pm) => {
           const runs = [...pm[1].matchAll(/<hp:run charPrIDRef="(\d+)"[^>]*>([\s\S]*?)<\/hp:run>/g)].map((rm) => ({ text: tText(rm[2]), ...charPr[rm[1]] || {} })).filter((r) => r.text);
           return { text: runs.map((r) => r.text).join(""), runs, hasAutoNum: /<hp:autoNum\b/.test(pm[1]) };
         });
-        const fm = { paras, hasAutoNum: paras.some((q) => q.hasAutoNum), numAt: paras.findIndex((q) => q.hasAutoNum), restart };
+        const fm = { paras: paras2, hasAutoNum: paras2.some((q) => q.hasAutoNum), numAt: paras2.findIndex((q) => q.hasAutoNum), restart };
         restart = 0;
-        (ti >= 0 ? secTables[ti] : out).push(fm);
+        if (ti >= 0) {
+          const o = objs[ti];
+          if (!o.caps) o.caps = [...sec.slice(o.start, o.end).matchAll(/<hp:caption\b[\s\S]*?<\/hp:caption>/g)].map((c) => [o.start + c.index, o.start + c.index + c[0].length]);
+          if (o.caps.some(([a, b]) => m.index > a && m.index < b)) fm.inCaption = true;
+        }
+        (ti >= 0 ? objs[ti].footnotes : out).push(fm);
+      }
+      sections.push(paras.map((p) => ({ objects: p.objects.map((o) => {
+        const raw = sec.slice(o.start, o.end);
+        let k = 0;
+        const xml = raw.replace(/<hp:(footNote|endNote)\b[^>]*>[\s\S]*?<\/hp:\1>/g, () => o.footnotes[k++]?.inCaption ? "" : "<!--tgfn-->").replace(/<hp:newNum num="\d+" numType="FOOTNOTE"\/>/g, "").replace(/<hp:ctrl>\s*<\/hp:ctrl>/g, "");
+        for (const b of xml.matchAll(/binaryItemIDRef="([^"]+)"/g)) binIds.add(b[1]);
+        return { tag: o.tag, kind: kindOf(o.tag), xml, pre: o.pre || "", footnotes: o.footnotes, info: describeObject(raw, o.tag), xmlOffset: textOffsetBefore(sec, p.start, o.start, (t) => decodeXml(dec(t))) };
+      }) })));
+    }
+    const bins = {};
+    if (binIds.size) {
+      const hpf = zip.file("Contents/content.hpf") ? await zip.file("Contents/content.hpf").async("string") : "";
+      for (const it of hpf.matchAll(/<opf:item\b[^>]*\/>/g)) {
+        const id = (/ id="([^"]+)"/.exec(it[0]) || [])[1];
+        if (!id || !binIds.has(id)) continue;
+        const href = (/href="([^"]+)"/.exec(it[0]) || [])[1];
+        const type = (/media-type="([^"]+)"/.exec(it[0]) || [])[1] || "application/octet-stream";
+        if (href && zip.file(href)) bins[id] = { href, type, bytes: await zip.file(href).async("uint8array") };
       }
     }
-    return { body: out, tables };
+    return { body: out, sections, header, bins };
   }
   var decodeXml = (s) => s.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&#x([0-9a-fA-F]+);/g, (_, h2) => String.fromCodePoint(parseInt(h2, 16))).replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(+n)).replace(/&amp;/g, "&");
   var attr = (xml, name) => {
@@ -20877,7 +21469,8 @@ main.over .dropline { display: block; }
         }
         if (src[gt - 1] === "/") {
           out += src.slice(i, a);
-          onHit?.();
+          const rep2 = onHit?.(src.slice(a, gt + 1));
+          if (typeof rep2 === "string") out += rep2;
           i = gt + 1;
           continue;
         }
@@ -20888,7 +21481,8 @@ main.over .dropline { display: block; }
           continue;
         }
         out += src.slice(i, a);
-        onHit?.();
+        const rep = onHit?.(src.slice(a, b + close.length));
+        if (typeof rep === "string") out += rep;
         i = b + close.length;
       }
       return out;
@@ -20901,12 +21495,13 @@ main.over .dropline { display: block; }
       styleNames[id] = nm ? nm[1] : id;
     }
     let symCount = 0;
-    const readPara = (body, notes) => {
+    const readPara = (body, notes, onObj) => {
       const runs = [];
       const footnotes = [];
       let text = "";
       for (const re of elements(body, "w:r")) {
         const r = re.body;
+        if (onObj && /<w:drawing\b|<w:pict\b/.test(r)) onObj(r, text.length);
         const rPr = (elements(r, "w:rPr")[0] || { body: "" }).body;
         const on = (tag) => {
           const t2 = new RegExp(`<w:${tag}\\b([^>]*)/?>`).exec(rPr);
@@ -20948,10 +21543,90 @@ main.over .dropline { display: block; }
     const endnoteParas = enXml ? noteParas(enXml, "w:endnote") : {};
     let tables = 0, pictures = 0, fnTotal = 0, enTotal = 0;
     let wordNum = 0, afterMark = false;
-    const bodyXml = stripElements(stripElements(xml, "w:tbl", () => {
+    const tblXmls = [];
+    const bodyXml = stripElements(stripElements(xml, "w:del"), "w:tbl", (full) => {
       tables++;
-    }), "w:del");
-    pictures = (bodyXml.match(/<w:drawing\b|<w:pict\b/g) || []).length;
+      tblXmls.push(full);
+      return `<w:p><w:r><w:tgobj w:k="${tblXmls.length - 1}"/></w:r></w:p>`;
+    });
+    const relsXml = await part("word/_rels/document.xml.rels", false);
+    const relMap = {};
+    for (const m of relsXml.matchAll(/<Relationship\b[^>]*>/g)) {
+      const id = attr(m[0], "Id");
+      const tg = attr(m[0], "Target");
+      const mode = attr(m[0], "TargetMode");
+      if (id && tg && mode !== "External") relMap[id] = tg;
+    }
+    const relCache = {};
+    const rel = async (id) => {
+      if (id in relCache) return relCache[id];
+      const tg = relMap[id];
+      let v = null;
+      if (tg) {
+        const p = tg.startsWith("/") ? tg.slice(1) : `word/${tg}`.replace(/\/[^/]+\/\.\.\//g, "/");
+        const f = zip.file(p);
+        if (f && (f._data?.uncompressedSize ?? 0) <= MAX_FILE) v = { bytes: await f.async("uint8array"), ext: (/\.([A-Za-z0-9]+)$/.exec(p) || [null, "png"])[1] };
+      }
+      relCache[id] = v;
+      return v;
+    };
+    for (const m of bodyXml.matchAll(/r:(?:embed|id)="([^"]+)"/g)) await rel(m[1]);
+    for (const t of tblXmls) for (const m of t.matchAll(/r:(?:embed|id)="([^"]+)"/g)) await rel(m[1]);
+    const R = makeDocxRes();
+    let objSeq = 0, objMoved = 0, objLost = 0, objFn = 0;
+    pictures = 0;
+    const tblStyleBorders = {};
+    for (const st of elements(stylesXml, "w:style")) {
+      if (attr(st.attrs, "w:type") !== "table") continue;
+      const b = elements(st.body, "w:tblBorders")[0];
+      if (b) tblStyleBorders[attr(st.attrs, "w:styleId")] = b.body;
+    }
+    const drawApi = { rel: (id) => relCache[id] || null };
+    const noteCb = (tk, offset, fns) => {
+      const src = tk.fn !== void 0 ? footnoteParas[tk.fn] : endnoteParas[tk.en];
+      if (!src) return;
+      if (tk.fn !== void 0) fnTotal++;
+      else enTotal++;
+      let restart = 0;
+      if (tk.fn !== void 0 && tk.customMark) afterMark = true;
+      else {
+        wordNum++;
+        if (afterMark) {
+          restart = wordNum;
+          afterMark = false;
+        }
+      }
+      fns.push({ offset, paras: src, text: src.map((q) => q.text).join("\n"), ...tk.customMark ? { noNumber: true } : {}, ...restart ? { restart } : {} });
+    };
+    const pics = (r) => {
+      const got = drawingXml(R, r, drawApi);
+      for (const g of got) {
+        if (g.lost) objLost++;
+        else pictures++;
+      }
+      return got.filter((g) => !g.lost);
+    };
+    const tblApi = {
+      elements,
+      attr,
+      tableStyleBorders: (id) => id && tblStyleBorders[id] || "",
+      cellPara: (pBody, tableFns) => {
+        const inserts = [];
+        const r = readPara(pBody, (tk, offset) => {
+          const tmp = [];
+          noteCb(tk, offset, tmp);
+          for (const f of tmp) {
+            tableFns.push(f);
+            inserts.push({ at: offset, xml: "<hp:ctrl><!--tgfn--></hp:ctrl>" });
+          }
+        }, (run, at) => {
+          for (const g of pics(run)) inserts.push({ at, xml: g.xml });
+        });
+        const pPr = (elements(pBody, "w:pPr")[0] || { body: "" }).body;
+        const jc = attr((/<w:jc\b[^>]*\/>/.exec(pPr) || [""])[0], "w:val") || "left";
+        return { align: { both: "justify", center: "center", right: "right", start: "left", end: "right" }[jc] || "left", runs: r.runs, inserts };
+      }
+    };
     const paragraphs = [];
     const paras = elements(bodyXml, "w:p");
     if (!paras.length && /<w:p[\s>\/]/.test(bodyXml)) throw new Error("DOCX \uBCF8\uBB38\uC744 \uC77D\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4(\uBB38\uB2E8 \uAD6C\uC870\uAC00 \uAE68\uC838 \uC788\uC2B5\uB2C8\uB2E4). Word\uC5D0\uC11C \uB2E4\uC2DC \uC800\uC7A5\uD55C \uB4A4 \uC62C\uB824 \uC8FC\uC138\uC694.");
@@ -20966,31 +21641,55 @@ main.over .dropline { display: block; }
       const twip = (v) => v ? Math.round(+v / 20 * 10) / 10 : 0;
       const marginLeft = twip(attr(indXml, "w:left") || attr(indXml, "w:start"));
       const indent = twip(attr(indXml, "w:firstLine")) - twip(attr(indXml, "w:hanging"));
-      const { text, runs, footnotes } = readPara(body, (tk, offset, fns) => {
-        const src = tk.fn !== void 0 ? footnoteParas[tk.fn] : endnoteParas[tk.en];
-        if (!src) return;
-        if (tk.fn !== void 0) fnTotal++;
-        else enTotal++;
-        let restart = 0;
-        if (tk.fn !== void 0 && tk.customMark) afterMark = true;
-        else {
-          wordNum++;
-          if (afterMark) {
-            restart = wordNum;
-            afterMark = false;
-          }
+      const tg = /<w:tgobj w:k="(\d+)"\/>/.exec(body);
+      if (tg) {
+        const tfns = [];
+        let t = null;
+        try {
+          t = tableXml(R, tblXmls[+tg[1]], { ...tblApi, cellPara: (b2) => tblApi.cellPara(b2, tfns) });
+        } catch {
+          t = null;
         }
-        fns.push({ offset, paras: src, text: src.map((q) => q.text).join("\n"), ...tk.customMark ? { noNumber: true } : {}, ...restart ? { restart } : {} });
+        if (!t) {
+          objLost++;
+          paragraphs.push({ text: "", runs: [], footnotes: [], align: "left", indent: 0, marginLeft: 0, size: 0, bold: false, styleName, level: 0 });
+          continue;
+        }
+        const id = `o${++objSeq}`;
+        objMoved++;
+        objFn += tfns.length;
+        paragraphs.push({
+          text: "",
+          runs: [],
+          footnotes: tfns.map((f) => ({ ...f, offset: 0, objId: id })),
+          objects: [{ id, tag: "tbl", kind: "table", xml: t.xml, pre: "", offset: 0, info: { rows: t.rows, cols: t.cols, width: t.width, height: t.height, caption: "" }, res: R.res }],
+          align: "center",
+          indent: 0,
+          marginLeft: 0,
+          size: 0,
+          bold: false,
+          styleName,
+          level: 0
+        });
+        continue;
+      }
+      const objects = [];
+      const { text, runs, footnotes } = readPara(body, noteCb, (run, at) => {
+        for (const g of pics(run)) {
+          objects.push({ id: `o${++objSeq}`, tag: "pic", kind: "picture", xml: g.xml, pre: "", offset: at, info: { rows: 0, cols: 0, width: Math.round(g.w), height: Math.round(g.h), caption: "" }, res: R.res });
+          objMoved++;
+        }
       });
       const size = runs.length ? runs.find((r) => r.text.trim())?.size || 0 : 0;
-      paragraphs.push({ text, runs, footnotes, align: { both: "justify", center: "center", right: "right", left: "left", start: "left", end: "right" }[jc] || "left", indent, marginLeft, size, bold: runs.length > 0 && runs.every((r) => r.bold || !r.text.trim()), styleName, level: 0 });
+      paragraphs.push({ text, runs, footnotes, ...objects.length ? { objects } : {}, align: { both: "justify", center: "center", right: "right", left: "left", start: "left", end: "right" }[jc] || "left", indent, marginLeft, size, bold: runs.length > 0 && runs.every((r) => r.bold || !r.text.trim()), styleName, level: 0 });
     }
+    R.finish();
     const warnings = [];
-    if (tables) warnings.push(`\uD45C ${tables}\uAC1C\uB294 \uBCC0\uD658\uB418\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4. \uBCC0\uD658 \uD6C4 \uD55C\uAE00\uC5D0\uC11C \uC9C1\uC811 \uC62E\uACA8 \uB123\uC73C\uC138\uC694.`);
-    if (pictures) warnings.push(`\uADF8\uB9BC ${pictures}\uAC1C\uB294 \uBCC0\uD658\uB418\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.`);
+    if (objMoved) warnings.push(`\uD45C ${tables}\uAC1C\xB7\uADF8\uB9BC ${pictures}\uAC1C\uB97C \uD55C\uAE00 \uD45C\xB7\uADF8\uB9BC\uC73C\uB85C \uC62E\uAE41\uB2C8\uB2E4${objFn ? `(\uD45C \uC548 \uAC01\uC8FC ${objFn}\uAC1C\uB294 \uBCF8\uBB38 \uAC01\uC8FC\uC640 \uBC88\uD638\uB97C \uC774\uC5B4 \uB9E4\uAE40)` : ""}. \uCE78 \uD569\uCE58\uAE30\xB7\uC74C\uC601\xB7\uD14C\uB450\uB9AC\uB294 \uC62E\uAE30\uACE0, \uCE78 \uC548 \uAE00\uC740 \uD559\uD68C \uBCF8\uBB38 \uAE00\uAF34\uB85C \uBC14\uAFC9\uB2C8\uB2E4. \uBCC0\uD658 \uD6C4 \uD45C\xB7\uADF8\uB9BC \uBAA8\uC591\uC744 \uD655\uC778\uD558\uC138\uC694.`);
+    if (objLost) warnings.push(`\uAE00\uC0C1\uC790\xB7\uCC28\uD2B8\xB7\uB3C4\uD615 \uB4F1 ${objLost}\uAC1C\uB294 \uC62E\uAE30\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4. \uBCC0\uD658 \uD6C4 \uD55C\uAE00\uC5D0\uC11C \uC9C1\uC811 \uB123\uC73C\uC138\uC694.`);
     if (enTotal) warnings.push(`\uBBF8\uC8FC ${enTotal}\uAC1C\uB97C \uAC01\uC8FC\uB85C \uC62E\uACBC\uC2B5\uB2C8\uB2E4.`);
     if (symCount) warnings.push(`\uAE30\uD638 \uAE00\uAF34 \uAE00\uC790 ${symCount}\uAC1C\uB294 \uAE00\uAF34\uC5D0 \uB530\uB77C \uB2E4\uB974\uAC8C \uBCF4\uC77C \uC218 \uC788\uC2B5\uB2C8\uB2E4. \uBCC0\uD658 \uD6C4 \uD655\uC778\uD558\uC138\uC694.`);
-    return { format: "DOCX", paragraphs, warnings, counts: { tables, pictures, footnotes: fnTotal + enTotal }, fonts: [] };
+    return { format: "DOCX", paragraphs, warnings, counts: { tables, pictures, shapes: 0, objects: objMoved, objectsLost: objLost, footnotes: fnTotal + enTotal }, fonts: [], ...objMoved ? { objectRes: R.res } : {} };
   }
   var WML_NS = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
   function normalizeWml(xml) {
@@ -21035,16 +21734,16 @@ main.over .dropline { display: block; }
         scope[a[2] === void 0 ? "" : a[2]] = a[3].slice(1, -1);
       }
       const defaultWml = scope[""] === WML_NS;
-      const attrsOut = attrs.replace(ATTR, (all, n1, n2, val) => {
-        if (n1 === "xmlns") return all;
+      const attrsOut = attrs.replace(ATTR, (all2, n1, n2, val) => {
+        if (n1 === "xmlns") return all2;
         const ap = n2 !== void 0 ? n1 : "";
         const an = n2 !== void 0 ? n2 : n1;
         if (ap) {
           if (scope[ap] === WML_NS) return `w:${an}=${val}`;
           if (ap === "w") return `nw:${an}=${val}`;
-          return all;
+          return all2;
         }
-        return defaultWml ? `w:${an}=${val}` : all;
+        return defaultWml ? `w:${an}=${val}` : all2;
       });
       out += `<${qn(scope, prefix, local)}${attrsOut}${selfClose ? "/" : ""}>`;
       if (!selfClose) stack.push(scope);
@@ -21361,6 +22060,8 @@ main.over .dropline { display: block; }
     h3: /^\d{1,2}\s*[.．]\s*\d{1,2}\s*[.．]\s*\d{1,2}\s*[.．]?\s*\S|^[(（]\s*\d{1,2}\s*[)）]\s*\S/,
     h4: /^[①-⑳㉠-㉭]\s*\S|^[가나다라마바사아자차카타파하]\s*[.．)]\s+\S/,
     caption: /^[\[〔<＜(（〈]?\s*(표|그림|사진|도표|도|Table|Figure|Fig\.)\s*\d+/i,
+    objNote: /^\s*(?:[*※]\s*)?[(（\[]?\s*(?:자료|출처|주|비고|참고|Source|Sources|Note|Notes)\s*[)）\]]?\s*[:：]|^\s*※|^\s*\*{1,3}\s*p\s*[<>≤]/i,
+    // 표·그림 밑 주석(자료: …, 주: …, ※ …, * p<.05)
     dates: /^[▮■□▪❙|｜*※\[(（]?\s*(?:논문\s*|원고\s*)?(?:최초\s*|최종\s*)?(?:(?:투고|접수|심사|게재|수정|채택)\s*(?:확정|완료|종료|결정|승인)?\s*일(?:자)?(?![가-힣])|수정\s*본\s*(?:접수|제출)일?)\s*[:：/)\]）]?/,
     subtitlePrefix: /^[\-–—⸺―:：]\s*\S/,
     author: /^[가-힣]{2,5}(\s*[*＊†‡]+)?(\s*[(（][^)）]{1,40}[)）])?(\s*[*＊]+)?\s*$|^[가-힣]{2,5}\s*[·,]\s*[가-힣]{2,5}(\s*[*＊]+)?\s*$/,
@@ -21402,6 +22103,7 @@ main.over .dropline { display: block; }
     let h4Idx = -1;
     let lastRole = "";
     let sawTitle = false, sawBody = false, lastWasHeading = false, inQuoteRun = false;
+    let lastObj = -9;
     const headingLike = (t) => RE.h1Num.test(t) || RE.h1Roman.test(t) || RE.h2.test(t) || RE.h3.test(t);
     const nextNonEmpty = new Array(paragraphs.length).fill(-1);
     for (let i = paragraphs.length - 2, nx = -1; i >= 0; i--) {
@@ -21413,11 +22115,16 @@ main.over .dropline { display: block; }
       const t = trimmed(p);
       const push = (role, reason) => {
         if (role !== "blank") lastRole = role;
-        blocks.push({ role, text: p.text, runs: p.runs, footnotes: p.footnotes, src: i, reason, auto: true });
+        blocks.push({ role, text: p.text, runs: p.runs, footnotes: p.footnotes, ...p.objects && p.objects.length ? { objects: p.objects } : {}, src: i, reason, auto: true });
+        if (p.objects && p.objects.length) lastObj = blocks.length - 1;
         lastWasHeading = /^h[1-4]$/.test(role);
         if (/^h[123]$/.test(role)) h4Idx = -1;
         if (!/^(quote|source|blank)$/.test(role)) inQuoteRun = false;
       };
+      if (!t && p.objects && p.objects.length) {
+        push("object", `${p.objects.map((o) => o.kind === "table" ? `\uD45C${o.info && o.info.rows ? ` ${o.info.rows}\xD7${o.info.cols}` : ""}` : o.kind === "picture" ? "\uADF8\uB9BC" : o.kind === "equation" ? "\uC218\uC2DD" : "\uB3C4\uD615").join("\xB7")}${p.objects.some((o) => o.info && o.info.caption) ? " (\uCEA1\uC158 \uD3EC\uD568)" : ""}`);
+        continue;
+      }
       if (!t && p.footnotes && p.footnotes.length) {
         push("body", "\uAE00 \uC5C6\uC774 \uAC01\uC8FC\uB9CC \uC788\uB294 \uBB38\uB2E8");
         continue;
@@ -21530,6 +22237,10 @@ main.over .dropline { display: block; }
       }
       if (RE.caption.test(t) && short && !dottedToc) {
         push("caption", "\uD45C\xB7\uADF8\uB9BC \uC81C\uBAA9");
+        continue;
+      }
+      if (RE.objNote.test(t) && t.length <= 300 && blocks.length - lastObj <= 4 && blocks.slice(lastObj + 1).every((b) => /^(blank|caption|objNote)$/.test(b.role))) {
+        push("objNote", "\uD45C\xB7\uADF8\uB9BC \uC8FC\uC11D");
         continue;
       }
       if (state2 !== "references" && p.styleName !== "quote" && !indented(p) && dotted(t) && (state2 === "front" || state2 === "toc" || blocks.filter((b) => b.role !== "blank").at(-1)?.role === "toc" || dottedNear(i) || /(?:[·‧⋅․…⋯.\-─_]\s*){10,}\s*\d{0,4}\s*$/.test(t) || /^(?:[IVXⅠ-Ⅻ\d]{1,3}(?:[.．]\d{1,2})*[.．)]\s|제\s*\d+\s*[장절부]|[가-하][.．)]\s)/.test(t))) {
@@ -21760,7 +22471,7 @@ main.over .dropline { display: block; }
     const seq = [];
     let cur = null;
     for (const b of blocks) {
-      const g = b.role === "blank" ? cur : ROLE_GROUP2[b.role] || "body";
+      const g = b.role === "blank" || FLOAT_ROLES.has(b.role) && cur ? cur : ROLE_GROUP2[b.role] || "body";
       if (b.role === "skip") continue;
       if (g === null || g === void 0) continue;
       if (!groups[g]) {
@@ -21807,11 +22518,11 @@ main.over .dropline { display: block; }
     const outSeq = [];
     for (const b of out) {
       const g = ROLE_GROUP2[b.role];
-      if (b.role !== "blank" && g && outSeq.at(-1) !== g) outSeq.push(g);
+      if (b.role !== "blank" && !FLOAT_ROLES.has(b.role) && g && outSeq.at(-1) !== g) outSeq.push(g);
     }
     const srcSeq = [];
     for (const b of blocks) {
-      if (b.role === "blank" || b.role === "skip") continue;
+      if (b.role === "blank" || b.role === "skip" || FLOAT_ROLES.has(b.role)) continue;
       const g = ROLE_GROUP2[b.role] || "body";
       if (srcSeq.at(-1) !== g) srcSeq.push(g);
     }
@@ -22122,6 +22833,7 @@ main.over .dropline { display: block; }
             nb.runs = remapRuns(b.runs, b.text.length, r);
           }
           if (b.footnotes && b.footnotes.length) nb.footnotes = b.footnotes.map((f) => ({ ...f, offset: mapOff(r, f.offset ?? b.text.length) }));
+          if (b.objects && b.objects.length) nb.objects = b.objects.map((o) => ({ ...o, offset: mapOff(r, o.offset ?? b.text.length) }));
         }
       }
       if (nb.footnotes && nb.footnotes.length) nb.footnotes = nb.footnotes.map((f) => {
@@ -22150,24 +22862,25 @@ main.over .dropline { display: block; }
         lines += Math.ceil(f.text.length / 20);
         chars += f.text.length;
       }
+      for (const o of b.objects || []) lines += Math.max(2, Math.round((o.info && o.info.height || 0) / 1700));
     }
     return { chars, charsNoSpace, fnChars, sheets: Math.round(lines / 10 * 10) / 10 };
   }
   function checklist(blocks, journal2) {
     const has = (r) => blocks.some((b) => b.role === r);
-    const items = [];
-    items.push({ ok: has("title"), text: "\uAD6D\uBB38 \uC81C\uBAA9" });
-    items.push({ ok: has("abstract") || has("abstractHead"), text: `\uAD6D\uBB38\uCD08\uB85D (${journal2.abstract?.ko || "\uD544\uC218"})` });
-    items.push({ ok: has("keywords"), text: `\uC8FC\uC81C\uC5B4 (${journal2.abstract?.keywords || "5\uAC1C \uC774\uC0C1"})` });
-    items.push({ ok: has("h1"), text: "\uC7A5 \uC81C\uBAA9" });
-    items.push({ ok: has("refHead") || has("ref"), text: `\uCC38\uACE0\uBB38\uD5CC (${journal2.references?.order || ""})` });
-    items.push({ ok: has("abstractEn") || has("abstractEnHead"), text: `\uC601\uBB38\uCD08\uB85D (${journal2.abstract?.en || ""})` });
-    items.push({ ok: has("keywordsEn"), text: "Keywords" });
+    const items2 = [];
+    items2.push({ ok: has("title"), text: "\uAD6D\uBB38 \uC81C\uBAA9" });
+    items2.push({ ok: has("abstract") || has("abstractHead"), text: `\uAD6D\uBB38\uCD08\uB85D (${journal2.abstract?.ko || "\uD544\uC218"})` });
+    items2.push({ ok: has("keywords"), text: `\uC8FC\uC81C\uC5B4 (${journal2.abstract?.keywords || "5\uAC1C \uC774\uC0C1"})` });
+    items2.push({ ok: has("h1"), text: "\uC7A5 \uC81C\uBAA9" });
+    items2.push({ ok: has("refHead") || has("ref"), text: `\uCC38\uACE0\uBB38\uD5CC (${journal2.references?.order || ""})` });
+    items2.push({ ok: has("abstractEn") || has("abstractEnHead"), text: `\uC601\uBB38\uCD08\uB85D (${journal2.abstract?.en || ""})` });
+    items2.push({ ok: has("keywordsEn"), text: "Keywords" });
     const author = blocks.find((b) => b.role === "author" || b.role === "affiliation");
-    if (journal2.anonymize && author) items.push({ ok: false, warn: true, text: `\uC775\uBA85\uD654 \uD655\uC778: \uC800\uC790 \u2018${(author.text || "").trim().slice(0, 20)}\u2019\uAC00 \uB0A8\uC544 \uC788\uC74C \u2014 ${journal2.anonymize}` });
+    if (journal2.anonymize && author) items2.push({ ok: false, warn: true, text: `\uC775\uBA85\uD654 \uD655\uC778: \uC800\uC790 \u2018${(author.text || "").trim().slice(0, 20)}\u2019\uAC00 \uB0A8\uC544 \uC788\uC74C \u2014 ${journal2.anonymize}` });
     const est = estimateLength(blocks);
-    if (journal2.length?.max) items.push({ ok: est.sheets <= journal2.length.max, text: `\uBD84\uB7C9 \uC57D ${est.sheets}\uB9E4 / \uD55C\uB3C4 ${journal2.length.text}` });
-    return items;
+    if (journal2.length?.max) items2.push({ ok: est.sheets <= journal2.length.max, text: `\uBD84\uB7C9 \uC57D ${est.sheets}\uB9E4 / \uD55C\uB3C4 ${journal2.length.text}` });
+    return items2;
   }
   function buildToc(blocks, journal2) {
     const wants = (journal2.structure || []).includes("toc") || !!(journal2.template && journal2.template.roles && (journal2.template.roles.toc || journal2.template.roles.tocHead));
@@ -22177,13 +22890,13 @@ main.over .dropline { display: block; }
     const heads = blocks.filter((b) => depth.includes(b.role) && b.text.trim());
     if (!heads.length) return { blocks, added: 0, reason: "\uC7A5 \uC81C\uBAA9 \uC5C6\uC74C" };
     const label = journal2.tocLabel || "\uBAA9\uCC28";
-    const items = [
+    const items2 = [
       { role: "tocHead", text: label, auto: true, reason: "\uBAA9\uCC28 \uC81C\uBAA9(\uC790\uB3D9 \uC0DD\uC131)", footnotes: [], runs: [] },
       ...heads.map((b) => ({ role: "toc", text: b.text.trim(), auto: true, reason: "\uC7A5 \uC81C\uBAA9\uC5D0\uC11C \uC0DD\uC131", footnotes: [], runs: [] }))
     ];
     let at = blocks.findIndex((b) => depth.includes(b.role) || b.role === "body");
     if (at < 0) at = blocks.length;
-    return { blocks: [...blocks.slice(0, at), ...items, ...blocks.slice(at)], added: items.length - 1, label };
+    return { blocks: [...blocks.slice(0, at), ...items2, ...blocks.slice(at)], added: items2.length - 1, label };
   }
 
   // src/app.js
@@ -22437,8 +23150,8 @@ main.over .dropline { display: block; }
     return a && typeof a === "object" && !Array.isArray(a) ? a : {};
   };
   var userSchedule = (id) => {
-    const all = lsGet(LS.schedule, {});
-    const list = all && typeof all === "object" && !Array.isArray(all) && Object.prototype.hasOwnProperty.call(all, id) ? all[id] : [];
+    const all2 = lsGet(LS.schedule, {});
+    const list = all2 && typeof all2 === "object" && !Array.isArray(all2) && Object.prototype.hasOwnProperty.call(all2, id) ? all2[id] : [];
     return Array.isArray(list) ? list.filter((u) => u && typeof u === "object" && isoDate(u.deadline)) : [];
   };
   function nextDeadlines(j, today = /* @__PURE__ */ new Date()) {
@@ -22480,9 +23193,9 @@ main.over .dropline { display: block; }
     const byName = (a, b) => (a.journal || "").localeCompare(b.journal || "", "ko");
     const groups = [["\uB4F1\uC7AC\uC9C0", (j2) => tier(j2) === 0], ["\uB4F1\uC7AC\uD6C4\uBCF4\uC9C0", (j2) => tier(j2) === 1], ["\uADF8 \uBC16\uC758 \uD559\uD68C", (j2) => tier(j2) === 2]];
     for (const [label, test] of groups) {
-      const items = state.journals.filter(test).sort(byName);
-      if (!items.length) continue;
-      sel.append(h("optgroup", { label: `${label} (${items.length})` }, ...items.map((j2) => h("option", { value: j2.id, selected: j2.id === state.journalId ? "" : null }, `${j2.journal} \u2014 ${j2.society}${j2.custom ? " (\uC0AC\uC6A9\uC790)" : ""}`))));
+      const items2 = state.journals.filter(test).sort(byName);
+      if (!items2.length) continue;
+      sel.append(h("optgroup", { label: `${label} (${items2.length})` }, ...items2.map((j2) => h("option", { value: j2.id, selected: j2.id === state.journalId ? "" : null }, `${j2.journal} \u2014 ${j2.society}${j2.custom ? " (\uC0AC\uC6A9\uC790)" : ""}`))));
     }
     const j = journal();
     const meta = $("#jmeta");
@@ -22560,7 +23273,7 @@ main.over .dropline { display: block; }
         h("div", {}, h("strong", {}, "\uC6D0\uACE0 \uD30C\uC77C\uC744 \uC774 \uD654\uBA74\uC5D0 \uB04C\uC5B4\uB2E4 \uB193\uC73C\uC138\uC694"), h("p", {}, "HWP \xB7 HWPX \xB7 DOCX \xB7 TXT \xB7 MD \u2014 \uB193\uB294 \uC989\uC2DC \uC5F4\uB9AC\uACE0, \u2018\uC801\uC6A9\u2019\uC744 \uB204\uB974\uBA74 \uD559\uD68C \uC591\uC2DD\uC774 \uC785\uD600\uC9C4 \uACB0\uACFC\uB97C \uC800\uC7A5 \uC804\uC5D0 \uBBF8\uB9AC \uBD05\uB2C8\uB2E4."), h("span", { class: "btn ghost" }, "\uD30C\uC77C \uC120\uD0DD"), input)
       );
       main.append(dz);
-      main.append(h("p", { class: "hero", style: "margin-top:18px" }, h("b", {}, "\uC6D0\uACE0 \uB0B4\uC6A9\uC740 \uBC14\uAFB8\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4."), " \uD559\uD68C \uBC14\uD0D5\uD2C0\uC758 \uAE00\uAF34\xB7\uD06C\uAE30\xB7\uC904\uAC04\uACA9\xB7\uC5EC\uBC31\xB7\uAC01\uC8FC \uC124\uC815\uC744 \uBB3C\uB824\uBC1B\uACE0, \uCCB4\uC7AC \uC21C\uC11C\uC640 \uCABD\uC218\xB7\uCABD\uC218 \uBC94\uC704 \uAE30\uD638\xB7\uB0AB\uD45C\xB7\uC11C\uC9C0 \uD45C\uAE30\uB9CC \uAC01\uC8FC\uC640 \uCC38\uACE0\uBB38\uD5CC\uC5D0\uC11C \uADDC\uCE59\uB300\uB85C \uB9DE\uCDA5\uB2C8\uB2E4. \uD45C\xB7\uADF8\uB9BC\uC740 \uBCC0\uD658 \uD6C4 \uD55C\uAE00\uC5D0\uC11C \uC62E\uACA8 \uB123\uC73C\uC138\uC694. AI\uB294 \uC4F0\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4."));
+      main.append(h("p", { class: "hero", style: "margin-top:18px" }, h("b", {}, "\uC6D0\uACE0 \uB0B4\uC6A9\uC740 \uBC14\uAFB8\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4."), " \uD559\uD68C \uBC14\uD0D5\uD2C0\uC758 \uAE00\uAF34\xB7\uD06C\uAE30\xB7\uC904\uAC04\uACA9\xB7\uC5EC\uBC31\xB7\uAC01\uC8FC \uC124\uC815\uC744 \uBB3C\uB824\uBC1B\uACE0, \uCCB4\uC7AC \uC21C\uC11C\uC640 \uCABD\uC218\xB7\uCABD\uC218 \uBC94\uC704 \uAE30\uD638\xB7\uB0AB\uD45C\xB7\uC11C\uC9C0 \uD45C\uAE30\uB9CC \uAC01\uC8FC\uC640 \uCC38\uACE0\uBB38\uD5CC\uC5D0\uC11C \uADDC\uCE59\uB300\uB85C \uB9DE\uCDA5\uB2C8\uB2E4. \uD45C\xB7\uADF8\uB9BC\uC740 \uCE78 \uC548\xB7\uCEA1\uC158\uC758 \uAC01\uC8FC\uAE4C\uC9C0 \uADF8\uB300\uB85C \uC62E\uAE41\uB2C8\uB2E4. AI\uB294 \uC4F0\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4."));
       return;
     }
     const left = h("div", { class: "pane" });
@@ -22570,8 +23283,9 @@ main.over .dropline { display: block; }
       h("span", { class: "tag" }, m.parsed.format),
       h("span", { class: "tag" }, `\uBB38\uB2E8 ${m.parsed.paragraphs.length}`),
       h("span", { class: "tag" }, `\uAC01\uC8FC ${m.parsed.counts.footnotes}`),
-      m.parsed.counts.tables ? h("span", { class: "tag warn" }, `\uD45C ${m.parsed.counts.tables}`) : null,
-      m.parsed.counts.pictures ? h("span", { class: "tag warn" }, `\uADF8\uB9BC ${m.parsed.counts.pictures}`) : null
+      m.parsed.counts.tables ? h("span", { class: "tag" }, `\uD45C ${m.parsed.counts.tables}`) : null,
+      m.parsed.counts.pictures ? h("span", { class: "tag" }, `\uADF8\uB9BC ${m.parsed.counts.pictures}`) : null,
+      m.parsed.counts.objectsLost ? h("span", { class: "tag warn" }, `\uC62E\uAE30\uC9C0 \uBABB\uD55C \uD45C\xB7\uADF8\uB9BC ${m.parsed.counts.objectsLost}`) : null
     );
     left.append(h("div", { class: "pane-h" }, "\uC6D0\uACE0 \uAD6C\uC870", h("span", { class: "grow" }), info, h("button", { class: "btn ghost sm", onclick: () => {
       state.manuscript = null;
@@ -22605,7 +23319,7 @@ main.over .dropline { display: block; }
   function settingsPop() {
     const o = state.options;
     const j = journal();
-    const seg = (key, items) => h("div", { class: "seg", role: "group" }, ...items.map(([v, l, title]) => h("button", { type: "button", class: o[key] === v ? "on" : "", title: title || null, "aria-pressed": o[key] === v ? "true" : "false", onclick: () => {
+    const seg = (key, items2) => h("div", { class: "seg", role: "group" }, ...items2.map(([v, l, title]) => h("button", { type: "button", class: o[key] === v ? "on" : "", title: title || null, "aria-pressed": o[key] === v ? "true" : "false", onclick: () => {
       o[key] = v;
       saveOpts();
       state.dirty = !!state.result;
@@ -22650,8 +23364,9 @@ main.over .dropline { display: block; }
         } },
         ...ROLE_DEFS.map((r) => h("option", { value: r.id, selected: r.id === b.role ? "" : null }, r.label))
       );
+      const objTags = (b.objects || []).map((o) => h("span", { class: "fn obj" }, `${o.kind === "table" ? `\uD45C${o.info?.rows ? ` ${o.info.rows}\xD7${o.info.cols}` : ""}` : o.kind === "picture" ? "\uADF8\uB9BC" : o.kind === "equation" ? "\uC218\uC2DD" : "\uB3C4\uD615"}${o.info?.caption ? ` \xB7 ${o.info.caption.slice(0, 30)}` : ""}`));
       tb.append(h("tr", { class: b.role + (b.auto ? "" : " manual") }, h("td", {}, sel), h("td", { class: "txt", title: `${b.reason || ""}
-${b.text}` }, b.text, b.footnotes?.length ? h("span", { class: "fn" }, `\uAC01\uC8FC ${b.footnotes.length}`) : null)));
+${b.text}` }, b.text, ...objTags, b.footnotes?.length ? h("span", { class: "fn" }, `\uAC01\uC8FC ${b.footnotes.length}`) : null)));
     });
     tbl.append(tb);
     el.append(h("div", { class: "struct" }, tbl));
@@ -22686,11 +23401,11 @@ ${b.text}` }, b.text, b.footnotes?.length ? h("span", { class: "fn" }, `\uAC01\u
   }
   function annotateErrata(svg, errata) {
     const norm = (s) => (s || "").replace(/[\s\u200b]+/g, "");
-    const items = [
+    const items2 = [
       ...errata.notes.filter((n) => n.status !== "ok").map((n) => ({ key: norm(n.text), why: `\uAC01\uC8FC ${n.no}) \u2014 ${n.issues.join(" \xB7 ")}` })),
       ...errata.refs.filter((x) => x.uncited || x.issues.length).map((x) => ({ key: norm(x.text), why: `\uCC38\uACE0\uBB38\uD5CC \u2014 ${[x.uncited ? "\uAC01\uC8FC\uC5D0\uC11C \uD55C \uBC88\uB3C4 \uC778\uC6A9\uB418\uC9C0 \uC54A\uC74C" : "", ...x.issues].filter(Boolean).join(" \xB7 ")}` }))
     ];
-    if (!items.length) return;
+    if (!items2.length) return;
     const reds = [...svg.querySelectorAll("text")].filter((t) => /^#ff0000$/i.test(t.getAttribute("fill") || ""));
     const lines = /* @__PURE__ */ new Map();
     for (const t of reds) {
@@ -22702,7 +23417,7 @@ ${b.text}` }, b.text, b.footnotes?.length ? h("span", { class: "fn" }, `\uAC01\u
       ts.sort((a, b) => +a.getAttribute("x") - +b.getAttribute("x"));
       const line = norm(ts.map((t) => t.textContent).join(""));
       const probe = line.slice(0, 16);
-      const hit = probe.length >= 4 ? items.find((it) => it.key.includes(probe)) : null;
+      const hit = probe.length >= 4 ? items2.find((it) => it.key.includes(probe)) : null;
       if (!hit) continue;
       for (const t of ts) {
         const ti = document.createElementNS("http://www.w3.org/2000/svg", "title");
@@ -22758,9 +23473,9 @@ ${b.text}` }, b.text, b.footnotes?.length ? h("span", { class: "fn" }, `\uAC01\u
   }
   function changesView(r) {
     const el = h("div", { class: "changes" });
-    const sec = (title, items) => {
-      if (!items || !items.length) return;
-      el.append(h("h4", {}, title), h("ul", {}, ...items.map((x) => h("li", {}, x))));
+    const sec = (title, items2) => {
+      if (!items2 || !items2.length) return;
+      el.append(h("h4", {}, title), h("ul", {}, ...items2.map((x) => h("li", {}, x))));
     };
     sec("\uC801\uC6A9\uD55C \uCC98\uB9AC", r.notes);
     if (r.cite?.samples?.length) {
@@ -22802,17 +23517,17 @@ ${b.text}` }, b.text, b.footnotes?.length ? h("span", { class: "fn" }, `\uAC01\u
     if (!m) return null;
     const blocks = state.blocks || [];
     const est = estimateLength(blocks.length ? blocks : m.parsed.paragraphs.map((q) => ({ role: "body", text: q.text, footnotes: q.footnotes })));
-    const items = [];
-    items.push(h("span", {}, "\uAE00\uC790 ", h("b", {}, est.chars.toLocaleString()), h("span", { class: "dim" }, ` (\uACF5\uBC31 \uC81C\uC678 ${est.charsNoSpace.toLocaleString()})`)));
-    items.push(h("span", {}, "\uAC01\uC8FC ", h("b", {}, m.parsed.counts.footnotes || 0), est.fnChars ? h("span", { class: "dim" }, ` \xB7 ${est.fnChars.toLocaleString()}\uC790`) : null));
-    items.push(h("span", {}, "200\uC790 \uC6D0\uACE0\uC9C0 \uC57D ", h("b", {}, est.sheets), "\uB9E4"));
+    const items2 = [];
+    items2.push(h("span", {}, "\uAE00\uC790 ", h("b", {}, est.chars.toLocaleString()), h("span", { class: "dim" }, ` (\uACF5\uBC31 \uC81C\uC678 ${est.charsNoSpace.toLocaleString()})`)));
+    items2.push(h("span", {}, "\uAC01\uC8FC ", h("b", {}, m.parsed.counts.footnotes || 0), est.fnChars ? h("span", { class: "dim" }, ` \xB7 ${est.fnChars.toLocaleString()}\uC790`) : null));
+    items2.push(h("span", {}, "200\uC790 \uC6D0\uACE0\uC9C0 \uC57D ", h("b", {}, est.sheets), "\uB9E4"));
     if (j?.length?.max) {
       const over = Math.round((est.sheets - j.length.max) * 10) / 10;
-      items.push(h("span", { class: over > 0 ? "over" : "okay" }, `\uADDC\uC815 ${j.length.max}\uB9E4`, over > 0 ? [" \xB7 ", h("b", {}, `${over}\uB9E4 \uCD08\uACFC`), h("span", { class: "dim" }, ` (\uC57D ${Math.round(over * 200).toLocaleString()}\uC790)`)] : [" \xB7 ", h("b", {}, `${Math.abs(over)}\uB9E4 \uC5EC\uC720`)]));
-    } else if (j?.length?.text) items.push(h("span", { class: "dim", title: j.length.text }, `\uADDC\uC815 \uBD84\uB7C9: ${j.length.text.slice(0, 28)}${j.length.text.length > 28 ? "\u2026" : ""}`));
-    if (r) items.push(h("span", {}, "\uC801\uC6A9 \uD6C4 ", h("b", {}, r.pages), "\uCABD"));
-    if (m.parsed.counts.tables || m.parsed.counts.pictures) items.push(h("span", { class: "dim" }, [m.parsed.counts.tables ? `\uD45C ${m.parsed.counts.tables}` : null, m.parsed.counts.pictures ? `\uADF8\uB9BC ${m.parsed.counts.pictures}` : null].filter(Boolean).join(" \xB7 ") + " (\uBCC0\uD658 \uC81C\uC678)"));
-    return h("div", { class: "docbar", role: "status", "aria-live": "polite", title: "\uBD84\uB7C9\uC740 \uC548\uB0B4\uC77C \uBFD0\uC774\uBA70 \uCD08\uACFC\uBD84\uC744 \uC790\uB3D9\uC73C\uB85C \uC904\uC774\uAC70\uB098 \uACE0\uCE58\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4. \uB9E4\uC218 \uCD08\uACFC\uB294 \uD559\uD68C\uC5D0 \uB530\uB77C \uCD94\uAC00 \uAC8C\uC7AC\uB8CC \uB300\uC0C1\uC785\uB2C8\uB2E4." }, ...items.flatMap((x, i) => i ? [h("span", { class: "sep", "aria-hidden": "true" }, "\xB7"), x] : [x]));
+      items2.push(h("span", { class: over > 0 ? "over" : "okay" }, `\uADDC\uC815 ${j.length.max}\uB9E4`, over > 0 ? [" \xB7 ", h("b", {}, `${over}\uB9E4 \uCD08\uACFC`), h("span", { class: "dim" }, ` (\uC57D ${Math.round(over * 200).toLocaleString()}\uC790)`)] : [" \xB7 ", h("b", {}, `${Math.abs(over)}\uB9E4 \uC5EC\uC720`)]));
+    } else if (j?.length?.text) items2.push(h("span", { class: "dim", title: j.length.text }, `\uADDC\uC815 \uBD84\uB7C9: ${j.length.text.slice(0, 28)}${j.length.text.length > 28 ? "\u2026" : ""}`));
+    if (r) items2.push(h("span", {}, "\uC801\uC6A9 \uD6C4 ", h("b", {}, r.pages), "\uCABD"));
+    if (m.parsed.counts.tables || m.parsed.counts.pictures) items2.push(h("span", { class: "dim" }, [m.parsed.counts.tables ? `\uD45C ${m.parsed.counts.tables}` : null, m.parsed.counts.pictures ? `\uADF8\uB9BC ${m.parsed.counts.pictures}` : null].filter(Boolean).join(" \xB7 ") + (m.parsed.counts.objectsLost ? ` (\uC62E\uAE30\uC9C0 \uBABB\uD568 ${m.parsed.counts.objectsLost})` : " (\uC62E\uAE40)")));
+    return h("div", { class: "docbar", role: "status", "aria-live": "polite", title: "\uBD84\uB7C9\uC740 \uC548\uB0B4\uC77C \uBFD0\uC774\uBA70 \uCD08\uACFC\uBD84\uC744 \uC790\uB3D9\uC73C\uB85C \uC904\uC774\uAC70\uB098 \uACE0\uCE58\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4. \uB9E4\uC218 \uCD08\uACFC\uB294 \uD559\uD68C\uC5D0 \uB530\uB77C \uCD94\uAC00 \uAC8C\uC7AC\uB8CC \uB300\uC0C1\uC785\uB2C8\uB2E4." }, ...items2.flatMap((x, i) => i ? [h("span", { class: "sep", "aria-hidden": "true" }, "\xB7"), x] : [x]));
   }
   function saveOpts() {
     lsSet(LS.opts, state.options);
@@ -23085,11 +23800,11 @@ ${b.text}` }, b.text, b.footnotes?.length ? h("span", { class: "fn" }, `\uAC01\u
           msg.textContent = "\uB9C8\uAC10\uC77C\uC740 \uD544\uC218\uC785\uB2C8\uB2E4.";
           return;
         }
-        const all = safeSchedMap();
-        const list = (Array.isArray(all[j.id]) ? all[j.id] : []).filter((x) => x && typeof x === "object" && isoDate(x.deadline) && x.deadline !== fDl.value);
+        const all2 = safeSchedMap();
+        const list = (Array.isArray(all2[j.id]) ? all2[j.id] : []).filter((x) => x && typeof x === "object" && isoDate(x.deadline) && x.deadline !== fDl.value);
         list.push({ issue: fIssue.value || "\uACF5\uC9C0", deadline: fDl.value, publish: fPub.value || "", note: "\uC0AC\uC6A9\uC790 \uC785\uB825 " + fmtDate(/* @__PURE__ */ new Date()) });
-        all[j.id] = list.sort((x, y) => String(x.deadline).localeCompare(String(y.deadline)));
-        if (!lsSet(LS.schedule, all)) {
+        all2[j.id] = list.sort((x, y) => String(x.deadline).localeCompare(String(y.deadline)));
+        if (!lsSet(LS.schedule, all2)) {
           msg.textContent = "\uB9C8\uAC10 \uC800\uC7A5\uC5D0 \uC2E4\uD328\uD588\uC2B5\uB2C8\uB2E4(\uBE0C\uB77C\uC6B0\uC800 \uC800\uC7A5 \uACF5\uAC04).";
           return;
         }
@@ -23101,9 +23816,9 @@ ${b.text}` }, b.text, b.footnotes?.length ? h("span", { class: "fn" }, `\uAC01\u
         ta,
         h("div", { class: "row", style: "margin-top:8px" }, fIssue, h("label", { class: "opt" }, "\uB9C8\uAC10", fDl), h("label", { class: "opt" }, "\uBC1C\uAC04", fPub), h("button", { class: "btn", onclick: saveSched }, "\uB9C8\uAC10 \uCD94\uAC00"), msg),
         mine.length ? h("div", { class: "small", style: "margin-top:8px" }, "\uB0B4\uAC00 \uB123\uC740 \uB9C8\uAC10: ", ...mine.map((x) => h("span", { class: "tag", style: "margin-right:4px" }, `${x.issue} ${x.deadline}`, h("button", { type: "button", class: "btn ghost sm", style: "height:20px;padding:0 6px;margin-left:4px", "aria-label": "\uC0AD\uC81C", onclick: () => {
-          const all = safeSchedMap();
-          all[j.id] = (Array.isArray(all[j.id]) ? all[j.id] : [][j.id] || []).filter((y) => y.deadline !== x.deadline);
-          lsSet(LS.schedule, all);
+          const all2 = safeSchedMap();
+          all2[j.id] = (Array.isArray(all2[j.id]) ? all2[j.id] : [][j.id] || []).filter((y) => y.deadline !== x.deadline);
+          lsSet(LS.schedule, all2);
           render();
         } }, "\xD7")))) : null,
         h("p", { class: "small muted", style: "margin:8px 0 0" }, "JAMS\uB098 \uD559\uD68C \uD648\uD398\uC774\uC9C0\uB97C \uC790\uB3D9\uC73C\uB85C \uC77D\uC5B4 \uC624\uC9C0\uB294 \uC54A\uC2B5\uB2C8\uB2E4(\uC774 \uD504\uB85C\uADF8\uB7A8\uC740 \uC5B4\uB514\uC5D0\uB3C4 \uC811\uC18D\uD558\uC9C0 \uC54A\uC74C). \uACF5\uACE0 \uBA54\uC77C\uC744 \uBD99\uC5EC \uB123\uAC70\uB098 \uB0A0\uC9DC\uB97C \uC9C1\uC811 \uACE0\uCE58\uBA74 \uC0AC\uC774\uB4DC\uBC14\uC640 \u2018\uD22C\uACE0 \uC77C\uC815\u2019\uC5D0 \uBC14\uB85C \uBC18\uC601\uB429\uB2C8\uB2E4. \uC774 \uBE0C\uB77C\uC6B0\uC800\uC5D0\uB9CC \uC800\uC7A5\uB429\uB2C8\uB2E4.")
@@ -23312,11 +24027,11 @@ ${b.text}` }, b.text, b.footnotes?.length ? h("span", { class: "fn" }, `\uAC01\u
       if (tplBytes) {
         const key = j.template && j.template.file || j.id;
         j.template = Object.assign({ roles: {} }, j.template || {}, { file: key, name: tplName });
-        const all = lsGet(LS.templates, {});
+        const all2 = lsGet(LS.templates, {});
         let s = "";
         for (let i = 0; i < tplBytes.length; i += 32768) s += String.fromCharCode.apply(null, tplBytes.subarray(i, i + 32768));
-        all[key] = btoa(s);
-        if (!lsSet(LS.templates, all)) {
+        all2[key] = btoa(s);
+        if (!lsSet(LS.templates, all2)) {
           msg.textContent = "\uBC14\uD0D5\uD2C0 \uC800\uC7A5 \uC2E4\uD328: \uBE0C\uB77C\uC6B0\uC800 \uC800\uC7A5 \uACF5\uAC04\uC774 \uBD80\uC871\uD569\uB2C8\uB2E4(\uBC14\uD0D5\uD2C0 \uD30C\uC77C\uC774 \uB108\uBB34 \uD06C\uAC70\uB098 \uC800\uC7A5\uC774 \uB9C9\uD600 \uC788\uC74C).";
           msg.className = "small err";
           return;
@@ -23381,18 +24096,18 @@ ${b.text}` }, b.text, b.footnotes?.length ? h("span", { class: "fn" }, `\uAC01\u
           ta.value = JSON.stringify(sample, null, 2);
         } }, "\uBE48 \uC591\uC2DD"),
         h("button", { class: "btn ghost", onclick: () => {
-          const all = { journals: custom, templates: lsGet(LS.templates, {}) };
-          downloadBytes(new TextEncoder().encode(JSON.stringify(all)), `\uD22C\uACE0\uD2C0_\uD559\uD68C_${fmtDate(/* @__PURE__ */ new Date())}.json`, "application/json");
+          const all2 = { journals: custom, templates: lsGet(LS.templates, {}) };
+          downloadBytes(new TextEncoder().encode(JSON.stringify(all2)), `\uD22C\uACE0\uD2C0_\uD559\uD68C_${fmtDate(/* @__PURE__ */ new Date())}.json`, "application/json");
         } }, "\uC0AC\uC6A9\uC790 \uD559\uD68C \uB0B4\uBCF4\uB0B4\uAE30"),
         h("label", { class: "btn ghost" }, "\uAC00\uC838\uC624\uAE30", h("input", { type: "file", accept: ".json", style: "display:none", onchange: async (e) => {
           const f = e.target.files[0];
           if (!f) return;
           try {
             if (f.size > 60 * 1048576) throw new Error("60 MB\uB97C \uB118\uB294 \uD30C\uC77C\uC785\uB2C8\uB2E4");
-            const all = JSON.parse(await f.text());
-            if (!all || typeof all !== "object" || !Array.isArray(all.journals)) throw new Error("journals \uBC30\uC5F4\uC774 \uC5C6\uC2B5\uB2C8\uB2E4");
-            const js = all.journals.map(sanitizeJournal).filter(Boolean);
-            const ts = sanitizeTemplates(all.templates);
+            const all2 = JSON.parse(await f.text());
+            if (!all2 || typeof all2 !== "object" || !Array.isArray(all2.journals)) throw new Error("journals \uBC30\uC5F4\uC774 \uC5C6\uC2B5\uB2C8\uB2E4");
+            const js = all2.journals.map(sanitizeJournal).filter(Boolean);
+            const ts = sanitizeTemplates(all2.templates);
             if (!js.length) throw new Error("\uC720\uD6A8\uD55C \uD559\uD68C \uD56D\uBAA9\uC774 \uC5C6\uC2B5\uB2C8\uB2E4(\uB0B4\uC7A5 \uD559\uD68C\uC640 \uAC19\uC740 id\uB294 \uBC1B\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4)");
             let oldJ = null, oldT = null;
             try {
@@ -23457,8 +24172,8 @@ ${b.text}` }, b.text, b.footnotes?.length ? h("span", { class: "fn" }, `\uAC01\u
   function renderHelp(main) {
     main.append(h("div", { class: "topbar" }, h("h1", {}, "\uC0AC\uC6A9\uBC95\xB7\uB3C4\uC6C0\uB9D0"), h("span", { class: "sub" }, "\uD22C\uACE0\uD2C0\uC740 AI\uB97C \uC4F0\uC9C0 \uC54A\uB294 \uADDC\uCE59 \uAE30\uBC18 \uBCC0\uD658\uAE30\uC785\uB2C8\uB2E4")));
     const sec = (title, ...kids) => h("section", { class: "card", style: "margin-bottom:14px" }, h("h2", { style: "font-size:16px;margin-bottom:10px" }, title), ...kids);
-    const ol = (...items) => h("ol", { style: "margin:0;padding-left:20px;line-height:1.7" }, ...items.map((x) => h("li", {}, x)));
-    const ul = (...items) => h("ul", { style: "margin:0;padding-left:20px;line-height:1.7" }, ...items.map((x) => h("li", {}, x)));
+    const ol = (...items2) => h("ol", { style: "margin:0;padding-left:20px;line-height:1.7" }, ...items2.map((x) => h("li", {}, x)));
+    const ul = (...items2) => h("ul", { style: "margin:0;padding-left:20px;line-height:1.7" }, ...items2.map((x) => h("li", {}, x)));
     main.append(sec(
       "\uC774 \uD504\uB85C\uADF8\uB7A8\uC740",
       h("p", { style: "margin:0 0 8px;font-size:15px" }, h("b", {}, "AI\uC758 \uAC1C\uC785 \uC5C6\uC774, \uC624\uB85C\uC9C0 \uD504\uB85C\uADF8\uB7A8 \uADDC\uCE59\uB9CC\uC73C\uB85C, \uB0B4 PC \uC548\uC5D0\uC11C \uC791\uB3D9\uD558\uBA70, \uB17C\uBB38 \uC815\uBCF4\uB97C \uC5B4\uB514\uC5D0\uB3C4 \uC800\uC7A5\xB7\uC804\uC1A1\uD558\uC9C0 \uC54A\uB294 \uB17C\uBB38 \uC11C\uC9C0\xB7\uC591\uC2DD \uBCC0\uD658\uAE30"), "\uC785\uB2C8\uB2E4."),
@@ -23478,7 +24193,7 @@ ${b.text}` }, b.text, b.footnotes?.length ? h("span", { class: "fn" }, `\uAC01\u
         [h("b", {}, "\uC5ED\uD560 \uD655\uC778"), " \u2014 \uC798\uBABB \uC7A1\uD78C \uC5ED\uD560\uC740 \uBAA9\uB85D\uC5D0\uC11C \uC9C1\uC811 \uBC14\uAFC9\uB2C8\uB2E4. \uC5ED\uD560\uC740 \uC11C\uC2DD\uC744 \uC815\uD558\uB294 \uAE30\uC900\uC774\uBBC0\uB85C \uC81C\uBAA9\xB7\uCC38\uACE0\uBB38\uD5CC\xB7\uC601\uBB38\uCD08\uB85D\uC774 \uB9DE\uAC8C \uC7A1\uD614\uB294\uC9C0 \uBA3C\uC800 \uBCF4\uC138\uC694."],
         [h("b", {}, "\uC801\uC6A9"), " \u2014 \uD559\uD68C \uC591\uC2DD\uC774 \uC785\uD600\uC9C4 \uCABD\uC744 \uC624\uB978\uCABD \u2018\uBBF8\uB9AC\uBCF4\uAE30\u2019\uC5D0\uC11C \uBCF4\uACE0, \u2018\uBCC0\uACBD \uC0AC\uD56D\u2019\uC5D0\uC11C \uBB34\uC5C7\uC774 \uBC14\uB00C\uC5C8\uB294\uC9C0(\uCCB4\uC7AC \uC7AC\uBC30\uC5F4, \uCABD\uC218\xB7\uC11C\uC9C0 \uD45C\uAE30, \uBE48 \uC904) \uD655\uC778\uD569\uB2C8\uB2E4. \uC800\uC7A5 \uC804\uC5D0 \uC124\uC815\uC774\uB098 \uC5ED\uD560\uC744 \uACE0\uCCE4\uB2E4\uBA74 \u2018\uB2E4\uC2DC \uC801\uC6A9\u2019\uC744 \uB204\uB985\uB2C8\uB2E4. \uAC01\uC8FC\uAC00 \uB9CE\uC740 \uCABD\uC740 \uBBF8\uB9AC\uBCF4\uAE30\uC5D0\uC11C \uBCF8\uBB38\uACFC \uAC01\uC8FC\uAC00 \uACB9\uCCD0 \uBCF4\uC77C \uC218 \uC788\uC2B5\uB2C8\uB2E4(\uCABD \uC544\uB798\uC5D0 \uB178\uB780 \uD45C\uC2DC). \uBBF8\uB9AC\uBCF4\uAE30 \uC5D4\uC9C4\uC758 \uD55C\uACC4\uC77C \uBFD0\uC774\uBA70, \uC800\uC7A5\uD55C HWP\uB294 \uD55C\uAE00\uC774 \uC5F4 \uB54C \uB2E4\uC2DC \uBC30\uCE58\uD558\uBBC0\uB85C \uACB9\uCE58\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4."],
         [h("b", {}, "\uC800\uC7A5"), " \u2014 \u2018\uC800\uC7A5\u2019\uC744 \uB204\uB974\uBA74 \uC800\uC7A5\uD560 \uD3F4\uB354\uC640 \uD30C\uC77C \uC774\uB984\uC744 \uADF8\uB54C\uADF8\uB54C \uACE0\uB97C \uC218 \uC788\uC2B5\uB2C8\uB2E4(\uD06C\uB86C\xB7\uC5E3\uC9C0). \uADF8 \uBC16\uC758 \uBE0C\uB77C\uC6B0\uC800\uC5D0\uC11C\uB294 \uB0B4\uB824\uBC1B\uAE30 \uD3F4\uB354\uC5D0 \uC800\uC7A5\uB429\uB2C8\uB2E4. \u25BE \uBA54\uB274\uC5D0\uC11C HWPX\xB7\uBCC0\uD658 \uB85C\uADF8\uB3C4 \uC800\uC7A5\uD569\uB2C8\uB2E4."],
-        [h("b", {}, "\uD55C\uAE00\uC5D0\uC11C \uB9C8\uBB34\uB9AC"), " \u2014 \uD45C\xB7\uADF8\uB9BC\uC740 \uBCC0\uD658\uB418\uC9C0 \uC54A\uC73C\uBBC0\uB85C \uD55C\uAE00\uC5D0\uC11C \uC62E\uACA8 \uB123\uACE0, \uCABD \uB118\uAE40\uACFC \uBA38\uB9AC\uB9D0\uC744 \uD655\uC778\uD55C \uB4A4 \uD22C\uACE0\uD569\uB2C8\uB2E4."]
+        [h("b", {}, "\uD55C\uAE00\uC5D0\uC11C \uB9C8\uBB34\uB9AC"), " \u2014 \uD45C\xB7\uADF8\uB9BC\uC774 \uD310\uBA74 \uC548\uC5D0 \uC81C\uB300\uB85C \uB193\uC600\uB294\uC9C0(\uB113\uC740 \uD45C\uB294 \uD3ED\uC744 \uC904\uC784), \uCABD \uB118\uAE40\uACFC \uBA38\uB9AC\uB9D0\uC744 \uD655\uC778\uD55C \uB4A4 \uD22C\uACE0\uD569\uB2C8\uB2E4. \uAE00\uC0C1\uC790\xB7\uCC28\uD2B8\uCC98\uB7FC \uC62E\uAE30\uC9C0 \uBABB\uD55C \uAC1C\uCCB4\uAC00 \uC788\uC73C\uBA74 \uACBD\uACE0\uC5D0 \uC218\uAC00 \uB098\uC635\uB2C8\uB2E4."]
       )
     ));
     main.append(sec(
@@ -23520,7 +24235,7 @@ ${b.text}` }, b.text, b.footnotes?.length ? h("span", { class: "fn" }, `\uAC01\u
       ul(
         "\uBC14\uAFB8\uB294 \uAC83: \uAE00\uAF34\xB7\uD06C\uAE30\xB7\uC904\uAC04\uACA9\xB7\uC5EC\uBC31\xB7\uC6A9\uC9C0(\uD559\uD68C \uC591\uC2DD), \uBB38\uB2E8 \uC5ED\uD560\uBCC4 \uC11C\uC2DD, \uCCB4\uC7AC \uC21C\uC11C, \uCABD\uC218 \uB2E8\uC704, \uC120\uD0DD\uD55C \uC11C\uC9C0 \uC591\uC2DD, \uBE48 \uC904.",
         "\uBC14\uAFB8\uC9C0 \uC54A\uB294 \uAC83: \uBCF8\uBB38 \uBB38\uC7A5, \uAC01\uC8FC \uB0B4\uC6A9, \uAC15\uC870(\uAD75\uAC8C\xB7\uAE30\uC6B8\uC784), \uC800\uC790 \uD45C\uAE30. \uAE00\uAF34\uC740 \uD559\uD68C \uC591\uC2DD\uC5D0 \uC815\uD574\uC9C4 \uAC83\uC744 \uADF8\uB300\uB85C \uC4F0\uBA70 \uC784\uC758\uB85C \uACE0\uB974\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.",
-        "\uBABB \uD558\uB294 \uAC83: \uD45C\xB7\uADF8\uB9BC \uC774\uB3D9, \uC601\uBB38 \uAD50\uC815, \uB0B4\uC6A9 \uC694\uC57D\xB7\uC0DD\uC131. \uBAA8\uB4E0 \uCC98\uB9AC\uB294 \uADDC\uCE59\uC774\uBA70 AI\uB97C \uD638\uCD9C\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4."
+        "\uBABB \uD558\uB294 \uAC83: Word \uC6D0\uACE0\uC758 \uAE00\uC0C1\uC790\xB7\uCC28\uD2B8\xB7\uC218\uC2DD \uC62E\uAE30\uAE30(\uAC1C\uC218\uB9CC \uC54C\uB9BC), \uC601\uBB38 \uAD50\uC815, \uB0B4\uC6A9 \uC694\uC57D\xB7\uC0DD\uC131. \uBAA8\uB4E0 \uCC98\uB9AC\uB294 \uADDC\uCE59\uC774\uBA70 AI\uB97C \uD638\uCD9C\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4."
       )
     ));
     main.append(sec(
