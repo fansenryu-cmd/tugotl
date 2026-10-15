@@ -1,5 +1,5 @@
 // 구조 인식 — 규칙(정규식·서식 단서)만으로 문단의 역할을 정한다. AI 없음.
-import { ROLE_DEFS, SECTION_LABELS } from './journals.js';
+import { ROLE_DEFS, SECTION_LABELS, FLOAT_ROLES } from './journals.js';
 
 const ROLE_GROUP = Object.fromEntries(ROLE_DEFS.map((r) => [r.id, r.group]));
 export const roleLabel = (id) => (ROLE_DEFS.find((r) => r.id === id) || { label: id }).label;
@@ -18,6 +18,7 @@ const RE = {
   h3: /^\d{1,2}\s*[.．]\s*\d{1,2}\s*[.．]\s*\d{1,2}\s*[.．]?\s*\S|^[(（]\s*\d{1,2}\s*[)）]\s*\S/,
   h4: /^[①-⑳㉠-㉭]\s*\S|^[가나다라마바사아자차카타파하]\s*[.．)]\s+\S/,
   caption: /^[\[〔<＜(（〈]?\s*(표|그림|사진|도표|도|Table|Figure|Fig\.)\s*\d+/i,
+  objNote: /^\s*(?:[*※]\s*)?[(（\[]?\s*(?:자료|출처|주|비고|참고|Source|Sources|Note|Notes)\s*[)）\]]?\s*[:：]|^\s*※|^\s*\*{1,3}\s*p\s*[<>≤]/i,   // 표·그림 밑 주석(자료: …, 주: …, ※ …, * p<.05)
   dates: /^[▮■□▪❙|｜*※\[(（]?\s*(?:논문\s*|원고\s*)?(?:최초\s*|최종\s*)?(?:(?:투고|접수|심사|게재|수정|채택)\s*(?:확정|완료|종료|결정|승인)?\s*일(?:자)?(?![가-힣])|수정\s*본\s*(?:접수|제출)일?)\s*[:：/)\]）]?/,
   subtitlePrefix: /^[\-–—⸺―:：]\s*\S/,
   author: /^[가-힣]{2,5}(\s*[*＊†‡]+)?(\s*[(（][^)）]{1,40}[)）])?(\s*[*＊]+)?\s*$|^[가-힣]{2,5}\s*[·,]\s*[가-힣]{2,5}(\s*[*＊]+)?\s*$/,
@@ -46,6 +47,7 @@ export function recognize(paragraphs, journal) {
   let refSubLast = 0;   // 참고문헌 번호 소분류의 마지막 번호
   let h4Idx = -1;   // 가나다 목록의 마지막 글자 위치(장·절·항이 바뀌면 처음부터)
   let lastRole = ''; let sawTitle = false, sawBody = false, lastWasHeading = false, inQuoteRun = false;
+  let lastObj = -9;   // 마지막 표·그림 블록 위치(바로 밑 ‘자료:’·‘주:’ 줄을 주석으로 본다)
   const headingLike = (t) => RE.h1Num.test(t) || RE.h1Roman.test(t) || RE.h2.test(t) || RE.h3.test(t);
   // 다음 비어 있지 않은 문단 번호를 미리 계산해 둔다(문단마다 slice·find를 하면 2만 문단 원고에서 O(n²)로 멈춘다)
   const nextNonEmpty = new Array(paragraphs.length).fill(-1);
@@ -53,7 +55,8 @@ export function recognize(paragraphs, journal) {
 
   for (let i = 0; i < paragraphs.length; i++) {
     const p = paragraphs[i]; const t = trimmed(p);
-    const push = (role, reason) => { if (role !== 'blank') lastRole = role; blocks.push({ role, text: p.text, runs: p.runs, footnotes: p.footnotes, src: i, reason, auto: true }); lastWasHeading = /^h[1-4]$/.test(role); if (/^h[123]$/.test(role)) h4Idx = -1; if (!/^(quote|source|blank)$/.test(role)) inQuoteRun = false; };
+    const push = (role, reason) => { if (role !== 'blank') lastRole = role; blocks.push({ role, text: p.text, runs: p.runs, footnotes: p.footnotes, ...(p.objects && p.objects.length ? { objects: p.objects } : {}), src: i, reason, auto: true }); if (p.objects && p.objects.length) lastObj = blocks.length - 1; lastWasHeading = /^h[1-4]$/.test(role); if (/^h[123]$/.test(role)) h4Idx = -1; if (!/^(quote|source|blank)$/.test(role)) inQuoteRun = false; };
+    if (!t && p.objects && p.objects.length) { push('object', `${p.objects.map((o) => (o.kind === 'table' ? `표${o.info && o.info.rows ? ` ${o.info.rows}×${o.info.cols}` : ''}` : o.kind === 'picture' ? '그림' : o.kind === 'equation' ? '수식' : '도형')).join('·')}${p.objects.some((o) => o.info && o.info.caption) ? ' (캡션 포함)' : ''}`); continue; }
     if (!t && p.footnotes && p.footnotes.length) { push('body', '글 없이 각주만 있는 문단'); continue; }
     if (!t) { if (blocks.length) blocks.push({ role: 'blank', text: '', runs: [], footnotes: [], src: i, reason: '원고의 빈 줄', auto: true }); continue; }
     const short = t.length <= 60;
@@ -100,6 +103,8 @@ export function recognize(paragraphs, journal) {
     const tocCont = state !== 'references' && t.length <= 140 && next && !dotted(t) && dotted(nt) && (lastRole === 'toc' || lastRole === 'tocHead') && !indented(p) && p.styleName !== 'quote';   // 목차 항목이 두 줄로 나뉜 앞줄(쪽 번호는 뒷줄에)
     if (tocCont) { push('toc', '목차 항목 이어짐(줄바꿈)'); continue; }
     if (RE.caption.test(t) && short && !dottedToc) { push('caption', '표·그림 제목'); continue; }
+    // 표·그림 바로 밑(사이에 빈 줄·제목·주석 몇 줄)의 ‘자료:’·‘주:’·‘※’ 줄은 표·그림 주석이다
+    if (RE.objNote.test(t) && t.length <= 300 && blocks.length - lastObj <= 4 && blocks.slice(lastObj + 1).every((b) => /^(blank|caption|objNote)$/.test(b.role))) { push('objNote', '표·그림 주석'); continue; }
 
     // 점선·쪽번호로 끝나는 줄(‘1. 서론 ········ 3’)은 제목이 아니라 목차 항목이다(목차 제목이 없는 원고)
     if (state !== 'references' && p.styleName !== 'quote' && !indented(p) && dotted(t) && (state === 'front' || state === 'toc' || blocks.filter((b) => b.role !== 'blank').at(-1)?.role === 'toc' || dottedNear(i) || /(?:[·‧⋅․…⋯.\-─_]\s*){10,}\s*\d{0,4}\s*$/.test(t) || /^(?:[IVXⅠ-Ⅻ\d]{1,3}(?:[.．]\d{1,2})*[.．)]\s|제\s*\d+\s*[장절부]|[가-하][.．)]\s)/.test(t))) { if (state === 'front') state = 'toc'; push('toc', '점선·쪽번호 목차 항목'); continue; }
@@ -214,7 +219,7 @@ export function reorderSections(blocks, journal) {
   const groups = {}; const seq = [];
   let cur = null;
   for (const b of blocks) {
-    const g = b.role === 'blank' ? cur : (ROLE_GROUP[b.role] || 'body');
+    const g = b.role === 'blank' || (FLOAT_ROLES.has(b.role) && cur) ? cur : (ROLE_GROUP[b.role] || 'body');
     if (b.role === 'skip') continue;
     if (g === null || g === undefined) continue;
     if (!groups[g]) { groups[g] = []; seq.push(g); }
@@ -243,8 +248,8 @@ export function reorderSections(blocks, journal) {
   for (const g of after['^'] || []) for (const b of groups[g]) out.push(b);
   for (const g of order) if (groups[g]) { for (const b of groups[g]) out.push(b); for (const x of after[g] || []) for (const b of groups[x]) out.push(b); }
   for (const g of after['$'] || []) for (const b of groups[g]) out.push(b);
-  const outSeq = []; for (const b of out) { const g = ROLE_GROUP[b.role]; if (b.role !== 'blank' && g && outSeq.at(-1) !== g) outSeq.push(g); }   // 안내문은 실제 산출 순서로(체재 밖 묶음도 남아 있음)
-  const srcSeq = []; for (const b of blocks) { if (b.role === 'blank' || b.role === 'skip') continue; const g = ROLE_GROUP[b.role] || 'body'; if (srcSeq.at(-1) !== g) srcSeq.push(g); }
+  const outSeq = []; for (const b of out) { const g = ROLE_GROUP[b.role]; if (b.role !== 'blank' && !FLOAT_ROLES.has(b.role) && g && outSeq.at(-1) !== g) outSeq.push(g); }   // 안내문은 실제 산출 순서로(체재 밖 묶음도 남아 있음)
+  const srcSeq = []; for (const b of blocks) { if (b.role === 'blank' || b.role === 'skip' || FLOAT_ROLES.has(b.role)) continue; const g = ROLE_GROUP[b.role] || 'body'; if (srcSeq.at(-1) !== g) srcSeq.push(g); }
   const changed = JSON.stringify(srcSeq) !== JSON.stringify(outSeq);
   // 묶음 경계의 빈 줄은 정리
   const cleaned = out.filter((b, i) => !(b.role === 'blank' && (i === 0 || i === out.length - 1)));   // 연속 빈 줄은 여기서 합치지 않는다(‘원고 빈 줄 유지’ 설정을 위해 applyBlanks가 정한다)
@@ -443,6 +448,7 @@ export function applySubstitutions(blocks, journal, opts) {
           nb.runs = remapRuns(b.runs, b.text.length, r);
         }
         if (b.footnotes && b.footnotes.length) nb.footnotes = b.footnotes.map((f) => ({ ...f, offset: mapOff(r, f.offset ?? b.text.length) }));
+        if (b.objects && b.objects.length) nb.objects = b.objects.map((o) => ({ ...o, offset: mapOff(r, o.offset ?? b.text.length) }));
       }
     }
     if (nb.footnotes && nb.footnotes.length) nb.footnotes = nb.footnotes.map((f) => {
@@ -463,6 +469,7 @@ export function estimateLength(blocks) {
     const t = (b.text || '');
     chars += t.length; charsNoSpace += t.replace(/\s/g, '').length; lines += Math.max(1, Math.ceil(t.length / 20));
     for (const f of b.footnotes || []) { fnChars += f.text.length; lines += Math.ceil(f.text.length / 20); chars += f.text.length; }
+    for (const o of b.objects || []) lines += Math.max(2, Math.round(((o.info && o.info.height) || 0) / 1700));   // 표·그림은 높이만큼 줄을 차지한다(10pt·160% 한 줄 ≈ 1,700 HWPUNIT)
   }
   return { chars, charsNoSpace, fnChars, sheets: Math.round((lines / 10) * 10) / 10 };
 }

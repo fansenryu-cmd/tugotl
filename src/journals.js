@@ -24,6 +24,8 @@ export const ROLE_DEFS = [
   { id: 'quote', label: '인용문', group: 'body' },
   { id: 'source', label: '출전 표기', group: 'body' },
   { id: 'caption', label: '표·그림 제목', group: 'body' },
+  { id: 'object', label: '표·그림', group: 'body' },
+  { id: 'objNote', label: '표·그림 주석(자료·주)', group: 'body' },
   { id: 'blank', label: '빈 줄', group: 'body' },
   { id: 'refHead', label: '참고문헌 제목', group: 'references' },
   { id: 'refSub', label: '참고문헌 분류', group: 'references' },
@@ -37,13 +39,16 @@ export const ROLE_DEFS = [
   { id: 'skip', label: '(제외)', group: 'none' },
 ];
 
+// 표·그림과 그 제목·주석은 놓인 자리의 묶음을 따른다(앞부분의 저자 정보 표가 본문으로 끌려가지 않게) — 빈 줄처럼 앞 블록의 묶음을 이어받는다
+export const FLOAT_ROLES = new Set(['object', 'objNote', 'caption']);
+
 // 역할이 비었을 때 대신 쓰는 역할 (순서대로 탐색)
 export const ROLE_FALLBACK = {
   subtitle: ['title'], titleEn: ['title'], subtitleEn: ['subtitle', 'titleEn', 'title'],
   affiliation: ['author'], tocHead: ['abstractHead', 'h1'], toc: ['body'],
   abstractHead: ['h1'], abstract: ['body'], keywords: ['abstract', 'body'],
   h2: ['h1'], h3: ['h2', 'h1'], h4: ['h3', 'h2', 'h1'], bodyFirst: ['body'], quote: ['body'],
-  source: ['quote', 'body'], caption: ['body'], blank: ['body'],
+  source: ['quote', 'body'], caption: ['body'], object: ['caption', 'body'], objNote: ['caption', 'body'], blank: ['body'],
   refHead: ['abstractHead', 'h1'], refSub: ['refHead', 'h2'], ref: ['body'],
   abstractEnHead: ['abstractHead', 'h1'], titleEn2: ['titleEn', 'title'], authorEn: ['author'],
   abstractEn: ['abstract', 'body'], keywordsEn: ['keywords', 'abstract', 'body'], dates: ['body'],
@@ -75,6 +80,8 @@ export const GENERIC_FORMAT = {
     quote: { size: 9, align: 'justify', lineSpacing: 150, marginLeft: 20, marginRight: 10, spacingBefore: 6, spacingAfter: 6 },
     source: { size: 9, align: 'right', lineSpacing: 150, marginRight: 10 },
     caption: { size: 9, bold: true, align: 'center', lineSpacing: 150, spacingBefore: 4, spacingAfter: 4 },
+    object: { size: 10, align: 'center', lineSpacing: 100, spacingBefore: 4, spacingAfter: 4 },
+    objNote: { size: 9, align: 'left', lineSpacing: 150, spacingAfter: 4 },
     refHead: { size: 12, bold: true, align: 'left', lineSpacing: 160, spacingBefore: 24, spacingAfter: 8 },
     refSub: { size: 10.5, bold: true, align: 'left', lineSpacing: 160, spacingBefore: 8, spacingAfter: 2 },
     ref: { size: 10, align: 'justify', lineSpacing: 160, indent: -20, marginLeft: 20 },

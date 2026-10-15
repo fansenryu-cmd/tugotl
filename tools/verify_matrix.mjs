@@ -20,7 +20,7 @@ async function fontTable(hwpx) {
 import { initEngine, buildDocument, resolveRoles, HwpDocument } from '../src/engine.js';
 import { parseManuscript } from '../src/parse.js';
 import { recognize, buildToc, reorderSections, applyBlanks, applySubstitutions } from '../src/structure.js';
-import { JOURNALS, ROLE_DEFS, GENERIC_FORMAT } from '../src/journals.js';
+import { JOURNALS, ROLE_DEFS, GENERIC_FORMAT, FLOAT_ROLES } from '../src/journals.js';
 await initEngine(fs.readFileSync(new URL('../node_modules/@rhwp/core/rhwp_bg.wasm', import.meta.url)));
 const arg = (k, d) => (process.argv.includes(k) ? process.argv[process.argv.indexOf(k) + 1] : d);
 const ids = arg('--journals', '') ? arg('--journals', '').split(',') : JOURNALS.map((j) => j.id);
@@ -78,7 +78,7 @@ for (const id of ids) {
       if (b.role === 'blank' || !b.text?.trim()) continue;
       const key = norm(b.text); let i = -1;
       const labelRole = /^(tocHead|abstractHead|abstractEnHead|refHead|keywords|keywordsEn)$/.test(b.role);   // 표지 문구는 바탕틀 표기로 바뀌므로 글 대신 자리(다음 비어 있지 않은 문단)로 짝짓는다
-      for (let k = ptr; k < n && k < ptr + 6; k++) { const ot = norm(outTexts[k]); if (!ot) continue; if (labelRole || (key && ot.startsWith(key.slice(0, 8)))) { i = k; break; } }
+      for (let k = ptr, seen = 0; k < n && seen < 6; k++) { const ot = norm(outTexts[k]); if (!ot) continue; seen++; /* 빈 문단(표·그림 문단 포함)은 창에 세지 않는다 */ if (labelRole || (key && ot.startsWith(key.slice(0, 8)))) { i = k; break; } }
       if (i < 0) { unmatched++; if (process.env.VM_DEBUG) console.log('   못 찾음', b.role, JSON.stringify(b.text.slice(0, 30)), '| 다음 문단', JSON.stringify(outTexts.slice(ptr, ptr + 3).map((x) => x.slice(0, 20)))); continue; }
       ptr = i + 1;
       const t = outTexts[i];
@@ -99,7 +99,7 @@ for (const id of ids) {
     pr.missingInSource = ['abstract', 'keywords', 'abstractEn'].filter((r) => !src(r));
     // 체재 순서: 출력 묶음 순서가 학회 structure 순서를 따르는가
     const order = j.structure || ['front', 'toc', 'abstractKo', 'body', 'references', 'abstractEn', 'tail'];
-    const seq = []; for (const b of outBlocks) { if (b.role === 'blank' || b.role === 'skip') continue; let g = GROUP[b.role] || 'body'; if ((j.keywordsPosition === 'afterReferences' || j.keywordsPosition === 'beforeReferences') && b.role === 'keywords') g = 'references'; if (seq[seq.length - 1] !== g) seq.push(g); }
+    const seq = []; for (const b of outBlocks) { if (b.role === 'blank' || b.role === 'skip' || FLOAT_ROLES.has(b.role)) continue; let g = GROUP[b.role] || 'body'; if ((j.keywordsPosition === 'afterReferences' || j.keywordsPosition === 'beforeReferences') && b.role === 'keywords') g = 'references'; if (seq[seq.length - 1] !== g) seq.push(g); }
     const pos = seq.map((g) => order.indexOf(g)).filter((x) => x >= 0); for (let k = 1; k < pos.length; k++) if (pos[k] < pos[k - 1]) { pr.structure.push(`체재 순서 어긋남: ${seq.join('→')}`); break; }
     // 역할별 서식 대조
     for (const [role, list] of Object.entries(perRole)) {

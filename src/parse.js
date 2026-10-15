@@ -2,6 +2,8 @@
 // { text, runs:[{text,bold,italic,underline,superscript}], footnotes:[{offset,text}], align, indent, marginLeft, size, bold, styleName, level }
 import JSZip from 'jszip';
 import { HwpDocument, U } from './engine.js';
+import { OBJ_CTRL, scanSection, textOffsetBefore, describeObject, kindOf } from './objects.js';
+import { makeDocxRes, tableXml, drawingXml } from './docxobj.js';
 
 // rhwp가 돌려주는 JSON 문자열 안에 줄바꿈 같은 제어 문자가 그대로 들어오는 경우(여러 줄 각주)가 있어, 문자열 리터럴 안의 제어 문자를 이스케이프한 뒤 파싱한다
 const fixJson = (s) => s.replace(/"(?:[^"\\]|\\.)*"/g, (lit) => lit.replace(/[\u0000-\u001f]/g, (c) => (c === '\n' ? '\\n' : c === '\r' ? '\\r' : c === '\t' ? '\\t' : '')));
@@ -35,20 +37,18 @@ async function parseHwp(bytes, ext) {
     const info = J(d.getDocumentInfo()) || {};
     const controls = J(d.getControls()) || [];
     // 각주의 번호 유무(autoNum)·‘새 번호 지정’·강조 런은 rhwp API가 주지 않으므로 HWPX로 한 번 내보내 문서 순서대로 읽어 둔다(글이 맞는 각주에만 붙인다)
-    let fnMeta = []; let fnCursor = 0; let endnotes = 0; let tblFn = null;
-    // 표 칸 안의 각주(제목·저자를 표로 짠 원고의 ‘*’ 소속 각주 등)는 rhwp API로 읽을 수 없어 HWPX에서 표별로 모아 둔다
-    if (controls.some((c) => c.ctrlId === 'fn' || c.ctrlId === 'en')) { try { const m = await hwpxFootnoteMeta(d); fnMeta = m.body; tblFn = m.tables; } catch { fnMeta = []; tblFn = null; } }
+    let fnMeta = []; let fnCursor = 0; let endnotes = 0; let scan = null;
+    // 표·그림 개체(칸·캡션 안 각주 포함)와 각주의 번호 유무는 rhwp API가 주지 않으므로 HWPX로 한 번 내보내 문서 순서대로 읽어 둔다
+    if (controls.some((c) => c.ctrlId === 'fn' || c.ctrlId === 'en' || (c.list === 0 && OBJ_CTRL.has(c.ctrlId)))) { try { scan = await hwpxScan(d); fnMeta = scan.body; } catch { fnMeta = []; scan = null; } }
+    const objRes = scan ? { header: scan.header, bins: scan.bins } : null;   // 개체가 쓰는 원고 자원(글자·문단 모양 목록, 그림 파일) — 개체마다 같은 것을 가리킨다
     const paragraphs = [];
     const sections = d.getSectionCount();
-    let tables = 0, pictures = 0, fnTotal = 0, lostMarks = 0, tblFnMoved = 0, tblFnLost = 0;
+    let tables = 0, pictures = 0, shapes = 0, fnTotal = 0, lostMarks = 0, objMoved = 0, objLost = 0, objFn = 0, objSeq = 0, capFn = 0;
     for (let s = 0; s < sections; s++) {
       const n = d.getParagraphCount(s);
       let base = 0; for (let k = 0; k < s; k++) base += d.getParagraphCount(k);
-      // 이 구역의 본문 표 수가 HWPX에서 센 표 수와 같을 때만 k번째 표 ↔ k번째 표의 각주로 짝짓는다
-      const secTbls = controls.filter((c) => c.list === 0 && c.ctrlId === 'tbl' && c.para >= base && c.para < base + n).length;
-      const secTblFn = tblFn && tblFn[s] && tblFn[s].length === secTbls ? tblFn[s] : null;
-      if (tblFn && tblFn[s] && !secTblFn) tblFnLost += tblFn[s].reduce((a, x) => a + x.length, 0);
-      let tblK = 0;
+      // HWPX의 최상위 문단 수가 rhwp와 같을 때만 문단 ↔ 개체를 짝짓는다(어긋나면 개체를 옮기지 않고 알린다)
+      const xmlParas = scan && scan.sections[s] && scan.sections[s].length === n ? scan.sections[s] : null;
       if (paragraphs.length + n > MAX_PARAS) throw new Error(`문단이 ${MAX_PARAS.toLocaleString()}개를 넘는 원고는 열 수 없습니다.`);
       for (let i = 0; i < n; i++) {
         const len = d.getParagraphLength(s, i);
@@ -74,20 +74,26 @@ async function parseHwp(bytes, ext) {
         // 각주 위치: getCharIndexAtStreamPos는 앞선 컨트롤 수만큼 글자 위치를 덜 세므로(감사 지적) 문단의 컨트롤 텍스트 위치 배열을 먼저 쓴다
         let ctrlPos = null; try { const cpz = J(d.getControlTextPositions(s, i)); if (Array.isArray(cpz)) ctrlPos = cpz; } catch { /* 구버전 엔진 */ }
         let ctrlK = 0;
+        const objects = [];
+        const xo = xmlParas ? xmlParas[i].objects : [];
+        const objCtrls = controls.filter((c) => c.list === 0 && c.para === base + i && OBJ_CTRL.has(c.ctrlId)).length;
+        let objK = 0;
         for (const c of controls) {
           // getControls()의 para는 구역을 이어 붙인 번호라 구역 시작 문단 수(base)를 더해 비교한다
           if (c.list !== 0 || c.para !== base + i) continue;
           const kth = ctrlK++;
-          if (c.ctrlId === 'tbl') {
-            tables++;
-            const inner = secTblFn ? secTblFn[tblK] : null; tblK++;
-            // 표는 옮기지 않지만 표 안 각주는 버리지 않는다 — 표가 있던 자리(그 문단)에 각주로 붙인다
-            if (inner && inner.length) {
-              const offset = ctrlPos && typeof ctrlPos[kth] === 'number' && ctrlPos[kth] >= 0 ? to16(ctrlPos[kth]) : text.length;
-              for (const m of inner) { footnotes.push(metaFootnote(m, offset)); fnTotal++; tblFnMoved++; }
-            }
+          if (OBJ_CTRL.has(c.ctrlId)) {
+            const o = xo.length === objCtrls ? xo[objK] : null; objK++;
+            if (!o) { objLost++; continue; }
+            // 표·그림은 XML을 통째로 옮긴다. 자리는 rhwp의 컨트롤 위치(없으면 XML에서 센 글자 수)
+            const offset = ctrlPos && typeof ctrlPos[kth] === 'number' && ctrlPos[kth] >= 0 ? to16(ctrlPos[kth]) : Math.min(text.length, o.xmlOffset);
+            const id = `o${++objSeq}`;
+            objects.push({ id, tag: o.tag, kind: o.kind, xml: o.xml, pre: o.pre, offset, info: o.info, res: objRes });
+            if (o.kind === 'table') tables++; else if (o.kind === 'picture') pictures++; else shapes++;
+            objMoved++;
+            // 칸·캡션·글상자 안의 각주: 문단 각주 목록에 ‘개체 소속’으로 싣는다(인용 변환·정오표 대조를 같이 받고, 엔진이 개체 안 제자리에 넣는다)
+            for (const m of o.footnotes) { footnotes.push({ ...metaFootnote(m, offset), objId: id, ...(m.inCaption ? { objCaption: true } : {}) }); fnTotal++; objFn++; if (m.inCaption) capFn++; }
           }
-          else if (c.ctrlId === 'gso' || c.ctrlId === '$pic' || c.ctrlId === 'pic') pictures++;
           else if (c.ctrlId === 'fn' || c.ctrlId === 'en') {
             if (c.ctrlId === 'en') endnotes++;
             const fi = J(d.getFootnoteInfo(s, i, c.controlIndex));
@@ -115,18 +121,17 @@ async function parseHwp(bytes, ext) {
             fnTotal++;
           }
         }
-        paragraphs.push({ text, runs, footnotes, align: pp.alignment, indent: U.pxToPt(pp.indent || 0), marginLeft: U.pxToPt(pp.marginLeft || 0),
+        paragraphs.push({ text, runs, footnotes, ...(objects.length ? { objects } : {}), align: pp.alignment, indent: U.pxToPt(pp.indent || 0), marginLeft: U.pxToPt(pp.marginLeft || 0),
           size: cp0.fontSize || 0, bold: !!cp0.bold && runs.every((r) => r.bold || !r.text.trim()), styleName: st.name || '', level: pp.paraLevel || 0 });
       }
     }
     if (sections > 1) warnings.push(`구역 ${sections}개를 하나로 이어 붙였습니다.`);
     if (endnotes) warnings.push(`미주 ${endnotes}개를 각주로 옮겼습니다.`);
-    if (tblFnMoved) warnings.push(`표 안에 있던 각주 ${tblFnMoved}개는 표 자리의 문단에 붙였습니다. 변환 후 각주 위치를 확인하세요.`);
-    if (tblFnLost) warnings.push(`표 안의 각주 ${tblFnLost}개는 위치를 찾지 못해 옮기지 못했습니다. 변환 후 한글에서 직접 넣으세요.`);
-    if (tables) warnings.push(`표 ${tables}개는 변환되지 않습니다. 변환 후 한글에서 직접 옮겨 넣으세요.`);
-    if (pictures) warnings.push(`그림·개체 ${pictures}개는 변환되지 않습니다.`);
+    if (objMoved) warnings.push(`표 ${tables}개·그림 ${pictures}개${shapes ? `·도형 ${shapes}개` : ''}를 옮깁니다${objFn ? `(표·그림 안 각주 ${objFn}개는 본문 각주와 번호를 이어 매김)` : ''}. 칸 안 글은 학회 본문 글꼴로, 캡션은 학회의 표·그림 제목 모양으로 바꿉니다. 변환 후 표·그림 위치를 확인하세요.`);
+    if (objLost) warnings.push(`표·그림 ${objLost}개는 원고 구조를 읽지 못해 옮기지 못했습니다(안의 각주 포함). 변환 후 한글에서 직접 옮겨 넣으세요.`);
+    if (capFn) warnings.push(`표·그림 캡션 안의 각주 ${capFn}개는 표·그림 바로 뒤로 옮깁니다. 한글은 캡션 안 각주에 따로 번호를 매기고 쪽 아래 글을 찍지 않습니다.`);
     if (lostMarks) warnings.push(`강조점·취소선·아래첨자 ${lostMarks}자는 옮기지 않습니다(학회 서식에 없는 장식). 변환 후 한글에서 확인하세요.`);
-    return { format: ext.toUpperCase(), paragraphs, warnings, counts: { tables, pictures, footnotes: fnTotal, pages: info.pageCount }, fonts: info.fontsUsed || [] };
+    return { format: ext.toUpperCase(), paragraphs, warnings, counts: { tables, pictures, shapes, objects: objMoved, objectsLost: objLost, footnotes: fnTotal, pages: info.pageCount }, fonts: info.fontsUsed || [], ...(objMoved && objRes ? { objectRes: objRes } : {}) };
   } finally { d.free(); }
 }
 
@@ -143,18 +148,20 @@ function hwpxLongestParagraph(sec) {
   return longest;
 }
 
-// HWPX에서만 읽은 각주(표 안 각주)를 앱의 각주 꼴로: 번호 문단 첫머리의 빈칸은 rhwp 경로와 같게 한 칸 뗀다
+// HWPX에서만 읽은 각주(표·그림 안 각주)를 앱의 각주 꼴로: 번호 문단 첫머리의 빈칸은 rhwp 경로와 같게 한 칸 뗀다
 function metaFootnote(m, offset) {
   const noNumber = !m.hasAutoNum; const numAt = noNumber ? -1 : m.numAt;
   const paras = m.paras.map((q, k) => {
     if (k === numAt && q.text.startsWith(' ')) { const runs = q.runs.map((r) => ({ ...r })); if (runs[0]) runs[0].text = runs[0].text.slice(1); return { text: q.text.slice(1), runs: runs.filter((r) => r.text) }; }
     return { text: q.text, runs: q.runs };
   });
-  return { offset, text: paras.map((q) => q.text).join('\n'), paras, ...(noNumber ? { noNumber: true } : {}), ...(numAt > 0 ? { numAt } : {}), ...(m.restart ? { restart: m.restart } : {}), inTable: true };
+  return { offset, text: paras.map((q) => q.text).join('\n'), paras, ...(noNumber ? { noNumber: true } : {}), ...(numAt > 0 ? { numAt } : {}), ...(m.restart ? { restart: m.restart } : {}) };
 }
 
-// HWPX(내보내기)의 각주·미주를 문서 순서대로 읽는다: 문단별 글·강조 런, 번호(autoNum) 유무, 바로 앞의 ‘새 번호 지정’
-async function hwpxFootnoteMeta(d) {
+// HWPX(내보내기)를 문서 순서대로 읽는다:
+// - 각주·미주: 문단별 글·강조 런, 번호(autoNum) 유무, 바로 앞의 ‘새 번호 지정’. 본문 각주(body)와 개체 안 각주(개체별)를 나눈다
+// - 개체: 구역마다 최상위 문단별 표·그림 XML(안의 각주 자리는 <!--tgfn--> 표시), 쓰는 그림 파일
+async function hwpxScan(d) {
   const zip = await JSZip.loadAsync(d.exportHwpx());
   const header = zip.file('Contents/header.xml') ? await zip.file('Contents/header.xml').async('string') : '';
   const charPr = {};
@@ -162,27 +169,43 @@ async function hwpxFootnoteMeta(d) {
   const dec = (x) => x.replace(/<hp:lineBreak\/>/g, '\n').replace(/<hp:tab\b[^>]*\/>/g, '\t').replace(/<hp:nbSpace\/>/g, '\u00a0').replace(/<hp:fwSpace\/>/g, '\u2007').replace(/<[^>]+>/g, '');
   const tText = (run) => decodeXml([...run.matchAll(/<hp:t\b[^>]*>([\s\S]*?)<\/hp:t>/g)].map((m) => dec(m[1])).join(''));
   const names = Object.keys(zip.files).filter((k) => /^Contents\/section\d+\.xml$/.test(k)).sort((a, b) => +a.match(/\d+/)[0] - +b.match(/\d+/)[0]);
-  const out = []; const tables = []; let restart = 0;
+  const out = []; const sections = []; let restart = 0; const binIds = new Set();
   for (const name of names) {
     const sec = await zip.file(name).async('string');
-    // 머리말·꼬리말·글상자·각주 안의 표는 본문 표(getControls의 list 0)가 아니므로 표 세기에서 뺀다
-    const box = []; for (const t of sec.matchAll(/<hp:(header|footer|drawText|footNote|endNote)\b[\s\S]*?<\/hp:\1>/g)) box.push([t.index, t.index + t[0].length]);
-    const inBox = (i) => box.some(([a, b]) => i > a && i < b);
-    const tbl = []; { const st = []; for (const t of sec.matchAll(/<(\/?)hp:tbl\b/g)) { if (!t[1]) st.push(t.index); else { const a = st.pop(); if (!st.length && a !== undefined && !inBox(a)) tbl.push([a, t.index]); } } }
-    const tblOf = (i) => tbl.findIndex(([a, b]) => i > a && i < b);
-    const secTables = tbl.map(() => []); tables.push(secTables);
+    const paras = scanSection(sec);
+    const objs = paras.flatMap((p) => p.objects.map((o) => { o.footnotes = []; return o; }));
+    const objOf = (i) => { let lo = 0, hi = objs.length - 1; while (lo <= hi) { const mid = (lo + hi) >> 1; const o = objs[mid]; if (i < o.start) hi = mid - 1; else if (i >= o.end) lo = mid + 1; else return mid; } return -1; };
     for (const m of sec.matchAll(/<hp:newNum num="(\d+)" numType="FOOTNOTE"\/>|<hp:(footNote|endNote)\b[^>]*>([\s\S]*?)<\/hp:\2>/g)) {
       if (m[1] !== undefined) { restart = +m[1]; continue; }
-      const ti = tblOf(m.index);
+      const ti = objOf(m.index);
       const paras = [...m[3].matchAll(/<hp:p\b[^>]*>([\s\S]*?)<\/hp:p>/g)].map((pm) => {
         const runs = [...pm[1].matchAll(/<hp:run charPrIDRef="(\d+)"[^>]*>([\s\S]*?)<\/hp:run>/g)].map((rm) => ({ text: tText(rm[2]), ...(charPr[rm[1]] || {}) })).filter((r) => r.text);
         return { text: runs.map((r) => r.text).join(''), runs, hasAutoNum: /<hp:autoNum\b/.test(pm[1]) };
       });
       const fm = { paras, hasAutoNum: paras.some((q) => q.hasAutoNum), numAt: paras.findIndex((q) => q.hasAutoNum), restart }; restart = 0;
-      (ti >= 0 ? secTables[ti] : out).push(fm);
+      // 캡션 안 각주: 한글은 캡션 안 각주에 따로 번호(1)부터)를 매기고 쪽 아래 글을 찍지 않는다 — 표시해 두고 엔진이 개체 바로 뒤로 꺼낸다
+      if (ti >= 0) { const o = objs[ti]; if (!o.caps) o.caps = [...sec.slice(o.start, o.end).matchAll(/<hp:caption\b[\s\S]*?<\/hp:caption>/g)].map((c) => [o.start + c.index, o.start + c.index + c[0].length]); if (o.caps.some(([a, b]) => m.index > a && m.index < b)) fm.inCaption = true; }
+      (ti >= 0 ? objs[ti].footnotes : out).push(fm);
+    }
+    // 개체 XML: 안의 각주는 자리 표시만 남기고(엔진이 번호를 이어 매겨 다시 넣는다; 캡션 안 각주는 개체 밖으로 꺼내므로 지운다) ‘새 번호’는 각주 쪽(restart)으로 옮겼으므로 뗀다
+    sections.push(paras.map((p) => ({ objects: p.objects.map((o) => {
+      const raw = sec.slice(o.start, o.end); let k = 0;
+      const xml = raw.replace(/<hp:(footNote|endNote)\b[^>]*>[\s\S]*?<\/hp:\1>/g, () => (o.footnotes[k++]?.inCaption ? '' : '<!--tgfn-->')).replace(/<hp:newNum num="\d+" numType="FOOTNOTE"\/>/g, '').replace(/<hp:ctrl>\s*<\/hp:ctrl>/g, '');
+      for (const b of xml.matchAll(/binaryItemIDRef="([^"]+)"/g)) binIds.add(b[1]);
+      return { tag: o.tag, kind: kindOf(o.tag), xml, pre: o.pre || "", footnotes: o.footnotes, info: describeObject(raw, o.tag), xmlOffset: textOffsetBefore(sec, p.start, o.start, (t) => decodeXml(dec(t))) };
+    }) })));
+  }
+  // 개체가 쓰는 그림 파일(content.hpf의 항목 → BinData 바이트)
+  const bins = {};
+  if (binIds.size) {
+    const hpf = zip.file('Contents/content.hpf') ? await zip.file('Contents/content.hpf').async('string') : '';
+    for (const it of hpf.matchAll(/<opf:item\b[^>]*\/>/g)) {
+      const id = (/ id="([^"]+)"/.exec(it[0]) || [])[1]; if (!id || !binIds.has(id)) continue;
+      const href = (/href="([^"]+)"/.exec(it[0]) || [])[1]; const type = (/media-type="([^"]+)"/.exec(it[0]) || [])[1] || 'application/octet-stream';
+      if (href && zip.file(href)) bins[id] = { href, type, bytes: await zip.file(href).async('uint8array') };
     }
   }
-  return { body: out, tables };
+  return { body: out, sections, header, bins };
 }
 
 // ───────── DOCX ─────────
@@ -240,9 +263,9 @@ async function parseDocx(bytes) {
       const a = src.indexOf(open, i); if (a < 0) { out += src.slice(i); break; }
       if (!isTagEnd(src[a + open.length] || '')) { out += src.slice(i, a + open.length); i = a + open.length; continue; }
       const gt = tagEnd(src, a); if (gt < 0) { out += src.slice(i, a); break; }
-      if (src[gt - 1] === '/') { out += src.slice(i, a); onHit?.(); i = gt + 1; continue; }
+      if (src[gt - 1] === '/') { out += src.slice(i, a); const rep = onHit?.(src.slice(a, gt + 1)); if (typeof rep === 'string') out += rep; i = gt + 1; continue; }
       const b = findClose(src, tag, gt + 1); if (b < 0) { out += src.slice(i, a + open.length); i = a + open.length; continue; }
-      out += src.slice(i, a); onHit?.(); i = b + close.length;
+      out += src.slice(i, a); const rep = onHit?.(src.slice(a, b + close.length)); if (typeof rep === 'string') out += rep; i = b + close.length;   // onHit이 글을 돌려주면 그 자리에 둔다(표 → 표 자리 문단)
     }
     return out;
   };
@@ -250,10 +273,11 @@ async function parseDocx(bytes) {
   for (const st of elements(stylesXml, 'w:style')) { const id = attr(st.attrs, 'w:styleId'); if (!id) continue; const nm = /<w:name\b[^>]*w:val="([^"]*)"/.exec(st.body); styleNames[id] = nm ? nm[1] : id; }
   // 문단 하나의 글·강조 런·각주 참조를 읽는다(본문과 각주 문단에 같이 쓴다)
   let symCount = 0;
-  const readPara = (body, notes) => {
+  const readPara = (body, notes, onObj) => {
     const runs = []; const footnotes = []; let text = '';
     for (const re of elements(body, 'w:r')) {
       const r = re.body;
+      if (onObj && /<w:drawing\b|<w:pict\b/.test(r)) onObj(r, text.length);   // 그림이 든 런: 글자 위치와 함께 알린다
       const rPr = (elements(r, 'w:rPr')[0] || { body: '' }).body;
       const on = (tag) => { const t = new RegExp(`<w:${tag}\\b([^>]*)/?>`).exec(rPr); if (!t) return false; const v = attr(t[1], 'w:val'); return !(v && ['0', 'false', 'off', 'none'].includes(v.toLowerCase())); };
       const sz = attr((/<w:sz\b[^>]*\/>/.exec(rPr) || [''])[0], 'w:val');
@@ -275,8 +299,37 @@ async function parseDocx(bytes) {
   const enXml = await part('word/endnotes.xml', false);
   const endnoteParas = enXml ? noteParas(enXml, 'w:endnote') : {};
   let tables = 0, pictures = 0, fnTotal = 0, enTotal = 0; let wordNum = 0, afterMark = false;   // Word는 사용자 지정 표시 각주를 세지 않는다
-  const bodyXml = stripElements(stripElements(xml, 'w:tbl', () => { tables++; }), 'w:del');   // 표 안 문단과 변경 추적 삭제분 제외
-  pictures = (bodyXml.match(/<w:drawing\b|<w:pict\b/g) || []).length;
+  // 표는 떼어 두고 그 자리에 표 자리 문단을 남긴다(문서 순서대로 각주 번호를 세기 위해 표는 그 문단 차례에 만든다). 변경 추적 삭제분은 먼저 뺀다
+  const tblXmls = [];
+  const bodyXml = stripElements(stripElements(xml, 'w:del'), 'w:tbl', (full) => { tables++; tblXmls.push(full); return `<w:p><w:r><w:tgobj w:k="${tblXmls.length - 1}"/></w:r></w:p>`; });
+  // 그림 파일: word/_rels/document.xml.rels의 관계 ID → word/media/… 바이트
+  const relsXml = await part('word/_rels/document.xml.rels', false);
+  const relMap = {}; for (const m of relsXml.matchAll(/<Relationship\b[^>]*>/g)) { const id = attr(m[0], 'Id'); const tg = attr(m[0], 'Target'); const mode = attr(m[0], 'TargetMode'); if (id && tg && mode !== 'External') relMap[id] = tg; }
+  const relCache = {};
+  const rel = async (id) => { if (id in relCache) return relCache[id]; const tg = relMap[id]; let v = null; if (tg) { const p = tg.startsWith('/') ? tg.slice(1) : `word/${tg}`.replace(/\/[^/]+\/\.\.\//g, '/'); const f = zip.file(p); if (f && (f._data?.uncompressedSize ?? 0) <= MAX_FILE) v = { bytes: await f.async('uint8array'), ext: (/\.([A-Za-z0-9]+)$/.exec(p) || [null, 'png'])[1] }; } relCache[id] = v; return v; };
+  for (const m of bodyXml.matchAll(/r:(?:embed|id)="([^"]+)"/g)) await rel(m[1]);   // 그림 바이트를 미리 읽어 둔다(아래 문단 처리는 동기)
+  for (const t of tblXmls) for (const m of t.matchAll(/r:(?:embed|id)="([^"]+)"/g)) await rel(m[1]);
+  const R = makeDocxRes(); let objSeq = 0, objMoved = 0, objLost = 0, objFn = 0; pictures = 0;
+  const tblStyleBorders = {}; for (const st of elements(stylesXml, 'w:style')) { if (attr(st.attrs, 'w:type') !== 'table') continue; const b = elements(st.body, 'w:tblBorders')[0]; if (b) tblStyleBorders[attr(st.attrs, 'w:styleId')] = b.body; }
+  const drawApi = { rel: (id) => relCache[id] || null };
+  // 각주·미주 참조(본문·칸 안 공통): 문서 순서대로 Word 번호를 센다
+  const noteCb = (tk, offset, fns) => {
+    const src = tk.fn !== undefined ? footnoteParas[tk.fn] : endnoteParas[tk.en];
+    if (!src) return;
+    if (tk.fn !== undefined) fnTotal++; else enTotal++;
+    // 사용자 지정 표시 각주(customMarkFollows)는 Word에서 번호를 세지 않는다 — 번호 없는 각주로 옮기고 본문의 표시 글자는 그대로 둔다
+    let restart = 0; if (tk.fn !== undefined && tk.customMark) afterMark = true; else { wordNum++; if (afterMark) { restart = wordNum; afterMark = false; } }   // wordNum: 산출에서 번호를 차지하는 각주·미주 수   // 표시 각주 뒤 첫 번호 각주에 Word 번호를 새 번호로
+    fns.push({ offset, paras: src, text: src.map((q) => q.text).join('\n'), ...(tk.customMark ? { noNumber: true } : {}), ...(restart ? { restart } : {}) });
+  };
+  const pics = (r) => { const got = drawingXml(R, r, drawApi); for (const g of got) { if (g.lost) objLost++; else pictures++; } return got.filter((g) => !g.lost); };
+  // 칸 안 문단: 글·강조 런, 각주 자리(<!--tgfn-->)와 그림
+  const tblApi = { elements, attr, tableStyleBorders: (id) => (id && tblStyleBorders[id]) || '',
+    cellPara: (pBody, tableFns) => {
+      const inserts = [];
+      const r = readPara(pBody, (tk, offset) => { const tmp = []; noteCb(tk, offset, tmp); for (const f of tmp) { tableFns.push(f); inserts.push({ at: offset, xml: '<hp:ctrl><!--tgfn--></hp:ctrl>' }); } }, (run, at) => { for (const g of pics(run)) inserts.push({ at, xml: g.xml }); });
+      const pPr = (elements(pBody, 'w:pPr')[0] || { body: '' }).body; const jc = attr((/<w:jc\b[^>]*\/>/.exec(pPr) || [''])[0], 'w:val') || 'left';
+      return { align: { both: 'justify', center: 'center', right: 'right', start: 'left', end: 'right' }[jc] || 'left', runs: r.runs, inserts };
+    } };
   const paragraphs = [];
   const paras = elements(bodyXml, 'w:p');
   if (!paras.length && /<w:p[\s>\/]/.test(bodyXml)) throw new Error('DOCX 본문을 읽지 못했습니다(문단 구조가 깨져 있습니다). Word에서 다시 저장한 뒤 올려 주세요.');   // 문단 태그는 있는데 짝이 맞는 것이 없다 — 조용히 빈 원고를 내지 않는다
@@ -291,23 +344,29 @@ async function parseDocx(bytes) {
     const twip = (v) => (v ? Math.round((+v / 20) * 10) / 10 : 0);
     const marginLeft = twip(attr(indXml, 'w:left') || attr(indXml, 'w:start'));
     const indent = twip(attr(indXml, 'w:firstLine')) - twip(attr(indXml, 'w:hanging'));
-    const { text, runs, footnotes } = readPara(body, (tk, offset, fns) => {
-      const src = tk.fn !== undefined ? footnoteParas[tk.fn] : endnoteParas[tk.en];
-      if (!src) return;
-      if (tk.fn !== undefined) fnTotal++; else enTotal++;
-      // 사용자 지정 표시 각주(customMarkFollows)는 Word에서 번호를 세지 않는다 — 번호 없는 각주로 옮기고 본문의 표시 글자는 그대로 둔다
-      let restart = 0; if (tk.fn !== undefined && tk.customMark) afterMark = true; else { wordNum++; if (afterMark) { restart = wordNum; afterMark = false; } }   // wordNum: 산출에서 번호를 차지하는 각주·미주 수   // 표시 각주 뒤 첫 번호 각주에 Word 번호를 새 번호로
-      fns.push({ offset, paras: src, text: src.map((q) => q.text).join('\n'), ...(tk.customMark ? { noNumber: true } : {}), ...(restart ? { restart } : {}) });
-    });
+    // 표 자리 문단: 표를 이 차례에 만든다(칸 안 각주가 앞뒤 본문 각주와 문서 순서대로 번호를 받는다)
+    const tg = /<w:tgobj w:k="(\d+)"\/>/.exec(body);
+    if (tg) {
+      const tfns = []; let t = null;
+      try { t = tableXml(R, tblXmls[+tg[1]], { ...tblApi, cellPara: (b2) => tblApi.cellPara(b2, tfns) }); } catch { t = null; }
+      if (!t) { objLost++; paragraphs.push({ text: '', runs: [], footnotes: [], align: 'left', indent: 0, marginLeft: 0, size: 0, bold: false, styleName, level: 0 }); continue; }
+      const id = `o${++objSeq}`; objMoved++; objFn += tfns.length;
+      paragraphs.push({ text: '', runs: [], footnotes: tfns.map((f) => ({ ...f, offset: 0, objId: id })), objects: [{ id, tag: 'tbl', kind: 'table', xml: t.xml, pre: '', offset: 0, info: { rows: t.rows, cols: t.cols, width: t.width, height: t.height, caption: '' }, res: R.res }],
+        align: 'center', indent: 0, marginLeft: 0, size: 0, bold: false, styleName, level: 0 });
+      continue;
+    }
+    const objects = [];
+    const { text, runs, footnotes } = readPara(body, noteCb, (run, at) => { for (const g of pics(run)) { objects.push({ id: `o${++objSeq}`, tag: 'pic', kind: 'picture', xml: g.xml, pre: '', offset: at, info: { rows: 0, cols: 0, width: Math.round(g.w), height: Math.round(g.h), caption: '' }, res: R.res }); objMoved++; } });
     const size = runs.length ? (runs.find((r) => r.text.trim())?.size || 0) : 0;
-    paragraphs.push({ text, runs, footnotes, align: { both: 'justify', center: 'center', right: 'right', left: 'left', start: 'left', end: 'right' }[jc] || 'left', indent, marginLeft, size, bold: runs.length > 0 && runs.every((r) => r.bold || !r.text.trim()), styleName, level: 0 });
+    paragraphs.push({ text, runs, footnotes, ...(objects.length ? { objects } : {}), align: { both: 'justify', center: 'center', right: 'right', left: 'left', start: 'left', end: 'right' }[jc] || 'left', indent, marginLeft, size, bold: runs.length > 0 && runs.every((r) => r.bold || !r.text.trim()), styleName, level: 0 });
   }
+  R.finish();   // 표·그림이 쓴 글자·문단 모양과 테두리를 가상 header로 묶는다(개체마다 같은 R.res를 가리킨다)
   const warnings = [];
-  if (tables) warnings.push(`표 ${tables}개는 변환되지 않습니다. 변환 후 한글에서 직접 옮겨 넣으세요.`);
-  if (pictures) warnings.push(`그림 ${pictures}개는 변환되지 않습니다.`);
+  if (objMoved) warnings.push(`표 ${tables}개·그림 ${pictures}개를 한글 표·그림으로 옮깁니다${objFn ? `(표 안 각주 ${objFn}개는 본문 각주와 번호를 이어 매김)` : ''}. 칸 합치기·음영·테두리는 옮기고, 칸 안 글은 학회 본문 글꼴로 바꿉니다. 변환 후 표·그림 모양을 확인하세요.`);
+  if (objLost) warnings.push(`글상자·차트·도형 등 ${objLost}개는 옮기지 못했습니다. 변환 후 한글에서 직접 넣으세요.`);
   if (enTotal) warnings.push(`미주 ${enTotal}개를 각주로 옮겼습니다.`);
   if (symCount) warnings.push(`기호 글꼴 글자 ${symCount}개는 글꼴에 따라 다르게 보일 수 있습니다. 변환 후 확인하세요.`);
-  return { format: 'DOCX', paragraphs, warnings, counts: { tables, pictures, footnotes: fnTotal + enTotal }, fonts: [] };
+  return { format: 'DOCX', paragraphs, warnings, counts: { tables, pictures, shapes: 0, objects: objMoved, objectsLost: objLost, footnotes: fnTotal + enTotal }, fonts: [], ...(objMoved ? { objectRes: R.res } : {}) };
 }
 // WordprocessingML 이름공간의 접두사가 w가 아니거나(xmlns:x=…) 기본 이름공간이면 w: 접두사로 바꿔 선형 스캐너가 읽게 한다(접두사는 XML의 의미가 아니다)
 const WML_NS = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main';

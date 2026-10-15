@@ -109,6 +109,7 @@ main.over .dropline { display: block; }
 .struct td.txt.blank { color: var(--subtle); font-style: italic; }
 .struct select { min-height: 28px; padding: 1px 24px 1px 8px; font-size: 12.5px; width: 100%; }
 .struct .fn { display: inline-block; color: var(--accent); font-size: 11px; margin-left: 6px; background: var(--accent-bg); padding: 0 6px; border-radius: 999px; }
+.struct .fn.obj { color: var(--fg); background: var(--muted); border: 1px solid var(--border); margin-left: 0; margin-right: 6px; }
 .struct tr.h1 td.txt, .struct tr.title td.txt, .struct tr.refHead td.txt, .struct tr.abstractHead td.txt, .struct tr.abstractEnHead td.txt { font-weight: 600; }
 .struct tr.h2 td.txt, .struct tr.h3 td.txt { font-weight: 500; }
 .struct tr.quote td.txt, .struct tr.source td.txt { color: var(--muted-fg); padding-left: 24px; }

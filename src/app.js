@@ -217,14 +217,15 @@ function renderConvert(main) {
     const dz = h('div', { class: 'dropzone', role: 'button', tabindex: '0', onclick: () => input.click(), onkeydown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); input.click(); } } },
       h('div', {}, h('strong', {}, '원고 파일을 이 화면에 끌어다 놓으세요'), h('p', {}, 'HWP · HWPX · DOCX · TXT · MD — 놓는 즉시 열리고, ‘적용’을 누르면 학회 양식이 입혀진 결과를 저장 전에 미리 봅니다.'), h('span', { class: 'btn ghost' }, '파일 선택'), input));
     main.append(dz);
-    main.append(h('p', { class: 'hero', style: 'margin-top:18px' }, h('b', {}, '원고 내용은 바꾸지 않습니다.'), ' 학회 바탕틀의 글꼴·크기·줄간격·여백·각주 설정을 물려받고, 체재 순서와 쪽수·쪽수 범위 기호·낫표·서지 표기만 각주와 참고문헌에서 규칙대로 맞춥니다. 표·그림은 변환 후 한글에서 옮겨 넣으세요. AI는 쓰지 않습니다.'));
+    main.append(h('p', { class: 'hero', style: 'margin-top:18px' }, h('b', {}, '원고 내용은 바꾸지 않습니다.'), ' 학회 바탕틀의 글꼴·크기·줄간격·여백·각주 설정을 물려받고, 체재 순서와 쪽수·쪽수 범위 기호·낫표·서지 표기만 각주와 참고문헌에서 규칙대로 맞춥니다. 표·그림은 칸 안·캡션의 각주까지 그대로 옮깁니다. AI는 쓰지 않습니다.'));
     return;
   }
 
   // 작업 화면: 왼쪽 원고 구조, 오른쪽 미리보기/변경 사항/확인
   const left = h('div', { class: 'pane' });
   const info = h('div', { class: 'row small', style: 'gap:6px' }, h('span', { class: 'tag' }, m.parsed.format), h('span', { class: 'tag' }, `문단 ${m.parsed.paragraphs.length}`), h('span', { class: 'tag' }, `각주 ${m.parsed.counts.footnotes}`),
-    m.parsed.counts.tables ? h('span', { class: 'tag warn' }, `표 ${m.parsed.counts.tables}`) : null, m.parsed.counts.pictures ? h('span', { class: 'tag warn' }, `그림 ${m.parsed.counts.pictures}`) : null);
+    m.parsed.counts.tables ? h('span', { class: 'tag' }, `표 ${m.parsed.counts.tables}`) : null, m.parsed.counts.pictures ? h('span', { class: 'tag' }, `그림 ${m.parsed.counts.pictures}`) : null,
+    m.parsed.counts.objectsLost ? h('span', { class: 'tag warn' }, `옮기지 못한 표·그림 ${m.parsed.counts.objectsLost}`) : null);
   left.append(h('div', { class: 'pane-h' }, '원고 구조', h('span', { class: 'grow' }), info, h('button', { class: 'btn ghost sm', onclick: () => { state.manuscript = null; state.blocks = null; state.result = null; render(); } }, '다른 원고')));
   const lb = h('div', { class: 'pane-b' });
   if (m.error) lb.append(h('p', { class: 'err' }, m.error));
@@ -271,7 +272,9 @@ function renderStructure(el) {
     if (b.role === 'blank') return;
     const sel = h('select', { 'aria-label': `${i + 1}번 문단 역할`, onchange: (e) => { b.role = e.target.value; b.auto = false; b.reason = '직접 지정'; state.dirty = !!state.result; render(); } },
       ...ROLE_DEFS.map((r) => h('option', { value: r.id, selected: r.id === b.role ? '' : null }, r.label)));
-    tb.append(h('tr', { class: b.role + (b.auto ? '' : ' manual') }, h('td', {}, sel), h('td', { class: 'txt', title: `${b.reason || ''}\n${b.text}` }, b.text, b.footnotes?.length ? h('span', { class: 'fn' }, `각주 ${b.footnotes.length}`) : null)));
+    // 표·그림은 글 대신 개체 요약(표 행×열, 캡션)을 보인다
+    const objTags = (b.objects || []).map((o) => h('span', { class: 'fn obj' }, `${o.kind === 'table' ? `표${o.info?.rows ? ` ${o.info.rows}×${o.info.cols}` : ''}` : o.kind === 'picture' ? '그림' : o.kind === 'equation' ? '수식' : '도형'}${o.info?.caption ? ` · ${o.info.caption.slice(0, 30)}` : ''}`));
+    tb.append(h('tr', { class: b.role + (b.auto ? '' : ' manual') }, h('td', {}, sel), h('td', { class: 'txt', title: `${b.reason || ''}\n${b.text}` }, b.text, ...objTags, b.footnotes?.length ? h('span', { class: 'fn' }, `각주 ${b.footnotes.length}`) : null)));
   });
   tbl.append(tb);
   el.append(h('div', { class: 'struct' }, tbl));
@@ -383,7 +386,7 @@ function docbar() {
     items.push(h('span', { class: over > 0 ? 'over' : 'okay' }, `규정 ${j.length.max}매`, over > 0 ? [' · ', h('b', {}, `${over}매 초과`), h('span', { class: 'dim' }, ` (약 ${Math.round(over * 200).toLocaleString()}자)`)] : [' · ', h('b', {}, `${Math.abs(over)}매 여유`)]));
   } else if (j?.length?.text) items.push(h('span', { class: 'dim', title: j.length.text }, `규정 분량: ${j.length.text.slice(0, 28)}${j.length.text.length > 28 ? '…' : ''}`));
   if (r) items.push(h('span', {}, '적용 후 ', h('b', {}, r.pages), '쪽'));
-  if (m.parsed.counts.tables || m.parsed.counts.pictures) items.push(h('span', { class: 'dim' }, [m.parsed.counts.tables ? `표 ${m.parsed.counts.tables}` : null, m.parsed.counts.pictures ? `그림 ${m.parsed.counts.pictures}` : null].filter(Boolean).join(' · ') + ' (변환 제외)'));
+  if (m.parsed.counts.tables || m.parsed.counts.pictures) items.push(h('span', { class: 'dim' }, [m.parsed.counts.tables ? `표 ${m.parsed.counts.tables}` : null, m.parsed.counts.pictures ? `그림 ${m.parsed.counts.pictures}` : null].filter(Boolean).join(' · ') + (m.parsed.counts.objectsLost ? ` (옮기지 못함 ${m.parsed.counts.objectsLost})` : ' (옮김)')));
   return h('div', { class: 'docbar', role: 'status', 'aria-live': 'polite', title: '분량은 안내일 뿐이며 초과분을 자동으로 줄이거나 고치지 않습니다. 매수 초과는 학회에 따라 추가 게재료 대상입니다.' }, ...items.flatMap((x, i) => (i ? [h('span', { class: 'sep', 'aria-hidden': 'true' }, '·'), x] : [x])));
 }
 
@@ -651,7 +654,7 @@ function renderHelp(main) {
       [h('b', {}, '역할 확인'), ' — 잘못 잡힌 역할은 목록에서 직접 바꿉니다. 역할은 서식을 정하는 기준이므로 제목·참고문헌·영문초록이 맞게 잡혔는지 먼저 보세요.'],
       [h('b', {}, '적용'), ' — 학회 양식이 입혀진 쪽을 오른쪽 ‘미리보기’에서 보고, ‘변경 사항’에서 무엇이 바뀌었는지(체재 재배열, 쪽수·서지 표기, 빈 줄) 확인합니다. 저장 전에 설정이나 역할을 고쳤다면 ‘다시 적용’을 누릅니다. 각주가 많은 쪽은 미리보기에서 본문과 각주가 겹쳐 보일 수 있습니다(쪽 아래에 노란 표시). 미리보기 엔진의 한계일 뿐이며, 저장한 HWP는 한글이 열 때 다시 배치하므로 겹치지 않습니다.'],
       [h('b', {}, '저장'), ' — ‘저장’을 누르면 저장할 폴더와 파일 이름을 그때그때 고를 수 있습니다(크롬·엣지). 그 밖의 브라우저에서는 내려받기 폴더에 저장됩니다. ▾ 메뉴에서 HWPX·변환 로그도 저장합니다.'],
-      [h('b', {}, '한글에서 마무리'), ' — 표·그림은 변환되지 않으므로 한글에서 옮겨 넣고, 쪽 넘김과 머리말을 확인한 뒤 투고합니다.'])));
+      [h('b', {}, '한글에서 마무리'), ' — 표·그림이 판면 안에 제대로 놓였는지(넓은 표는 폭을 줄임), 쪽 넘김과 머리말을 확인한 뒤 투고합니다. 글상자·차트처럼 옮기지 못한 개체가 있으면 경고에 수가 나옵니다.'])));
   main.append(sec('설정 (상단 ‘설정’ 버튼)',
     ul([h('b', {}, '화면 스킨'), ' — 왼쪽 아래 ‘스킨’의 색 점을 누르면 다크 스튜디오(기본), 종이·서지, 모노크롬, 네이비·크림, 타이포 편집, 보라(슬랙식), 바이올렛 가운데 고를 수 있습니다. 색·글꼴·모서리만 바뀌고 변환 결과에는 영향이 없으며, 이 브라우저에만 기억됩니다.'],
       [h('b', {}, '목차 자동 생성'), ' — 원고에 목차가 없고 학회 체재에 목차(차례)가 있으면 장 제목으로 목차를 만들어 넣습니다. 인용문 앞뒤에는 한 줄을 띄우고, 바탕틀 예시에 쪽 나눔(참고문헌·영문초록이 새 쪽에서 시작)이 있으면 그대로 따릅니다.'],
@@ -675,7 +678,7 @@ function renderHelp(main) {
   main.append(sec('무엇을 바꾸고 무엇을 바꾸지 않나',
     ul('바꾸는 것: 글꼴·크기·줄간격·여백·용지(학회 양식), 문단 역할별 서식, 체재 순서, 쪽수 단위, 선택한 서지 양식, 빈 줄.',
       '바꾸지 않는 것: 본문 문장, 각주 내용, 강조(굵게·기울임), 저자 표기. 글꼴은 학회 양식에 정해진 것을 그대로 쓰며 임의로 고르지 않습니다.',
-      '못 하는 것: 표·그림 이동, 영문 교정, 내용 요약·생성. 모든 처리는 규칙이며 AI를 호출하지 않습니다.')));
+      '못 하는 것: Word 원고의 글상자·차트·수식 옮기기(개수만 알림), 영문 교정, 내용 요약·생성. 모든 처리는 규칙이며 AI를 호출하지 않습니다.')));
   main.append(sec('글꼴',
     h('p', {}, '투고틀은 글꼴 파일을 포함하지 않습니다. 글꼴은 저작권이 있는 소프트웨어라 임의로 배포할 수 없기 때문입니다. 산출 HWP에는 학회 양식·규정이 지정한 글꼴 이름이 그대로 기록되므로, 그 글꼴이 내 PC에 없어도 파일은 정상이고 한글이 비슷한 글꼴로 화면에 보여 줄 뿐입니다. 학회 편집부에는 해당 글꼴이 있으므로 투고에는 지장이 없습니다.'),
     ul([h('b', {}, '내 PC에서 똑같이 보려면'), ' — 학회 화면 ‘편집 양식’ 탭의 글꼴 목록을 확인하고 설치합니다. 함초롬·한컴·휴먼·HY(한양) 계열은 한글(한컴오피스)과 함께 설치되고, 바탕·돋움·맑은 고딕·Times New Roman은 윈도우 기본입니다. KoPubWorld(한국출판인회의)·나눔글꼴(네이버)은 무료로 받을 수 있습니다.'],

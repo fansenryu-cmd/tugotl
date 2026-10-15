@@ -2,7 +2,8 @@
 // AI 호출 없음. 모든 처리는 이 파일 안(브라우저 메모리)에서 끝난다.
 import init, { HwpDocument } from '../node_modules/@rhwp/core/rhwp.js';
 import JSZip from 'jszip';
-import { ROLE_FALLBACK, GENERIC_FORMAT, ROLE_DEFS } from './journals.js';
+import { ROLE_FALLBACK, GENERIC_FORMAT, ROLE_DEFS, FLOAT_ROLES } from './journals.js';
+import { makeImporter } from './objects.js';
 const ROLE_GROUP = Object.fromEntries(ROLE_DEFS.map((r) => [r.id, r.group]));
 
 export { HwpDocument };
@@ -124,7 +125,7 @@ export async function resolveRoles(doc, journal, log, hasTemplate) {
   const byName = Object.fromEntries(styles.map((s) => [s.name.trim(), s]));
   const n0 = doc.getParagraphCount(0);
   const shapes = {};
-  const need = ['title', 'subtitle', 'titleEn', 'subtitleEn', 'author', 'affiliation', 'tocHead', 'toc', 'abstractHead', 'abstract', 'keywords', 'h1', 'h2', 'h3', 'h4', 'body', 'bodyFirst', 'quote', 'source', 'caption', 'blank', 'refHead', 'refSub', 'ref', 'abstractEnHead', 'titleEn2', 'authorEn', 'abstractEn', 'keywordsEn', 'dates'];
+  const need = ['title', 'subtitle', 'titleEn', 'subtitleEn', 'author', 'affiliation', 'tocHead', 'toc', 'abstractHead', 'abstract', 'keywords', 'h1', 'h2', 'h3', 'h4', 'body', 'bodyFirst', 'quote', 'source', 'caption', 'object', 'objNote', 'blank', 'refHead', 'refSub', 'ref', 'abstractEnHead', 'titleEn2', 'authorEn', 'abstractEn', 'keywordsEn', 'dates'];
   const scratch = [];
   const fromFormat = (role, f) => {
     // 임시 문단: 마지막 문단 뒤에 추가
@@ -148,11 +149,11 @@ export async function resolveRoles(doc, journal, log, hasTemplate) {
       let valueCs; if (role === 'keywords' || role === 'keywordsEn') { const lead = /^\s*/.exec(txt)[0].length; const km = KW_LABEL.exec(txt.slice(lead)); if (km) { const cpAt = (o16) => J(doc.getCharPropertiesAt(sec, i, [...txt.slice(0, o16)].length)) || {}; const lo = km[1].search(/[가-힣A-Za-z]/); if (lo >= 0) { const cl = cpAt(lead + lo); if (cl.charShapeId !== undefined) cp = cl; }   // 머리말 모양은 머리말 첫 글자에서
         const v16 = lead + km[1].length; const vr = txt.slice(v16).search(/[가-힣A-Za-z0-9]/); const lab = km[1].replace(/\s+$/, ''); const at16 = vr >= 0 ? v16 + vr : (lab && /[^가-힣A-Za-z]$/.test(lab) ? lead + lab.length - 1 : -1);   // 값 모양은 머리말 뒤 첫 글자(〻￨ 같은 구분 기호는 건너뜀), 값이 없으면 머리말 끝 구분 기호
         if (at16 >= 0) { const cv = cpAt(at16); if (cv.charShapeId !== undefined && cv.charShapeId !== cp.charShapeId) valueCs = cv.charShapeId; } } }   // 머리말 뒤 첫 글자의 글자 모양(예시에 값이 없으면 머리말 끝 구분 기호의 모양)
-      got = { ps: pp.paraShapeId, cs: cp.charShapeId, ...(valueCs !== undefined ? { valueCs } : {}), sample: txt.trim(), src: `바탕틀 ${sec ? `구역 ${sec} ` : ''}문단 ${i} (${cp.fontFamily} ${(cp.fontSize || 0) / 100}pt${cp.bold ? ' 굵게' : ''}, ${pp.alignment}, ${pp.lineSpacing}%)` };
+      got = { ps: pp.paraShapeId, cs: cp.charShapeId, font: cp.fontFamily, size: cp.fontSize, ...(valueCs !== undefined ? { valueCs } : {}), sample: txt.trim(), src: `바탕틀 ${sec ? `구역 ${sec} ` : ''}문단 ${i} (${cp.fontFamily} ${(cp.fontSize || 0) / 100}pt${cp.bold ? ' 굵게' : ''}, ${pp.alignment}, ${pp.lineSpacing}%)` };
     } else if (spec && spec.style && byName[spec.style]) {
       const s = byName[spec.style];
       const det = J(doc.getStyleDetail(s.id)) || {};
-      got = { ps: s.paraShapeId, cs: s.charShapeId, styleId: s.id, src: `바탕틀 스타일 ‘${s.name}’ (${det.charProps?.fontFamily || ''} ${(det.charProps?.fontSize || 0) / 100}pt)` };
+      got = { ps: s.paraShapeId, cs: s.charShapeId, styleId: s.id, font: det.charProps?.fontFamily, size: det.charProps?.fontSize, src: `바탕틀 스타일 ‘${s.name}’ (${det.charProps?.fontFamily || ''} ${(det.charProps?.fontSize || 0) / 100}pt)` };
     } else if (spec && spec.format) {
       got = fromFormat(role, spec.format);
     } else if (fmt && fmt.roles && fmt.roles[role]) {
@@ -161,6 +162,11 @@ export async function resolveRoles(doc, journal, log, hasTemplate) {
     if (got) shapes[role] = got;
     else if (spec && spec.like) shapes[role] = { like: spec.like };
   }
+  // 표·그림 문단(가운데, 줄 간격 100% — 큰 표의 줄 높이에 줄 간격이 곱해지지 않게)과 그 밑 주석(왼쪽, 작은 글자)은 학회가 따로 정하지 않았으면 본문 글꼴로 만든다
+  const bodyFont = (shapes.body && shapes.body.font) || (fmt && fmt.font);
+  const bodyPt = shapes.body && shapes.body.size ? shapes.body.size / 100 : (fmt && fmt.roles && fmt.roles.body && fmt.roles.body.size) || 10;
+  if (!shapes.object && !(roles.object && roles.object.like)) shapes.object = fromFormat('object', { ...GENERIC_FORMAT.roles.object, size: bodyPt, font: bodyFont });
+  if (!shapes.objNote && !(roles.objNote && roles.objNote.like)) shapes.objNote = fromFormat('objNote', { ...GENERIC_FORMAT.roles.objNote, size: Math.max(7, Math.round((bodyPt - 1) * 10) / 10), font: bodyFont });
   // like / fallback 해결
   for (const role of need) {
     if (shapes[role] && !shapes[role].like) continue;
@@ -345,8 +351,27 @@ export async function buildDocument({ journal, templateBytes, blocks, onLog }) {
   const suffixCode = suffixChar ? suffixChar.charCodeAt(0) : 0;
   const fnShape = footnote || shapes.body || { ps: 0, cs: 0 };
 
-  let pid = 1; let fnCount = 0; let fnNum = 0; let runCount = 0; let charCount = 0; let redParas = 0; let redFns = 0;
+  let pid = 1; let fnCount = 0; let fnNum = 0; let runCount = 0; let charCount = 0; let redParas = 0; let redFns = 0; let objLost = 0;
   const roleCount = {};
+  // 표·그림: 원고 자원(같은 원고면 같은 객체)마다 옮겨 심는 도구를 하나씩 만든다
+  const pageW = (() => {
+    const pm = /<hp:pagePr\b[^>]*?landscape="(\w+)"[^>]*?width="(\d+)"[^>]*?height="(\d+)"/.exec(sec); const mm = /<hp:margin\b[^>]*\/>/.exec(sec);
+    if (!pm || !mm) return 0;
+    const at = (k) => +((new RegExp(`${k}="(\\d+)"`).exec(mm[0]) || [0, 0])[1]);
+    const cols = +((/<hp:colPr\b[^>]*colCount="(\d+)"/.exec(sec) || [0, 1])[1]) || 1;
+    const gap = +((/<hp:colPr\b[^>]*sameGap="(\d+)"/.exec(sec) || [0, 0])[1]) || 0;
+    const w = (pm[1] === 'NARROWLY' ? +pm[3] : +pm[2]) - at('left') - at('right') - at('gutter');
+    return Math.max(0, Math.floor((w - gap * (cols - 1)) / cols));
+  })();
+  const importers = new Map();
+  const bodyFontRef = (() => { const x = charPrById(shapes.body ? shapes.body.cs : 0) || ''; const m = /<hh:fontRef\b[^>]*\/>/.exec(x); return m ? m[0] : null; })();
+  const importerFor = (res) => {
+    if (!res) return null;
+    if (!importers.has(res)) importers.set(res, makeImporter({ header, src: res, textWidth: pageW, captionShape: shapes.caption || null, bodyFontRef,
+      allocCharPr: (xml) => { const id = nextCs++; added.push(xml.replace(/ id="\d+"/, ` id="${id}"`)); return id; }, nextPid: () => pid++ }));
+    return importers.get(res);
+  };
+
   // 각주: 문단 배열(paras: [{ text, runs }])을 그대로 문단으로, 문단 안 줄바꿈은 lineBreak로 쓴다. 번호 없는 각주(사사·소속)는 번호를 세지 않고, 원고의 ‘새 번호 지정’은 newNum으로 보존한다
   const makeFootnote = (f) => {
     fnCount++;
@@ -382,15 +407,33 @@ export async function buildDocument({ journal, templateBytes, blocks, onLog }) {
     const sh0 = shapes[b.role]; const kmL = sh0 && sh0.valueCs !== undefined && /^keywords/.test(b.role) ? KW_LABEL.exec(text) : null; const L = kmL ? kmL[1].length : -1;   // 주제어 머리말 뒤는 값 글자 모양
     if (L > 0 && L < text.length) segs = segs.flatMap((g) => (g.s < L && g.e > L ? [{ ...g, e: L }, { ...g, s: L }] : [g]));
     const csAt = (s) => (sh0 && sh0.valueCs !== undefined && /^keywords/.test(b.role) && (L <= 0 || s >= L) ? sh0.valueCs : cs);
-    const fns = [...(b.footnotes || [])].map((f) => ({ ...f, at: Math.max(0, Math.min(text.length, f.offset ?? text.length)) })).sort((a, c) => a.at - c.at);
+    // 글 사이에 넣을 것: 각주와 표·그림. 개체 안 각주(objId)는 개체를 넣을 때 그 안 제자리에 넣는다(개체를 못 옮기면 개체 자리의 본문 각주로)
+    const at = (o) => Math.max(0, Math.min(text.length, o.offset ?? text.length));
+    const objs = (b.objects || []).map((o) => ({ o, imp: importerFor(o.res) }));
+    const placed = new Set(objs.filter((x) => x.imp).map((x) => x.o.id));
+    const fnItems = (b.footnotes || []).filter((f) => !(f.objId && placed.has(f.objId))).map((f) => ({ f, at: at(f) }));
+    const objItems = objs.filter((x) => x.imp).map((x) => ({ obj: x.o, imp: x.imp, at: at(x.o) }));
+    const fns = [...fnItems, ...objItems].map((it, k) => ({ ...it, k })).sort((a, c) => a.at - c.at || (a.obj ? 1 : 0) - (c.obj ? 1 : 0) || a.k - c.k);
+    if (objs.some((x) => !x.imp)) objLost += objs.filter((x) => !x.imp).length;
+    // 글자처럼 한 줄에 나란히 놓인 개체(그림 두 장 등)는 합친 폭이 판면을 넘지 않게 폭을 나눠 준다(원고처럼 나란히 — 한글은 넘치면 줄을 바꿔 위아래로 쌓는다)
+    const inlineW = (o) => (/<hp:pos\b[^>]*treatAsChar="1"/.test(o.xml) && o.info ? o.info.width + (+((/<hp:outMargin left="(\d+)" right="(\d+)"/.exec(o.xml) || [0, 0, 0]).slice(1).reduce((a, v) => a + +v, 0))) : 0);
+    const inl = objItems.map((it) => inlineW(it.obj)); const inlSum = inl.reduce((a, v) => a + v, 0);
+    const share = inl.filter((v) => v > 0).length > 1 && pageW && inlSum > pageW * 0.98 ? (o) => Math.floor(pageW * 0.94 * inlineW(o) / inlSum) : () => 0;
+    const place = (it) => {
+      if (!it.obj) return makeFootnote(it.f);
+      const inner = (b.footnotes || []).filter((f) => f.objId === it.obj.id && !f.objCaption);
+      const capFns = (b.footnotes || []).filter((f) => f.objId === it.obj.id && f.objCaption);   // 캡션 안 각주는 개체 바로 뒤(같은 문단)에 — 한글은 캡션 안 각주를 쪽 아래에 찍지 않는다
+      const x = it.imp.importObject(it.obj, (k) => (inner[k] ? makeFootnote(inner[k]) : ''), share(it.obj)) + capFns.map(makeFootnote).join('');
+      return !text && it.obj.tag !== 'tbl' ? x + '<hp:t> </hp:t>' : x;   // 글 없는 문단에 그림만 있으면 rhwp가 그 줄을 그리지 않는다 — 빈칸 한 글자를 둔다(가운데 정렬에서 끝 빈칸은 자리를 차지하지 않음)
+    };
     let out = ''; let fi = 0;
     for (const sg of segs) {
       let x = `<hp:run charPrIDRef="${variantCs(csAt(sg.s), sg.v)}">`; let pos = sg.s;
-      while (fi < fns.length && fns[fi].at <= sg.e && (fns[fi].at < sg.e || sg === segs[segs.length - 1])) { x += `${tx(text.slice(pos, fns[fi].at))}${makeFootnote(fns[fi])}`; pos = fns[fi].at; fi++; }
+      while (fi < fns.length && fns[fi].at <= sg.e && (fns[fi].at < sg.e || sg === segs[segs.length - 1])) { x += `${tx(text.slice(pos, fns[fi].at))}${place(fns[fi])}`; pos = fns[fi].at; fi++; }
       x += `${tx(text.slice(pos, sg.e))}</hp:run>`;
       out += x;
     }
-    while (fi < fns.length) { out += `<hp:run charPrIDRef="${cs}"><hp:t></hp:t>${makeFootnote(fns[fi])}<hp:t></hp:t></hp:run>`; fi++; }
+    while (fi < fns.length) { out += `<hp:run charPrIDRef="${cs}"><hp:t></hp:t>${place(fns[fi])}<hp:t></hp:t></hp:run>`; fi++; }
     if (!text && !fns.length) out = `<hp:run charPrIDRef="${cs}"><hp:t></hp:t></hp:run>`;
     return out;
   };
@@ -403,14 +446,15 @@ export async function buildDocument({ journal, templateBytes, blocks, onLog }) {
     const runs = []; let off = 0; for (const r of b.runs || []) { const s0 = Math.max(off, cutOld), e0 = off + r.text.length; if (e0 > s0) runs.push({ ...r, text: old.slice(s0, e0) }); off = e0; }
     if (cutNew) runs.unshift({ text: t.slice(0, cutNew) });
     const okRuns = (b.runs || []).length > 0 && runs.reduce((a, r) => a + r.text.length, 0) === t.length;
-    return { ...b, text: t, runs: okRuns ? runs : [], footnotes: (b.footnotes || []).map((f) => { const o = f.offset ?? old.length; return { ...f, offset: o >= cutOld ? o - cutOld + cutNew : Math.min(o, cutNew) }; }) };
+    const mv = (x) => { const o = x.offset ?? old.length; return { ...x, offset: o >= cutOld ? o - cutOld + cutNew : Math.min(o, cutNew) }; };
+    return { ...b, text: t, runs: okRuns ? runs : [], footnotes: (b.footnotes || []).map(mv), ...(b.objects ? { objects: b.objects.map(mv) } : {}) };
   });
   if (relabel.count) log(`표지 문구를 바탕틀대로 — ${relabel.notes.slice(0, 4).join(', ')}${relabel.count > 4 ? ` 외 ${relabel.count - 4}곳` : ''}`);
   const bodyParas = [];
   let firstAttrs = null; let firstRuns = null; let prevGroup = null;
   for (const b of blocks) {
     if (b.role === 'skip') continue;
-    const group = b.role === 'blank' ? prevGroup : (ROLE_GROUP[b.role] || 'body');
+    const group = b.role === 'blank' || (FLOAT_ROLES.has(b.role) && prevGroup) ? prevGroup : (ROLE_GROUP[b.role] || 'body');   // 표·그림·캡션은 놓인 자리의 묶음(새 쪽을 열지 않음)
     const groupStart = b.role !== 'blank' && group !== prevGroup && pbGroups.has(group) && prevGroup !== null;
     if (b.role !== 'blank') prevGroup = group;
     const text = b.role === 'blank' ? '' : sanitize(b.text);
@@ -435,6 +479,14 @@ export async function buildDocument({ journal, templateBytes, blocks, onLog }) {
   const newFirst = `<hp:p id="0" ${firstAttrs || 'paraPrIDRef="0" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0"'}>${ctrlRuns.join('')}${firstRuns || ''}</hp:p>`;
   // 첫 문단 뒤에 남아 있을 수 있는 문단(비운 바탕틀의 잔여)은 버린다
   sec = sec.slice(0, pm.index) + newFirst + bodyParas.join('') + sec.slice(sec.lastIndexOf('</hs:sec>'));
+  // 표·그림이 쓰는 문단 모양·테두리·탭·번호 목록과 그림 파일
+  const objStats = { objects: 0, tables: 0, pictures: 0, shapes: 0, scaled: 0, moved: 0, footnotes: 0, bins: 0 };
+  for (const imp of importers.values()) {
+    header = imp.applyHeader(header);
+    for (const [k, v] of Object.entries(imp.stats)) objStats[k] += v;
+    for (const bf of imp.bins) { zip.file(bf.path, bf.bytes); objStats.bins++; }
+    if (imp.bins.length) await patchText('Contents/content.hpf', (x) => imp.applyManifest(x));
+  }
   if (added.length) header = header.replace(/<hh:charProperties itemCnt="\d+"/, () => `<hh:charProperties itemCnt="${nextCs}"`).replace(/<\/hh:charProperties>/, () => `${added.join('')}</hh:charProperties>`);
   zip.file('Contents/section0.xml', enc.encode(sec));
   zip.file('Contents/header.xml', enc.encode(header));
@@ -443,6 +495,8 @@ export async function buildDocument({ journal, templateBytes, blocks, onLog }) {
   if (runCount) log(`강조 서식(굵게·기울임 등) ${runCount}곳 유지`);
   if (fnCount) log(`각주 ${fnCount}개 삽입${footnote ? ` (각주 서식 ← ${footnote.src})` : ''}`);
   if (redParas || redFns) log(`정오표 표시 — 참고문헌 ${redParas}개, 각주 ${redFns}개 붉게`);
+  if (objStats.objects) log(`표 ${objStats.tables}개·그림 ${objStats.pictures}개${objStats.shapes ? `·도형 ${objStats.shapes}개` : ''} 옮김${objStats.bins ? ` (그림 파일 ${objStats.bins}개)` : ''}${objStats.footnotes ? ` — 안의 각주 ${objStats.footnotes}개는 본문 각주와 번호를 이어 매김` : ''}${objStats.scaled ? ` — 판면보다 넓은 ${objStats.scaled}개는 폭을 줄임` : ''}${objStats.moved ? ` — 쪽 기준으로 떠 있던 ${objStats.moved}개는 문단 기준으로 옮김` : ''}`);
+  if (objLost) log(`표·그림 ${objLost}개는 원고 자원을 찾지 못해 옮기지 못함(안의 각주는 그 자리 본문 각주로)`, 'warn');
   const hwpxBytes = await zip.generateAsync({ type: 'uint8array', compression: 'DEFLATE' });
 
   const doc2 = new HwpDocument(hwpxBytes);
