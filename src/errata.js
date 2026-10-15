@@ -183,7 +183,8 @@ export function buildErrata(blocks, journal) {
     }
   }
   for (const r of refs) { if (!r.cited) { r.uncited = true; blocks[r.bi].flag = 'red'; } else if (r.issues.length) blocks[r.bi].flag = 'red'; }
-  const links = (t) => { const q = encodeURIComponent((t.key?.parsed?.title || t.text).replace(/\s+/g, ' ').slice(0, 80)); return { scholar: `https://scholar.google.com/scholar?q=${q}`, riss: `https://www.riss.kr/search/Search.do?isDetailSearch=N&searchGubun=true&query=${q}`, kci: `https://www.google.com/search?q=site%3Akci.go.kr+${q}` }; };
+  // 검색어는 글자(코드포인트) 단위로 자른다: UTF-16으로 80칸을 자르면 옛 한글 문서의 겹낫표(U+F0854 ‘󰡔’ 등 보조평면 글자)가 반으로 갈려 encodeURIComponent가 ‘URI malformed’로 변환 전체를 멈춘다. 원고에 처음부터 짝 없는 대리 문자가 있어도 뺀다
+  const links = (t) => { const q = encodeURIComponent(Array.from((t.key?.parsed?.title || t.text).replace(/\s+/g, ' ').replace(/\u{F0854}/gu, '『').replace(/\u{F0855}/gu, '』')).slice(0, 80).join('').replace(/[\ud800-\udbff](?![\udc00-\udfff])|(?<![\ud800-\udbff])[\udc00-\udfff]/g, '')); return { scholar: `https://scholar.google.com/scholar?q=${q}`, riss: `https://www.riss.kr/search/Search.do?isDetailSearch=N&searchGubun=true&query=${q}`, kci: `https://www.google.com/search?q=site%3Akci.go.kr+${q}` }; };
   for (const r of refs) r.links = links(r);
   for (const t of notes) t.links = links(t);
   const summary = { footnotes: notes.length, citing: notes.filter((x) => x.kind === 'cite').length, noRef: notes.filter((x) => x.status === 'noref').length, formatBad: notes.filter((x) => x.status === 'format').length, refs: refs.length, uncited: refs.filter((r) => r.uncited).length, refFormatBad: refs.filter((r) => r.issues.length).length };
