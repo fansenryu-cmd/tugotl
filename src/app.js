@@ -166,7 +166,17 @@ const cleanLayout = (x) => (typeof x === 'string' ? x.replace(/\s*[—–-]\s*�
 const cleanSource = (x) => (typeof x === 'string' ? x.replace(/\(견본화\)/g, '') : x);
 
 // ───────── 사이드바 ─────────
-function setStatus(text, cls) { $('#status-text').textContent = text; $('#status').className = 'mast-status ' + (cls || ''); }
+function setStatus(text, cls) { $('#status-text').textContent = text; $('#status').className = 'mast-status ' + (cls || ''); const d = $('#mdot'); if (d) { d.className = 'mbar-dot ' + (cls || ''); d.title = text; } }
+// 휴대폰: 좁은 화면이면 사이드바를 서랍으로 연다. 손가락 입력(터치)이면 끌어 놓기 대신 파일 고르기 문구를 쓴다
+const narrow = () => window.matchMedia('(max-width: 760px)').matches;
+const touch = () => window.matchMedia('(pointer: coarse)').matches;
+function openSide(open) {
+  const side = $('#side'); const scrim = $('#scrim'); if (!side) return;
+  side.classList.toggle('open', !!open); if (scrim) scrim.hidden = !open;
+  $('#mnav')?.setAttribute('aria-expanded', open ? 'true' : 'false');
+  document.body.classList.toggle('drawer', !!open);
+  if (open) side.querySelector('select, button')?.focus();
+}
 function renderSide() {
   const sel = $('#jsel'); sel.replaceChildren(h('option', { value: '' }, '학회지를 고르세요…'));
   // 등재지 → 등재후보지 → 그 밖(등급 미기재·사용자 학회) 순, 묶음 안은 학술지 이름 가나다순
@@ -186,6 +196,7 @@ function renderSide() {
     else sub.append(h('button', { type: 'button', disabled: '' }, h('span', { class: 'ico', 'aria-hidden': 'true' }, '↗'), '투고처 주소 없음'));
   }
   document.querySelectorAll('#nav button').forEach((b) => b.classList.toggle('on', b.dataset.view === state.view));
+  const mj = $('#mjour'); if (mj) mj.textContent = j ? j.journal : '투고처 고르기';
 }
 
 // ───────── 렌더 ─────────
@@ -203,19 +214,22 @@ function renderConvert(main) {
   const applyBtn = h('button', { class: 'btn red', disabled: canApply ? null : '', onclick: runConvert }, state.dirty && state.result ? '다시 적용' : '적용');
   const saveWrap = h('div', { class: 'rel' });
   const saveBtn = h('button', { class: 'btn', disabled: state.result && !state.dirty ? null : '', onclick: () => saveResult('hwp') }, '저장');
-  const moreBtn = h('button', { class: 'btn ghost', 'aria-label': '다른 형식으로 저장', disabled: state.result && !state.dirty ? null : '', onclick: () => { const open = saveWrap.querySelector('.menu'); if (open) open.remove(); else saveWrap.append(h('div', { class: 'menu' }, h('button', { onclick: () => saveResult('hwpx') }, 'HWPX로 저장'), h('button', { onclick: () => saveResult('log') }, '변환 로그(txt) 저장'))); } }, '▾');
+  const canShare = typeof navigator !== 'undefined' && typeof navigator.canShare === 'function' && touch();   // 휴대폰 공유 시트(파일 앱·드라이브·메신저로 보내기)
+  const moreBtn = h('button', { class: 'btn ghost', 'aria-label': '다른 형식으로 저장', disabled: state.result && !state.dirty ? null : '', onclick: () => { const open = saveWrap.querySelector('.menu'); if (open) open.remove(); else saveWrap.append(h('div', { class: 'menu' }, canShare ? h('button', { onclick: () => saveResult('hwp', { share: true }) }, 'HWP 공유하기(파일 앱·드라이브·메신저)') : null, h('button', { onclick: () => saveResult('hwpx') }, 'HWPX로 저장'), h('button', { onclick: () => saveResult('log') }, '변환 로그(txt) 저장'))); } }, '▾');
   saveWrap.append(h('div', { class: 'row', style: 'gap:4px' }, saveBtn, moreBtn));
   const setWrap = h('div', { class: 'rel' });
   const setBtn = h('button', { class: 'btn ghost', 'aria-expanded': 'false', onclick: () => { const open = setWrap.querySelector('.pop'); if (open) { open.remove(); setBtn.setAttribute('aria-expanded', 'false'); } else { setWrap.append(settingsPop()); setBtn.setAttribute('aria-expanded', 'true'); } } }, '설정');
   setWrap.append(setBtn);
+  // 버튼 묶음(acts): 넓은 화면에서는 제목 줄 오른쪽, 휴대폰에서는 화면 아래 고정 막대
   main.append(h('div', { class: 'topbar' },
-    h('h1', {}, m ? m.name : '원고 변환'), h('span', { class: 'sub' }, j ? `→ ${j.journal}` : '왼쪽에서 투고처를 고르세요'),
-    h('span', { class: 'grow' }), setWrap, applyBtn, saveWrap));
+    h('h1', {}, m ? m.name : '원고 변환'), h('span', { class: 'sub' }, j ? `→ ${j.journal}` : '투고처를 먼저 고르세요'),
+    h('span', { class: 'grow' }), h('div', { class: 'acts' }, setWrap, applyBtn, saveWrap)));
 
   if (!m) {
-    const input = h('input', { type: 'file', accept: '.hwp,.hwpx,.hml,.docx,.txt,.md', 'aria-label': '원고 파일', onchange: (e) => { const f = e.target.files[0]; if (f) openFile(f); } });
+    // 휴대폰 파일 앱은 모르는 확장자(.hwp)를 흐리게 막는 경우가 있어, 터치 기기에서는 형식 제한을 두지 않고 열 때 확인한다
+    const input = h('input', { type: 'file', accept: touch() ? null : '.hwp,.hwpx,.hml,.docx,.txt,.md', 'aria-label': '원고 파일', onchange: (e) => { const f = e.target.files[0]; if (f) openFile(f); } });
     const dz = h('div', { class: 'dropzone', role: 'button', tabindex: '0', onclick: () => input.click(), onkeydown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); input.click(); } } },
-      h('div', {}, h('strong', {}, '원고 파일을 이 화면에 끌어다 놓으세요'), h('p', {}, 'HWP · HWPX · DOCX · TXT · MD — 놓는 즉시 열리고, ‘적용’을 누르면 학회 양식이 입혀진 결과를 저장 전에 미리 봅니다.'), h('span', { class: 'btn ghost' }, '파일 선택'), input));
+      h('div', {}, h('strong', {}, touch() ? '원고 파일을 고르세요' : '원고 파일을 이 화면에 끌어다 놓으세요'), h('p', {}, touch() ? 'HWP · HWPX · DOCX · TXT · MD — 파일 앱·드라이브에서 고르면 바로 열리고, ‘적용’을 누르면 학회 양식이 입혀진 결과를 저장 전에 미리 봅니다.' : 'HWP · HWPX · DOCX · TXT · MD — 놓는 즉시 열리고, ‘적용’을 누르면 학회 양식이 입혀진 결과를 저장 전에 미리 봅니다.'), h('span', { class: touch() ? 'btn' : 'btn ghost' }, '파일 선택'), input));
     main.append(dz);
     main.append(h('p', { class: 'hero', style: 'margin-top:18px' }, h('b', {}, '원고 내용은 바꾸지 않습니다.'), ' 학회 바탕틀의 글꼴·크기·줄간격·여백·각주 설정을 물려받고, 체재 순서와 쪽수·쪽수 범위 기호·낫표·서지 표기만 각주와 참고문헌에서 규칙대로 맞춥니다. 표·그림은 칸 안·캡션의 각주까지 그대로 옮깁니다. AI는 쓰지 않습니다.'));
     return;
@@ -229,7 +243,7 @@ function renderConvert(main) {
   left.append(h('div', { class: 'pane-h' }, '원고 구조', h('span', { class: 'grow' }), info, h('button', { class: 'btn ghost sm', onclick: () => { state.manuscript = null; state.blocks = null; state.result = null; render(); } }, '다른 원고')));
   const lb = h('div', { class: 'pane-b' });
   if (m.error) lb.append(h('p', { class: 'err' }, m.error));
-  if (!j) lb.append(h('p', { class: 'muted' }, '왼쪽 ‘투고처 선택’에서 학회지를 고르면 문단 역할을 인식합니다.'));
+  if (!j) lb.append(h('p', { class: 'muted' }, '‘투고처 선택’에서 학회지를 고르면 문단 역할을 인식합니다.', narrow() ? h('button', { class: 'btn sm', style: 'margin-left:8px', onclick: () => openSide(true) }, '투고처 고르기') : null));
   else if (state.blocks) renderStructure(lb);
   left.append(lb);
 
@@ -244,7 +258,10 @@ function renderConvert(main) {
   else if (state.tab === 'check') rb.append(h('ul', { class: 'check' }, ...state.result.checklist.map((c) => h('li', { class: c.ok ? 'ok' : (c.warn ? 'warn' : 'no') }, c.text))));
   else rb.append(h('div', { class: 'log' }, ...state.result.steps.map((s) => h('div', { class: s.kind }, h('span', { class: 't' }, `${s.t} ms`), h('span', { class: s.kind }, s.msg)))));
   right.append(rb);
-  main.append(h('div', { class: 'work' }, left, right));
+  // 휴대폰: 원고 구조와 결과를 한 번에 하나씩(탭으로 바꿔 본다)
+  const mp = state.mpane || (state.result ? 'result' : 'struct');
+  main.append(h('div', { class: 'mseg seg', role: 'tablist', 'aria-label': '보기 전환' }, ...[['struct', '원고 구조'], ['result', state.result ? '결과 미리보기' : '결과']].map(([k, l]) => h('button', { type: 'button', role: 'tab', class: mp === k ? 'on' : '', 'aria-selected': mp === k ? 'true' : 'false', onclick: () => { state.mpane = k; render(); window.scrollTo(0, 0); } }, l))));
+  main.append(h('div', { class: 'work', 'data-m': mp }, left, right));
   const db = docbar(); if (db) main.append(db);
 }
 
@@ -453,17 +470,21 @@ async function runConvert() {
     res.checklist = checklist(blocks, j); res.notes = notes; res.subst = subst; res.cite = cite; res.errata = errata;
     const roles = {}; for (const b of blocks) if (b.role !== 'blank' && b.role !== 'skip') roles[b.role] = (roles[b.role] || 0) + 1; res.stats = { ...(res.stats || {}), roles };
     res.logText = [`투고틀 변환 로그 — ${new Date().toLocaleString('ko-KR')}`, ...notes.map((n) => `· ${n}`), ...res.steps.map((s) => `[${String(s.t).padStart(5)} ms] ${s.kind === 'warn' ? '△ ' : ''}${s.msg}`), '', '투고 전 확인:', ...res.checklist.map((c) => `${c.ok ? '●' : (c.warn ? '▲' : '○')} ${c.text}`)].join('\n');
-    state.result = res; state.dirty = false; state.tab = 'preview';
+    state.result = res; state.dirty = false; state.tab = 'preview'; state.mpane = 'result'; if (narrow()) setTimeout(() => window.scrollTo(0, 0), 0);   // 휴대폰: 결과 맨 위(미리보기 탭 줄)부터
     setStatus(`적용 완료 · ${res.elapsed} ms`, 'ready'); $('#status-note').hidden = false;
   } catch (e) { console.error(e); state.result = null; setStatus('적용 실패: ' + (e.message || e), 'err'); alert('적용 실패: ' + (e.message || e)); }
   render();
 }
 // 저장 — 브라우저가 지원하면 저장 위치를 직접 고른다(파일 시스템 접근 API), 아니면 내려받기
-async function saveResult(kind) {
+async function saveResult(kind, how = {}) {
   const r = state.result; const j = journal(); if (!r || !j) return;
   const base = (state.manuscript?.name || '원고').replace(/\.[^.]+$/, '');
   const spec = { hwp: { data: r.hwp, name: `${base}_${j.journal}.hwp`, mime: 'application/x-hwp', desc: '한글 문서 (HWP)' }, hwpx: { data: r.hwpx, name: `${base}_${j.journal}.hwpx`, mime: 'application/hwp+zip', desc: '한글 문서 (HWPX)' }, log: { data: new TextEncoder().encode(r.logText), name: `${base}_${j.journal}_변환로그.txt`, mime: 'text/plain', desc: '텍스트' } }[kind];
   const blob = new Blob([spec.data], { type: spec.mime });
+  if (how.share) {   // 휴대폰 공유 시트: 파일 앱 저장·드라이브·메신저로 바로 보낸다
+    try { const file = new File([blob], spec.name, { type: spec.mime }); if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: spec.name }); setStatus(`공유함 · ${spec.name}`, 'ready'); return; } }
+    catch (e) { if (e && e.name === 'AbortError') return; console.warn(e); }
+  }
   if (window.showSaveFilePicker) {
     try {
       const handle = await window.showSaveFilePicker({ suggestedName: spec.name, types: [{ description: spec.desc, accept: { [spec.mime]: ['.' + spec.name.split('.').pop()] } }] });
@@ -703,13 +724,20 @@ function renderHelp(main) {
 }
 
 // ───────── 시작 ─────────
-document.querySelectorAll('#nav button').forEach((b) => b.addEventListener('click', () => { state.view = b.dataset.view; render(); }));
+document.querySelectorAll('#nav button').forEach((b) => b.addEventListener('click', () => { state.view = b.dataset.view; openSide(false); render(); window.scrollTo(0, 0); }));
+// 휴대폰 서랍: 메뉴 단추·투고처 이름을 누르면 열고, 바깥·Esc·메뉴 선택으로 닫는다
+$('#mnav')?.addEventListener('click', () => openSide(!$('#side').classList.contains('open')));
+$('#mjour')?.addEventListener('click', () => openSide(true));
+$('#scrim')?.addEventListener('click', () => openSide(false));
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && $('#side')?.classList.contains('open')) openSide(false); });
+$('#jsub')?.addEventListener('click', (e) => { if (e.target.closest('button')) openSide(false); });
+window.matchMedia('(max-width: 760px)').addEventListener?.('change', () => { if (!narrow()) openSide(false); render(); });
 // 화면 스킨: 색·글꼴·둥글기 변수만 바꾼다(원고 처리와 무관). 이 브라우저에만 기억
 const SKINS = new Set(['', 'dark', 'paper', 'mono', 'navy', 'type', 'slack', 'violet']);   // ''=다크(기본)
 const applySkin = (k) => { if (!SKINS.has(k)) k = ''; if (k) document.documentElement.setAttribute('data-skin', k); else document.documentElement.removeAttribute('data-skin'); document.querySelectorAll('#skins .sw').forEach((b) => { const on = (b.dataset.skin || '') === k; b.classList.toggle('on', on); b.setAttribute('aria-checked', on ? 'true' : 'false'); }); };
 applySkin(typeof lsGet(LS.skin, '') === 'string' ? lsGet(LS.skin, '') : '');
 document.querySelectorAll('#skins .sw').forEach((b) => b.addEventListener('click', () => { const k = b.dataset.skin || ''; applySkin(k); lsSet(LS.skin, k); }));
-$('#jsel').addEventListener('change', (e) => { state.journalId = e.target.value || null; lsSet(LS.journal, state.journalId); if (state.view === 'journal' && !state.journalId) state.view = 'convert'; recompute(true); render(); });
+$('#jsel').addEventListener('change', (e) => { state.journalId = e.target.value || null; lsSet(LS.journal, state.journalId); if (state.view === 'journal' && !state.journalId) state.view = 'convert'; recompute(true); if (narrow()) openSide(false); render(); });
 // 화면 어디에 놓아도 원고가 열린다
 const mainEl = $('#main'); let dragDepth = 0;
 mainEl.append(h('div', { class: 'dropline', 'aria-hidden': 'true' }));
@@ -728,5 +756,7 @@ function safeBoot() {
 safeBoot();
 loadAssets().then(() => { state.ready = true; setStatus('엔진 준비됨 · 오프라인 처리', 'ready'); render(); })
   .catch((e) => { console.error(e); setStatus('엔진 로드 실패: ' + (e.message || e), 'err'); });
+// 웹 배포본(https)에서는 오프라인 캐시(서비스 워커)를 등록해 홈 화면 앱처럼 인터넷 없이 연다. 내려받은 파일(file://)에서는 하지 않는다
+if (location.protocol === 'https:' && 'serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => { /* sw.js가 없는 곳 */ });
 // 테스트용 훅(브라우저 콘솔에서 파일을 넣을 때) — UI 동작에는 영향 없음
 window.__tugotl = { openFile, state, render, runConvert, saveResult };

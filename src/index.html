@@ -2,9 +2,13 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="투고틀">
+<link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#3f0e40">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' 'wasm-unsafe-eval'; style-src 'unsafe-inline'; img-src data: blob:; font-src data:; connect-src data: blob:; form-action 'none'; base-uri 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' 'wasm-unsafe-eval'; style-src 'unsafe-inline'; img-src data: blob:; font-src data:; connect-src data: blob:; form-action 'none'; base-uri 'none'; object-src 'none'; manifest-src 'self'; worker-src 'self'">
 <title>투고틀</title>
 <meta name="description" content="문학 학회지 논문 양식 변환기 — 원고를 학회 바탕틀에 맞춰 HWP로 저장합니다. 모든 처리는 이 파일 안에서 끝나며 외부로 전송되지 않습니다.">
 <style>/*__CSS__*/</style>
@@ -12,8 +16,15 @@
 <body>
 <script>try { var _sk = JSON.parse(localStorage.getItem('tugotl.skin') || '""'); if (_sk) document.documentElement.setAttribute('data-skin', _sk); } catch (e) { /* 저장소 없음 */ }</script>
 <a class="skip" href="#main">본문으로 건너뛰기</a>
+<header class="mbar">
+  <button type="button" class="mbar-btn" id="mnav" aria-label="메뉴와 투고처 열기" aria-controls="side" aria-expanded="false"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+  <span class="mbar-brand">투고틀</span>
+  <button type="button" class="mbar-journal" id="mjour" aria-controls="side">투고처 고르기</button>
+  <span class="mbar-dot" id="mdot" aria-hidden="true"></span>
+</header>
+<div class="scrim" id="scrim" hidden></div>
 <div class="shell">
-  <aside class="side" aria-label="투고처와 메뉴">
+  <aside class="side" id="side" aria-label="투고처와 메뉴">
     <div class="brand"><span class="brand-name">투고틀</span><span class="brand-sub">논문 양식 변환 · 오프라인</span></div>
     <div class="side-sec">
       <div class="side-label" id="jsel-label">투고처 선택</div>
