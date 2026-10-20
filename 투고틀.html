@@ -2,9 +2,13 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="투고틀">
+<link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#3f0e40">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' 'wasm-unsafe-eval'; style-src 'unsafe-inline'; img-src data: blob:; font-src data:; connect-src data: blob:; form-action 'none'; base-uri 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' 'wasm-unsafe-eval'; style-src 'unsafe-inline'; img-src data: blob:; font-src data:; connect-src data: blob:; form-action 'none'; base-uri 'none'; object-src 'none'; manifest-src 'self'; worker-src 'self'">
 <title>투고틀</title>
 <meta name="description" content="문학 학회지 논문 양식 변환기 — 원고를 학회 바탕틀에 맞춰 HWP로 저장합니다. 모든 처리는 이 파일 안에서 끝나며 외부로 전송되지 않습니다.">
 <style>/* 투고틀 — 슬랙식 2단 구성(왼쪽 짙은 사이드바 + 오른쪽 작업 화면). 토큰은 shadcn/ui neutral, 강조색 1개, 8px 간격, 그림자 최소 */
@@ -192,12 +196,77 @@ main.over .dropline { display: block; }
 .drop input { display: none; }
 
 @media (max-width: 1100px) { .work { grid-template-columns: 1fr; } .struct { max-height: 420px; } .pages { max-height: 70vh; } }
+/* 휴대폰 전용 요소(넓은 화면에서는 숨김) */
+.mbar, .scrim, .mseg { display: none; }
+.topbar .acts { display: flex; align-items: center; gap: 10px; }
+
 @media (max-width: 760px) {
+  /* 위: 얇은 앱 막대(메뉴 단추 · 이름 · 고른 투고처 · 엔진 상태). 사이드바는 왼쪽에서 밀려 나오는 서랍 */
+  .mbar { display: flex; position: sticky; top: 0; z-index: 30; align-items: center; gap: 8px; min-height: 52px; padding: 6px 12px; padding-top: calc(6px + env(safe-area-inset-top)); background: var(--side-bg); color: var(--side-fg); border-bottom: 1px solid var(--side-line); }
+  .mbar-btn { display: inline-grid; place-items: center; width: 40px; height: 40px; margin-left: -6px; border: 0; border-radius: var(--radius-sm); background: none; color: inherit; }
+  .mbar-btn:active { background: var(--side-on); }
+  .mbar-brand { font-weight: 700; font-size: 16px; letter-spacing: -0.02em; }
+  .mbar-journal { flex: 1; min-width: 0; height: 36px; padding: 0 12px; border: 1px solid var(--side-line); border-radius: 999px; background: var(--side-bg-2); color: var(--side-fg); font-size: 13px; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .mbar-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--warn); flex: none; }
+  .mbar-dot.ready { background: #4ade80; } .mbar-dot.err { background: #f87171; }
   .shell { grid-template-columns: 1fr; }
-  .side { position: static; height: auto; }
-  main { padding: 0 16px 32px; }
+  .side { position: fixed; z-index: 40; inset: 0 auto 0 0; width: min(86vw, 330px); height: 100dvh; padding-top: calc(14px + env(safe-area-inset-top)); padding-bottom: calc(14px + env(safe-area-inset-bottom)); transform: translateX(-105%); transition: transform 220ms ease; box-shadow: 0 0 40px rgba(0,0,0,.35); overscroll-behavior: contain; }
+  .side.open { transform: none; }
+  .scrim { display: block; position: fixed; inset: 0; z-index: 35; background: rgba(0,0,0,.45); }
+  .scrim[hidden] { display: none; }
+  body.drawer { overflow: hidden; }
+  main { padding: 0 14px calc(92px + env(safe-area-inset-bottom)); }
+  /* 제목 줄: 파일 이름은 두 줄까지, 버튼 묶음은 화면 아래 고정 막대로 */
+  .topbar { position: static; flex-wrap: wrap; min-height: 0; padding: 14px 0 10px; margin-bottom: 12px; backdrop-filter: none; }
+  .topbar h1 { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; font-size: 16px; width: 100%; }
+  .topbar .sub { white-space: normal; }
+  .topbar .grow { display: none; }
+  .topbar .acts { position: fixed; z-index: 25; left: 0; right: 0; bottom: 0; gap: 8px; padding: 10px 12px; padding-bottom: calc(10px + env(safe-area-inset-bottom)); background: color-mix(in srgb, var(--card) 96%, transparent); backdrop-filter: blur(10px); border-top: 1px solid var(--border); }
+  .topbar .acts > .btn.red { flex: 1; }
+  .topbar .acts .btn { height: 44px; }
+  .topbar .acts .pop { position: fixed; left: 12px; right: 12px; top: auto; bottom: calc(76px + env(safe-area-inset-bottom)); width: auto; max-height: 70dvh; overflow: auto; }
+  .topbar .acts .menu { position: fixed; left: auto; right: 12px; top: auto; bottom: calc(76px + env(safe-area-inset-bottom)); min-width: 240px; }
+  .topbar .acts .menu button { min-height: 44px; }
+  /* 원고 구조 ↔ 결과 전환 */
+  .mseg { display: flex; position: sticky; top: calc(58px + env(safe-area-inset-top)); z-index: 20; margin: 0 0 10px; }
+  .mseg button { flex: 1; height: 36px; }
+  .work[data-m="struct"] > .pane:nth-child(2), .work[data-m="result"] > .pane:nth-child(1) { display: none; }
+  .pane-h { flex-wrap: wrap; }
+  .tabs { overflow-x: auto; scrollbar-width: none; max-width: 100%; } .tabs::-webkit-scrollbar { display: none; }
+  .struct { max-height: none; overflow: visible; border: 0; }
+  .struct th:first-child, .struct td:first-child { width: 118px; padding-left: 0; }
+  .struct td.txt { white-space: normal; max-width: none; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; }
+  .struct th { top: calc(104px + env(safe-area-inset-top)); }
+  .pages { max-height: none; overflow: visible; padding: 8px; }
+  .docbar { position: static; }
+  .dropzone { min-height: 240px; padding: 28px 18px; }
+  .card { padding: 16px; }
+  .detail .tabs { overflow-x: auto; }
+  table { display: block; overflow-x: auto; }
+  .struct table { display: table; }
+  /* 투고 일정: 표 대신 카드(마감·남은 날 / 학회지 / 호·발간·분량·비고) */
+  .sched thead { display: none; }
+  .sched tbody { display: block; }
+  .sched tr { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+  .sched td { border: 0; padding: 0; }
+  .sched td:nth-child(2) { text-align: right; font-weight: 600; white-space: nowrap; }
+  .sched td:nth-child(n+3) { grid-column: 1 / -1; }
+  .sched td:nth-child(n+4) { font-size: 12.5px; color: var(--muted-fg); }
+  .sched td:nth-child(4):not(:empty)::before { content: "호 "; color: var(--subtle); }
+  .sched td:nth-child(5):not(:empty)::before { content: "발간 "; color: var(--subtle); }
+  .sched td:nth-child(6):not(:empty)::before { content: "분량 "; color: var(--subtle); }
+  .card:has(> .sched) { padding: 4px 16px; }
   .kv { grid-template-columns: 1fr; gap: 2px 0; } .kv dt { margin-top: 6px; }
   .pop { width: min(360px, calc(100vw - 32px)); }
+}
+/* 손가락 입력: 누르는 곳을 44px 이상으로 */
+@media (pointer: coarse) {
+  .btn { height: 44px; } .btn.sm { height: 38px; }
+  .side button, .side-sub a { min-height: 44px; }
+  .side select, main select { min-height: 44px; }
+  .seg button { height: 38px; }
+  .skins .sw { width: 26px; height: 26px; }
+  .struct select { min-height: 38px; }
 }
 
 /* ── 스킨(사이드바 아래 색 점으로 고른다. data-skin이 없으면 기본 보라 사이드바). 색·글꼴·둥글기 변수만 바꾼다 */
@@ -228,7 +297,7 @@ main.over .dropline { display: block; }
 :root[data-skin="paper"], :root[data-skin="mono"], :root[data-skin="navy"], :root[data-skin="type"], :root[data-skin="violet"] { --ok: #15803d; --ok-bg: #f0fdf4; --warn: #b45309; --warn-bg: #fffbeb; --danger: #b91c1c; --danger-bg: #fef2f2; }
 /* 스킨 선택 점 */
 .skins { display: flex; align-items: center; gap: 7px; }
-.skins .sw { width: 18px; height: 18px; border-radius: 50%; border: 1px solid rgba(0,0,0,.18); padding: 0; cursor: pointer; box-shadow: inset 0 0 0 1px rgba(255,255,255,.35); }
+.skins .sw { flex: none; width: 18px; height: 18px; border-radius: 50%; border: 1px solid rgba(0,0,0,.18); padding: 0; cursor: pointer; box-shadow: inset 0 0 0 1px rgba(255,255,255,.35); }
 .skins .sw.on { outline: 2px solid var(--side-fg); outline-offset: 2px; }
 .skins .sw-default { background: linear-gradient(135deg, #1c1c1c 50%, #e8b14a 50%); }
 .skins .sw-slack { background: linear-gradient(135deg, #3f0e40 50%, #f8f8f8 50%); }
@@ -243,8 +312,15 @@ main.over .dropline { display: block; }
 <body>
 <script>try { var _sk = JSON.parse(localStorage.getItem('tugotl.skin') || '""'); if (_sk) document.documentElement.setAttribute('data-skin', _sk); } catch (e) { /* 저장소 없음 */ }</script>
 <a class="skip" href="#main">본문으로 건너뛰기</a>
+<header class="mbar">
+  <button type="button" class="mbar-btn" id="mnav" aria-label="메뉴와 투고처 열기" aria-controls="side" aria-expanded="false"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+  <span class="mbar-brand">투고틀</span>
+  <button type="button" class="mbar-journal" id="mjour" aria-controls="side">투고처 고르기</button>
+  <span class="mbar-dot" id="mdot" aria-hidden="true"></span>
+</header>
+<div class="scrim" id="scrim" hidden></div>
 <div class="shell">
-  <aside class="side" aria-label="투고처와 메뉴">
+  <aside class="side" id="side" aria-label="투고처와 메뉴">
     <div class="brand"><span class="brand-name">투고틀</span><span class="brand-sub">논문 양식 변환 · 오프라인</span></div>
     <div class="side-sec">
       <div class="side-label" id="jsel-label">투고처 선택</div>
@@ -263,7 +339,7 @@ main.over .dropline { display: block; }
       <div class="mast-status" id="status" role="status" aria-live="polite"><span class="dot" aria-hidden="true"></span><span id="status-text">엔진 준비 중…</span></div>
       <div class="skins" id="skins" role="radiogroup" aria-label="화면 스킨"><span class="sk-label">스킨</span><button type="button" class="sw sw-default" data-skin="" role="radio" aria-label="다크 스튜디오(기본)" title="다크 스튜디오(기본)"></button><button type="button" class="sw sw-paper" data-skin="paper" role="radio" aria-label="종이·서지" title="종이·서지"></button><button type="button" class="sw sw-mono" data-skin="mono" role="radio" aria-label="모노크롬 미니멀" title="모노크롬 미니멀"></button><button type="button" class="sw sw-navy" data-skin="navy" role="radio" aria-label="네이비·크림" title="네이비·크림"></button><button type="button" class="sw sw-type" data-skin="type" role="radio" aria-label="타이포 편집" title="타이포 편집"></button><button type="button" class="sw sw-slack" data-skin="slack" role="radio" aria-label="보라(슬랙식, 이전 기본)" title="보라(슬랙식, 이전 기본)"></button><button type="button" class="sw sw-violet" data-skin="violet" role="radio" aria-label="바이올렛" title="바이올렛"></button></div>
       <div class="mast-note" id="status-note" hidden>본 투고 양식 편집은 프로그램 규칙에 따른 것으로 완벽한 편집이 아닙니다. 저장한 원고는 투고 전에 반드시 저자가 직접 확인해 주세요.</div>
-      <div class="side-fine">원고는 이 브라우저 안에서만 처리되며 전송되지 않습니다 · <a href="https://github.com/edwardkim/rhwp" target="_blank" rel="noopener">rhwp</a> · v1.3 · 빌드 2026-10-15 01:20</div>
+      <div class="side-fine">원고는 이 브라우저 안에서만 처리되며 전송되지 않습니다 · <a href="https://github.com/edwardkim/rhwp" target="_blank" rel="noopener">rhwp</a> · v1.3 · 빌드 2026-10-20 11:59</div>
     </div>
   </aside>
   <main id="main" tabindex="-1"></main>
@@ -23185,6 +23261,23 @@ main.over .dropline { display: block; }
   function setStatus(text, cls) {
     $("#status-text").textContent = text;
     $("#status").className = "mast-status " + (cls || "");
+    const d = $("#mdot");
+    if (d) {
+      d.className = "mbar-dot " + (cls || "");
+      d.title = text;
+    }
+  }
+  var narrow = () => window.matchMedia("(max-width: 760px)").matches;
+  var touch = () => window.matchMedia("(pointer: coarse)").matches;
+  function openSide(open) {
+    const side = $("#side");
+    const scrim = $("#scrim");
+    if (!side) return;
+    side.classList.toggle("open", !!open);
+    if (scrim) scrim.hidden = !open;
+    $("#mnav")?.setAttribute("aria-expanded", open ? "true" : "false");
+    document.body.classList.toggle("drawer", !!open);
+    if (open) side.querySelector("select, button")?.focus();
   }
   function renderSide() {
     const sel = $("#jsel");
@@ -23214,6 +23307,8 @@ main.over .dropline { display: block; }
       else sub.append(h("button", { type: "button", disabled: "" }, h("span", { class: "ico", "aria-hidden": "true" }, "\u2197"), "\uD22C\uACE0\uCC98 \uC8FC\uC18C \uC5C6\uC74C"));
     }
     document.querySelectorAll("#nav button").forEach((b) => b.classList.toggle("on", b.dataset.view === state.view));
+    const mj = $("#mjour");
+    if (mj) mj.textContent = j ? j.journal : "\uD22C\uACE0\uCC98 \uACE0\uB974\uAE30";
   }
   function render() {
     renderSide();
@@ -23229,10 +23324,11 @@ main.over .dropline { display: block; }
     const applyBtn = h("button", { class: "btn red", disabled: canApply ? null : "", onclick: runConvert }, state.dirty && state.result ? "\uB2E4\uC2DC \uC801\uC6A9" : "\uC801\uC6A9");
     const saveWrap = h("div", { class: "rel" });
     const saveBtn = h("button", { class: "btn", disabled: state.result && !state.dirty ? null : "", onclick: () => saveResult("hwp") }, "\uC800\uC7A5");
+    const canShare = typeof navigator !== "undefined" && typeof navigator.canShare === "function" && touch();
     const moreBtn = h("button", { class: "btn ghost", "aria-label": "\uB2E4\uB978 \uD615\uC2DD\uC73C\uB85C \uC800\uC7A5", disabled: state.result && !state.dirty ? null : "", onclick: () => {
       const open = saveWrap.querySelector(".menu");
       if (open) open.remove();
-      else saveWrap.append(h("div", { class: "menu" }, h("button", { onclick: () => saveResult("hwpx") }, "HWPX\uB85C \uC800\uC7A5"), h("button", { onclick: () => saveResult("log") }, "\uBCC0\uD658 \uB85C\uADF8(txt) \uC800\uC7A5")));
+      else saveWrap.append(h("div", { class: "menu" }, canShare ? h("button", { onclick: () => saveResult("hwp", { share: true }) }, "HWP \uACF5\uC720\uD558\uAE30(\uD30C\uC77C \uC571\xB7\uB4DC\uB77C\uC774\uBE0C\xB7\uBA54\uC2E0\uC800)") : null, h("button", { onclick: () => saveResult("hwpx") }, "HWPX\uB85C \uC800\uC7A5"), h("button", { onclick: () => saveResult("log") }, "\uBCC0\uD658 \uB85C\uADF8(txt) \uC800\uC7A5")));
     } }, "\u25BE");
     saveWrap.append(h("div", { class: "row", style: "gap:4px" }, saveBtn, moreBtn));
     const setWrap = h("div", { class: "rel" });
@@ -23251,14 +23347,12 @@ main.over .dropline { display: block; }
       "div",
       { class: "topbar" },
       h("h1", {}, m ? m.name : "\uC6D0\uACE0 \uBCC0\uD658"),
-      h("span", { class: "sub" }, j ? `\u2192 ${j.journal}` : "\uC67C\uCABD\uC5D0\uC11C \uD22C\uACE0\uCC98\uB97C \uACE0\uB974\uC138\uC694"),
+      h("span", { class: "sub" }, j ? `\u2192 ${j.journal}` : "\uD22C\uACE0\uCC98\uB97C \uBA3C\uC800 \uACE0\uB974\uC138\uC694"),
       h("span", { class: "grow" }),
-      setWrap,
-      applyBtn,
-      saveWrap
+      h("div", { class: "acts" }, setWrap, applyBtn, saveWrap)
     ));
     if (!m) {
-      const input = h("input", { type: "file", accept: ".hwp,.hwpx,.hml,.docx,.txt,.md", "aria-label": "\uC6D0\uACE0 \uD30C\uC77C", onchange: (e) => {
+      const input = h("input", { type: "file", accept: touch() ? null : ".hwp,.hwpx,.hml,.docx,.txt,.md", "aria-label": "\uC6D0\uACE0 \uD30C\uC77C", onchange: (e) => {
         const f = e.target.files[0];
         if (f) openFile(f);
       } });
@@ -23270,7 +23364,7 @@ main.over .dropline { display: block; }
             input.click();
           }
         } },
-        h("div", {}, h("strong", {}, "\uC6D0\uACE0 \uD30C\uC77C\uC744 \uC774 \uD654\uBA74\uC5D0 \uB04C\uC5B4\uB2E4 \uB193\uC73C\uC138\uC694"), h("p", {}, "HWP \xB7 HWPX \xB7 DOCX \xB7 TXT \xB7 MD \u2014 \uB193\uB294 \uC989\uC2DC \uC5F4\uB9AC\uACE0, \u2018\uC801\uC6A9\u2019\uC744 \uB204\uB974\uBA74 \uD559\uD68C \uC591\uC2DD\uC774 \uC785\uD600\uC9C4 \uACB0\uACFC\uB97C \uC800\uC7A5 \uC804\uC5D0 \uBBF8\uB9AC \uBD05\uB2C8\uB2E4."), h("span", { class: "btn ghost" }, "\uD30C\uC77C \uC120\uD0DD"), input)
+        h("div", {}, h("strong", {}, touch() ? "\uC6D0\uACE0 \uD30C\uC77C\uC744 \uACE0\uB974\uC138\uC694" : "\uC6D0\uACE0 \uD30C\uC77C\uC744 \uC774 \uD654\uBA74\uC5D0 \uB04C\uC5B4\uB2E4 \uB193\uC73C\uC138\uC694"), h("p", {}, touch() ? "HWP \xB7 HWPX \xB7 DOCX \xB7 TXT \xB7 MD \u2014 \uD30C\uC77C \uC571\xB7\uB4DC\uB77C\uC774\uBE0C\uC5D0\uC11C \uACE0\uB974\uBA74 \uBC14\uB85C \uC5F4\uB9AC\uACE0, \u2018\uC801\uC6A9\u2019\uC744 \uB204\uB974\uBA74 \uD559\uD68C \uC591\uC2DD\uC774 \uC785\uD600\uC9C4 \uACB0\uACFC\uB97C \uC800\uC7A5 \uC804\uC5D0 \uBBF8\uB9AC \uBD05\uB2C8\uB2E4." : "HWP \xB7 HWPX \xB7 DOCX \xB7 TXT \xB7 MD \u2014 \uB193\uB294 \uC989\uC2DC \uC5F4\uB9AC\uACE0, \u2018\uC801\uC6A9\u2019\uC744 \uB204\uB974\uBA74 \uD559\uD68C \uC591\uC2DD\uC774 \uC785\uD600\uC9C4 \uACB0\uACFC\uB97C \uC800\uC7A5 \uC804\uC5D0 \uBBF8\uB9AC \uBD05\uB2C8\uB2E4."), h("span", { class: touch() ? "btn" : "btn ghost" }, "\uD30C\uC77C \uC120\uD0DD"), input)
       );
       main.append(dz);
       main.append(h("p", { class: "hero", style: "margin-top:18px" }, h("b", {}, "\uC6D0\uACE0 \uB0B4\uC6A9\uC740 \uBC14\uAFB8\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4."), " \uD559\uD68C \uBC14\uD0D5\uD2C0\uC758 \uAE00\uAF34\xB7\uD06C\uAE30\xB7\uC904\uAC04\uACA9\xB7\uC5EC\uBC31\xB7\uAC01\uC8FC \uC124\uC815\uC744 \uBB3C\uB824\uBC1B\uACE0, \uCCB4\uC7AC \uC21C\uC11C\uC640 \uCABD\uC218\xB7\uCABD\uC218 \uBC94\uC704 \uAE30\uD638\xB7\uB0AB\uD45C\xB7\uC11C\uC9C0 \uD45C\uAE30\uB9CC \uAC01\uC8FC\uC640 \uCC38\uACE0\uBB38\uD5CC\uC5D0\uC11C \uADDC\uCE59\uB300\uB85C \uB9DE\uCDA5\uB2C8\uB2E4. \uD45C\xB7\uADF8\uB9BC\uC740 \uCE78 \uC548\xB7\uCEA1\uC158\uC758 \uAC01\uC8FC\uAE4C\uC9C0 \uADF8\uB300\uB85C \uC62E\uAE41\uB2C8\uB2E4. AI\uB294 \uC4F0\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4."));
@@ -23295,7 +23389,7 @@ main.over .dropline { display: block; }
     } }, "\uB2E4\uB978 \uC6D0\uACE0")));
     const lb = h("div", { class: "pane-b" });
     if (m.error) lb.append(h("p", { class: "err" }, m.error));
-    if (!j) lb.append(h("p", { class: "muted" }, "\uC67C\uCABD \u2018\uD22C\uACE0\uCC98 \uC120\uD0DD\u2019\uC5D0\uC11C \uD559\uD68C\uC9C0\uB97C \uACE0\uB974\uBA74 \uBB38\uB2E8 \uC5ED\uD560\uC744 \uC778\uC2DD\uD569\uB2C8\uB2E4."));
+    if (!j) lb.append(h("p", { class: "muted" }, "\u2018\uD22C\uACE0\uCC98 \uC120\uD0DD\u2019\uC5D0\uC11C \uD559\uD68C\uC9C0\uB97C \uACE0\uB974\uBA74 \uBB38\uB2E8 \uC5ED\uD560\uC744 \uC778\uC2DD\uD569\uB2C8\uB2E4.", narrow() ? h("button", { class: "btn sm", style: "margin-left:8px", onclick: () => openSide(true) }, "\uD22C\uACE0\uCC98 \uACE0\uB974\uAE30") : null));
     else if (state.blocks) renderStructure(lb);
     left.append(lb);
     const right = h("div", { class: "pane" });
@@ -23312,7 +23406,13 @@ main.over .dropline { display: block; }
     else if (state.tab === "check") rb.append(h("ul", { class: "check" }, ...state.result.checklist.map((c) => h("li", { class: c.ok ? "ok" : c.warn ? "warn" : "no" }, c.text))));
     else rb.append(h("div", { class: "log" }, ...state.result.steps.map((s) => h("div", { class: s.kind }, h("span", { class: "t" }, `${s.t} ms`), h("span", { class: s.kind }, s.msg)))));
     right.append(rb);
-    main.append(h("div", { class: "work" }, left, right));
+    const mp = state.mpane || (state.result ? "result" : "struct");
+    main.append(h("div", { class: "mseg seg", role: "tablist", "aria-label": "\uBCF4\uAE30 \uC804\uD658" }, ...[["struct", "\uC6D0\uACE0 \uAD6C\uC870"], ["result", state.result ? "\uACB0\uACFC \uBBF8\uB9AC\uBCF4\uAE30" : "\uACB0\uACFC"]].map(([k, l]) => h("button", { type: "button", role: "tab", class: mp === k ? "on" : "", "aria-selected": mp === k ? "true" : "false", onclick: () => {
+      state.mpane = k;
+      render();
+      window.scrollTo(0, 0);
+    } }, l))));
+    main.append(h("div", { class: "work", "data-m": mp }, left, right));
     const db = docbar();
     if (db) main.append(db);
   }
@@ -23658,6 +23758,8 @@ ${b.text}` }, b.text, ...objTags, b.footnotes?.length ? h("span", { class: "fn" 
       state.result = res;
       state.dirty = false;
       state.tab = "preview";
+      state.mpane = "result";
+      if (narrow()) setTimeout(() => window.scrollTo(0, 0), 0);
       setStatus(`\uC801\uC6A9 \uC644\uB8CC \xB7 ${res.elapsed} ms`, "ready");
       $("#status-note").hidden = false;
     } catch (e) {
@@ -23668,13 +23770,26 @@ ${b.text}` }, b.text, ...objTags, b.footnotes?.length ? h("span", { class: "fn" 
     }
     render();
   }
-  async function saveResult(kind) {
+  async function saveResult(kind, how = {}) {
     const r = state.result;
     const j = journal();
     if (!r || !j) return;
     const base = (state.manuscript?.name || "\uC6D0\uACE0").replace(/\.[^.]+$/, "");
     const spec = { hwp: { data: r.hwp, name: `${base}_${j.journal}.hwp`, mime: "application/x-hwp", desc: "\uD55C\uAE00 \uBB38\uC11C (HWP)" }, hwpx: { data: r.hwpx, name: `${base}_${j.journal}.hwpx`, mime: "application/hwp+zip", desc: "\uD55C\uAE00 \uBB38\uC11C (HWPX)" }, log: { data: new TextEncoder().encode(r.logText), name: `${base}_${j.journal}_\uBCC0\uD658\uB85C\uADF8.txt`, mime: "text/plain", desc: "\uD14D\uC2A4\uD2B8" } }[kind];
     const blob = new Blob([spec.data], { type: spec.mime });
+    if (how.share) {
+      try {
+        const file = new File([blob], spec.name, { type: spec.mime });
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({ files: [file], title: spec.name });
+          setStatus(`\uACF5\uC720\uD568 \xB7 ${spec.name}`, "ready");
+          return;
+        }
+      } catch (e) {
+        if (e && e.name === "AbortError") return;
+        console.warn(e);
+      }
+    }
     if (window.showSaveFilePicker) {
       try {
         const handle = await window.showSaveFilePicker({ suggestedName: spec.name, types: [{ description: spec.desc, accept: { [spec.mime]: ["." + spec.name.split(".").pop()] } }] });
@@ -24276,8 +24391,23 @@ ${b.text}` }, b.text, ...objTags, b.footnotes?.length ? h("span", { class: "fn" 
   }
   document.querySelectorAll("#nav button").forEach((b) => b.addEventListener("click", () => {
     state.view = b.dataset.view;
+    openSide(false);
     render();
+    window.scrollTo(0, 0);
   }));
+  $("#mnav")?.addEventListener("click", () => openSide(!$("#side").classList.contains("open")));
+  $("#mjour")?.addEventListener("click", () => openSide(true));
+  $("#scrim")?.addEventListener("click", () => openSide(false));
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && $("#side")?.classList.contains("open")) openSide(false);
+  });
+  $("#jsub")?.addEventListener("click", (e) => {
+    if (e.target.closest("button")) openSide(false);
+  });
+  window.matchMedia("(max-width: 760px)").addEventListener?.("change", () => {
+    if (!narrow()) openSide(false);
+    render();
+  });
   var SKINS = /* @__PURE__ */ new Set(["", "dark", "paper", "mono", "navy", "type", "slack", "violet"]);
   var applySkin = (k) => {
     if (!SKINS.has(k)) k = "";
@@ -24300,6 +24430,7 @@ ${b.text}` }, b.text, ...objTags, b.footnotes?.length ? h("span", { class: "fn" 
     lsSet(LS.journal, state.journalId);
     if (state.view === "journal" && !state.journalId) state.view = "convert";
     recompute(true);
+    if (narrow()) openSide(false);
     render();
   });
   var mainEl = $("#main");
@@ -24357,6 +24488,8 @@ ${b.text}` }, b.text, ...objTags, b.footnotes?.length ? h("span", { class: "fn" 
   }).catch((e) => {
     console.error(e);
     setStatus("\uC5D4\uC9C4 \uB85C\uB4DC \uC2E4\uD328: " + (e.message || e), "err");
+  });
+  if (location.protocol === "https:" && "serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {
   });
   window.__tugotl = { openFile, state, render, runConvert, saveResult };
 })();

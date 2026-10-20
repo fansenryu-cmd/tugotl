@@ -2,7 +2,11 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1c1c1c">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
 <title>투고틀 — 문학 학회지 논문 양식 변환기</title>
 <meta name="description" content="원고(HWP·HWPX·DOCX·TXT·MD)를 올리고 학회지를 고르면 그 학회의 양식에 맞춘 HWP를 만듭니다. 브라우저 안에서만 처리되고 원고는 전송되지 않습니다.">
 <style>
@@ -44,6 +48,7 @@
     <a class="btn" href="https://github.com/fansenryu-cmd/tugotl/releases/latest/download/tugotl.html">내려받기 (오프라인용 HTML 한 개)</a>
   </div>
   <p class="note">약 30 MB. 열어 둔 뒤 인터넷을 끊어도 동작합니다. 내려받은 파일은 더블클릭으로 브라우저에서 엽니다.</p>
+  <div class="privacy" style="border-color:var(--border);background:var(--card)"><b>휴대폰에서 쓰기.</b> ‘웹에서 바로 열기’로 연 뒤 브라우저 메뉴의 <b>홈 화면에 추가</b>(아이폰 사파리: 공유 → 홈 화면에 추가)를 누르면 앱처럼 설치되고, 한 번 연 뒤에는 인터넷 없이도 열립니다. 원고는 파일 앱·드라이브에서 고르고, 결과는 저장하거나 ▾ 메뉴의 <b>공유하기</b>로 파일 앱·메신저에 바로 보냅니다.</div>
 
   <div class="grid">
     <div class="card"><b>입력</b><span>HWP · HWPX · DOCX · TXT · MD 원고</span></div>
@@ -59,5 +64,6 @@
     <img class="hits" src="https://hits.sh/fansenryu-cmd.github.io/tugotl.svg?label=%EB%B0%A9%EB%AC%B8&color=e8b14a&labelColor=2a2a2a" alt="방문 수" referrerpolicy="no-referrer">
   </footer>
 </main>
+<script>if (location.protocol === 'https:' && 'serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(function () {});</script>
 </body>
 </html>
