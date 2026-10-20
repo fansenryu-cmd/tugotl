@@ -1,4 +1,4 @@
-# 투고틀 (tugotl) v1.3
+# 투고틀 (tugotl) v1.4
 
 **KCI 학술지 투고용 논문 양식 변환기 · Manuscript formatter for Korean (KCI) academic journals**
 
@@ -341,13 +341,15 @@ docs/             학회 조사·규정 요지·첨부 원본·감사 보고서
 
 ## 변경 내역 · Changelog
 
-**v1.4 (2026-10-21)** — 학회 108곳 추가(82곳 → 190곳), 표·그림, 휴대폰, 화면 그림, 한영 안내.
+**v1.4 (2026-10-21)** — 학회 108곳 추가(82곳 → 190곳), 분야 거르기, 표·그림, 휴대폰, 화면 그림, 한영 안내, 감사 반영.
 - **학회 확장**: KCI 문학·고전문학·한문학·구비민속·문화연구·대중문화·영상·문화콘텐츠·한국학 분야 등재지·등재후보지 108곳 추가(등재 179 · 등재후보 11). 학회 공식 규정만으로 수집하고, Sonnet 5.5·Haiku 5.5 에이전트가 108곳 전부를 원문과 따로 대조한 뒤 엇갈린 항목은 원문을 다시 확인해 반영. 기록은 [docs/audit/journal_expansion_2026-10-20.md](docs/audit/journal_expansion_2026-10-20.md).
 - **표·그림**: 한글·Word 원고의 표·그림을 옮김(칸 안·캡션 각주 포함). 목차를 표로 짠 원고는 목차를 다시 만들지 않음.
 - **휴대폰**: 서랍형 메뉴·아래쪽 버튼 막대·구조/결과 전환, 홈 화면 설치·오프라인.
 - **화면 그림 6종**과 **한영 안내**(README·소개 페이지·앱 도움말 영어 절, 영문 주소 tugotl.html), 사용량 배지.
+- **분야 거르기**: 학회 선택 칸 위에서 국어국문학 종합·현대문학·고전문학·구비민속·문학교육·비교문학·문화연구·대중문화·문화콘텐츠로 목록을 좁힘.
+- **감사 반영**(코드 감사 + 학회 25곳 규정 원문 대조, [review13_code](docs/audit/review13_code.md)·[review13_data](docs/audit/review13_data.md)): 한글 내어쓰기를 한글 방식으로 써서 참고문헌·각주 둘째 줄이 두 배로 들어가던 문제, 문단 위·아래 간격이 절반으로 들어가던 단위 오류, 참고문헌 뒤 영문 제목·저자가 참고문헌으로 잡히던 문제, 규정에 없는 각주·제목이 본문 모양으로 나오던 문제, DOCX 글상자 속 표·중복 그림·빈 표, 같은 자리의 각주·표 순서를 고침. 학회 데이터 보충(탐라문화 양식 수치, 대중음악·트랜스- 각주, 표지·주제어 머리말 등).
 
-*v1.4 in English:* 108 more KCI journals in literature, classics, Sino-Korean literature, folklore, culture studies, film and cultural content (190 in total: 179 accredited, 11 candidate), each collected from the society’s official rules and cross-checked against the source by two independent model passes. Tables and figures are now carried over (including footnotes inside cells and captions). A phone layout with home-screen install and offline use, six illustrations, English guidance in the README, landing page and in-app help, and usage badges.
+*v1.4 in English:* 108 more KCI journals in literature, classics, Sino-Korean literature, folklore, culture studies, film and cultural content (190 in total: 179 accredited, 11 candidate), each collected from the society’s official rules and cross-checked against the source by two independent model passes. Tables and figures are now carried over (including footnotes inside cells and captions). A phone layout with home-screen install and offline use, six illustrations, English guidance in the README, landing page and in-app help, usage badges, and a field filter for the journal list. A code audit and a source-by-source check of 25 journals led to fixes: hanging indents are now written the way Hangul draws them (the second line no longer moves twice as far), paragraph spacing is no longer halved, English titles after the references are recognised, missing footnote/heading rules fall back to proportional defaults instead of body text, and several DOCX table/picture edge cases are handled.
 
 **v1.3 (2026-10-15)** — 화면 정리, 학회 양식 정제, 역할 인식 3회차.
 - 학회 선택 목록을 등재지·등재후보지 순, 학술지 이름 가나다순으로. 자료 수집용 내부 분류(양식 파일·규정 수치·일반 서식)는 화면에서 뺌.
