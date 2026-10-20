@@ -13,7 +13,7 @@ export const U = {
   mm: (v) => Math.round((v * 7200) / 25.4),      // mm → HWPUNIT
   hwpToMm: (v) => Math.round((v * 25.4) / 7200 * 10) / 10,
   fontSize: (pt) => Math.round(pt * 100),         // pt → fontSize(1/100pt)
-  spacing: (pt) => Math.round(pt * 100),          // 문단 위/아래 간격 → HWPUNIT
+  spacing: (pt) => Math.round(pt * 200),          // 문단 위/아래 간격도 들여쓰기처럼 HWPUNIT×2 로 저장됨(한글 COM으로 확인: 양식의 45pt = 9000)
   margin: (pt) => Math.round(pt * 200),           // 들여쓰기·좌우 여백은 HWPUNIT×2 로 저장됨
   pxToPt: (px) => Math.round((px * 72) / 96 * 10) / 10,
 };
@@ -103,8 +103,9 @@ function charPropsOf(doc, fmt, fontName) {
   const fid = doc.findOrCreateFontId(name);
   const p = { fontFamily: name, fontSize: U.fontSize(fmt.size || 10), bold: !!fmt.bold, italic: !!fmt.italic };
   if (fid >= 0) p.fontId = fid;
-  if (fmt.spacing !== undefined) p.spacings = Array(7).fill(fmt.spacing);
-  if (fmt.ratio !== undefined) p.ratios = Array(7).fill(fmt.ratio);
+  // 장평·자간을 적지 않은 역할은 100%·0%로 — 임시 문단이 바로 앞 역할의 값을 물려받지 않게
+  p.spacings = Array(7).fill(fmt.spacing !== undefined ? fmt.spacing : 0);
+  p.ratios = Array(7).fill(fmt.ratio !== undefined ? fmt.ratio : 100);
   return p;
 }
 function paraPropsOf(fmt) {
@@ -125,7 +126,7 @@ export async function resolveRoles(doc, journal, log, hasTemplate) {
   const byName = Object.fromEntries(styles.map((s) => [s.name.trim(), s]));
   const n0 = doc.getParagraphCount(0);
   const shapes = {};
-  const need = ['title', 'subtitle', 'titleEn', 'subtitleEn', 'author', 'affiliation', 'tocHead', 'toc', 'abstractHead', 'abstract', 'keywords', 'h1', 'h2', 'h3', 'h4', 'body', 'bodyFirst', 'quote', 'source', 'caption', 'object', 'objNote', 'blank', 'refHead', 'refSub', 'ref', 'abstractEnHead', 'titleEn2', 'authorEn', 'abstractEn', 'keywordsEn', 'dates'];
+  const need = ['title', 'subtitle', 'titleEn', 'subtitleEn', 'author', 'affiliation', 'tocHead', 'toc', 'abstractHead', 'abstract', 'keywords', 'h1', 'h2', 'h3', 'h4', 'body', 'bodyFirst', 'quote', 'source', 'caption', 'object', 'objNote', 'blank', 'refHead', 'refSub', 'ref', 'abstractEnHead', 'titleEn2', 'subtitleEn2', 'authorEn', 'abstractEn', 'keywordsEn', 'dates'];
   const scratch = [];
   const fromFormat = (role, f) => {
     // 임시 문단: 마지막 문단 뒤에 추가

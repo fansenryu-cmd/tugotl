@@ -180,7 +180,7 @@ export function recognize(paragraphs, journal) {
       const kwW = t.replace(/[.!?]["”’')\]]*$/, '').split(/\s+/); const kwProse = /[.!?]["”’')\]]*$/.test(t) && kwWords >= 3 && !/[,;，；]/.test(t) && /^[A-Z]/.test(t) && kwW.slice(1).some((w) => /^[a-z]/.test(w) && !/^(?:of|the|a|an|and|or|in|on|for|to|with|as|at|by|from|into|between|versus|vs)$/i.test(w));
       if (prevKw && prevKw.role === 'keywordsEn' && kwRun <= 3 && !kwProse && RE.latin.test(t) && t.length <= 100 && !/^[*＊\d]/.test(t) && !/\b(?:is|are|was|were|has|have|we)\b/i.test(t) && !/[.!?]["”’')\]]*$/.test(kwPrevText) && ((/[,;，；]$/.test(kwPrevText) && kwWords <= 12) || (kwPrevText.length >= 45 && ((kwWords <= 4 && !/[.!?]["”’')\]]*$/.test(t)) || (/[,;，；]/.test(t) && kwWords <= 12 && !/[.!?]["”’')\]]*$/.test(t)))))) { push('keywordsEn', 'Keywords 이어짐(줄바꿈)'); continue; }   // 영문 주제어가 두 줄로 나뉜 경우
       if (!enBlocks.some((b) => b.role === 'titleEn2') && short && RE.latin.test(t) && !authorEnLike(t) && !/[.!?。！？]["”’'」』)\]}]*\s*$/.test(t)) { push('titleEn2', '영문 제목(초록부)'); continue; }
-      if (RE.subtitlePrefix.test(t) && short && RE.latin.test(t)) { push('subtitleEn', '영문 부제'); continue; }
+      if (RE.subtitlePrefix.test(t) && short && RE.latin.test(t)) { push('subtitleEn2', '영문 부제'); continue; }
       if (authorEnLike(t) || (short && /^[A-Z][a-z]+,\s*[A-Z]/.test(t))) { push('authorEn', '영문 이름'); continue; }
       if (RE.journalNameLine.test(t) && short) { push('skip', '학술지명(바탕틀 예시 문구)'); continue; }
       if (/^[*＊†‡]{1,2}\s*\S/.test(t) && t.length < 160 && /(대학|연구소|연구원|학과|학부|교수|박사|강사|@|University|Institute|Department|College|교신|e-?mail)/i.test(t)) { push('affiliation', '별표 소속·교신 표기(영문초록부)'); continue; }
@@ -210,6 +210,15 @@ export function recognize(paragraphs, journal) {
     if (lastWasHeading && journal?.template?.roles?.bodyFirst) { push('bodyFirst', '장 첫 문단'); continue; }
     push('body', '본문');
   }
+  // 참고문헌 끝에 붙어 들어온 영문 제목·부제·저자(영문초록 제목 바로 앞, 연도·낫표·한글이 없는 라틴 문자 줄)를 영문초록부로 돌린다
+  for (let h = 0; h < blocks.length; h++) {
+    if (blocks[h].role !== 'abstractEnHead') continue;
+    const run = []; for (let k = h - 1; k >= 0 && run.length < 4; k--) { const b = blocks[k]; if (b.role === 'blank') continue; if (b.role !== 'ref') break; const t = trimmed({ text: b.text }); if (!RE.latin.test(t) || hasHangul(t) || t.length > 160 || /\b(?:1[5-9]|20)\d{2}\b|[『「《〈󰡔]|https?:|\bpp?\.\s*\d/.test(t)) break; run.unshift(b); }
+    if (!run.length || run.length === 4) continue;   // 넷 이상 이어지면 실제 국외 참고문헌일 수 있다
+    run.forEach((b, n) => { const t = trimmed({ text: b.text });
+      const role = n === 0 ? 'titleEn2' : RE.subtitlePrefix.test(t) ? 'subtitleEn2' : (authorEnLike(t) || /^[A-Z][A-Za-z\-]+\s+[A-Z][A-Za-z\-]+.{0,4}[(（]/.test(t) || /\b(University|Professor|Institute|College|Researcher|Lecturer)\b/i.test(t)) ? 'authorEn' : 'subtitleEn2';
+      b.role = role; b.reason = '영문 제목부(참고문헌 뒤·영문초록 앞)'; });
+  }
   return blocks;
 }
 
@@ -219,7 +228,8 @@ export function reorderSections(blocks, journal) {
   const groups = {}; const seq = [];
   let cur = null;
   for (const b of blocks) {
-    const g = b.role === 'blank' || (FLOAT_ROLES.has(b.role) && cur) ? cur : (ROLE_GROUP[b.role] || 'body');
+    const tocObj = b.role === 'object' && (b.objects || []).some((o) => o.info && o.info.toc);   // 표 상자에 짠 목차는 목차 묶음으로 옮긴다
+    const g = tocObj ? 'toc' : b.role === 'blank' || (FLOAT_ROLES.has(b.role) && cur) ? cur : (ROLE_GROUP[b.role] || 'body');
     if (b.role === 'skip') continue;
     if (g === null || g === undefined) continue;
     if (!groups[g]) { groups[g] = []; seq.push(g); }
@@ -335,7 +345,8 @@ export function applySubstitutions(blocks, journal, opts) {
   const fr = (journal && journal.footnote) || {};
   const okSym = (x) => (typeof x === 'string' && /^[-~∼〜～–－]$/.test(x) ? x : null);
   const rangeKo = opts.pageRange === undefined ? okSym(fr.pageRange) : okSym(opts.pageRange);
-  const pageSpace = fr.pageSpace === true && (unit === 'p.' || unit === 'pp.');
+  const pageSpace = fr.pageSpace === true && (!unit || unit === 'p.' || unit === 'pp.');   // 쪽 단위를 원고대로 두는 학회(keep)도 p./pp. 뒤 한 칸은 적용(‘p. 25’, 한류연구)
+  const symOf = (r) => (r ? r.replace(/[\s\d]/g, '') : '');   // 원고의 범위 기호(학회가 정하지 않았으면 그대로 쓴다)
   const pageSpaceLatin = fr.pageSpaceLatin === true;   // 국외 문헌의 p./pp.만 한 칸(‘pp. 33－35’, 겨레어문학)
   const latSame = fr.pageUnitLatin === 'same';   // 국외 문헌도 국문과 같은 단위(‘…, 2019, 20~37면’, 문학교육학)
   const langOf = (before) => (latSame ? 'ko' : citeLang(before));
@@ -400,12 +411,12 @@ export function applySubstitutions(blocks, journal, opts) {
         if (unit && (hasHangul(seg) || latSame)) {
           if (unit === '쪽' || unit === '면') {
             // 국외 문헌 뒤에 잘못 붙은 쪽·면은 p./pp.로(‘…, Journal of Things 1(2), 2000, 15쪽’ → ‘p.15’)
-            apply(/(\d+)(\s*[-~–∼〜～－]\s*(\d+))?\s*(쪽|면)(?=에서|에|부터|까지|을|를|의|과|와|참조|재인용|[^가-힣]|$)/g, (m, a, r, b, u, off, str) => (langOf(str.slice(0, off)) === 'lat' ? (b ? `pp.${a}${rangeLatin || '-'}${b}` : `p.${a}`) : m));
+            apply(/(\d+)(\s*[-~–∼〜～－]\s*(\d+))?\s*(쪽|면)(?=에서|에|부터|까지|을|를|의|과|와|참조|재인용|[^가-힣]|$)/g, (m, a, r, b, u, off, str) => (langOf(str.slice(0, off)) === 'lat' ? (b ? `pp.${a}${rangeLatin || symOf(r) || '-'}${b}` : `p.${a}`) : m));
             apply(/(\d+)\s*(쪽|면)(?![가-힣])/g, (m, d, u) => (u === unit ? m : `${d}${unit}`));
             // p./pp.는 그 문헌이 국문일 때만 쪽·면으로(국문 문장 안에 인용된 외국 논문은 그대로). ‘p.20에서’처럼 조사가 붙어도 → ‘20쪽에서’
-            apply(/\bpp?\.\s*(\d+)(\s*[-~–∼〜～－]\s*(\d+))?(?=[.,;)\s]|$|[가-힣])/g, (m, a, r, b, off, str) => (langOf(str.slice(0, off)) === 'lat' ? m : (b ? `${a}${rangeKo || '~'}${b}${unit}` : `${a}${unit}`)));
+            apply(/\bpp?\.\s*(\d+)(\s*[-~–∼〜～－]\s*(\d+))?(?=[.,;)\s]|$|[가-힣])/g, (m, a, r, b, off, str) => (langOf(str.slice(0, off)) === 'lat' ? m : (b ? `${a}${rangeKo || symOf(r) || '~'}${b}${unit}` : `${a}${unit}`)));
           } else if (unit === 'p.' || unit === 'pp.') {
-            apply(/(\d+)(\s*[-~–∼〜～－]\s*(\d+))?\s*(쪽|면)(?![가-힣])/g, (m, a, r, b) => (b ? `pp.${a}${rangeKo || '-'}${b}` : `p.${a}`));
+            apply(/(\d+)(\s*[-~–∼〜～－]\s*(\d+))?\s*(쪽|면)(?![가-힣])/g, (m, a, r, b) => (b ? `pp.${a}${rangeKo || symOf(r) || '-'}${b}` : `p.${a}`));
           }
         }
         // 쪽수 범위 기호(~ ～ ∼ -)는 학회 각주·참고문헌 예시대로 — 기호 한 글자만 바꾼다. pp. 범위는 그 문헌의 언어(국문/국외)로 고른다
