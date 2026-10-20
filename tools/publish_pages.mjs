@@ -25,7 +25,8 @@ for (const f of fs.readdirSync(path.join(root, 'site'))) {
   const p = path.join(root, 'site', f); if (!fs.statSync(p).isFile()) continue;
   entries.push({ name: f, id: blob(p, f === 'sw.js' ? (s) => s.replace('__BUILD__', build) : null) });   // 오프라인 캐시 이름에 빌드 지문을 넣어 새 판이 오면 옛 캐시를 지운다
 }
-entries.push({ name: '투고틀.html', id: blob(app) }, { name: '투고틀.sha256', id: blob(sha) });
+const appBlob = blob(app);
+entries.push({ name: '투고틀.html', id: appBlob }, { name: 'tugotl.html', id: appBlob }, { name: '투고틀.sha256', id: blob(sha) });   // 영문 주소(tugotl.html)도 같은 파일 — 해외 사용자용
 if (!entries.some((e) => e.name === '.nojekyll')) entries.push({ name: '.nojekyll', id: execFileSync('git', ['hash-object', '-w', '--stdin'], { cwd: root, input: '' }).toString().trim() });
 
 const tree = execFileSync('git', ['mktree'], { cwd: root, input: entries.map((e) => `100644 blob ${e.id}\t${e.name}`).join('\n') + '\n' }).toString().trim();

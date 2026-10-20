@@ -734,6 +734,14 @@ function renderHelp(main) {
       ['전문과 목록: 저장소의 ', h('a', { href: 'https://github.com/fansenryu-cmd/tugotl/blob/main/LICENSE', target: '_blank', rel: 'noopener noreferrer' }, 'LICENSE'), ', ', h('a', { href: 'https://github.com/fansenryu-cmd/tugotl/blob/main/THIRD_PARTY_NOTICES.md', target: '_blank', rel: 'noopener noreferrer' }, 'THIRD_PARTY_NOTICES.md'), '. 새 버전과 소스: ', h('a', { href: 'https://github.com/fansenryu-cmd/tugotl', target: '_blank', rel: 'noopener noreferrer' }, 'github.com/fansenryu-cmd/tugotl')]),
     h('details', { style: 'margin-top:10px' }, h('summary', { style: 'cursor:pointer' }, '제3자 소프트웨어 라이선스 전문 (MIT)'), ...THIRD_PARTY_LICENSES.map((l) => h('div', { style: 'margin-top:8px' }, h('b', {}, l.name), h('pre', { style: 'white-space:pre-wrap;font-size:11px;line-height:1.5;margin:4px 0 0' }, l.text)))),
     h('p', { style: 'margin:10px 0 0' }, '규정을 공개해 주신 각 학회 편집위원회와 rhwp를 만든 Edward Kim께 감사드립니다. 이 프로그램의 코드와 문서는 AI 코딩 도구(Claude, Anthropic)의 도움을 받아 작성했고, 설계·검증·최종 확인은 저자가 했습니다.')));
+  // 해외 연구자용 영어 안내(화면은 한글이지만 단추 네 개로 끝난다)
+  main.append(h('section', { class: 'card', lang: 'en', style: 'margin-bottom:14px' }, h('h2', { style: 'font-size:16px;margin-bottom:10px' }, 'In English — for researchers submitting to Korean journals'),
+    h('p', { style: 'margin:0 0 8px' }, 'tugotl reformats your manuscript to the house style of a Korean (KCI-listed) journal and saves it as HWP, the format most Korean journals require. It uses rules only (no AI) and runs entirely in this browser; nothing is uploaded.'),
+    ol(h('span', {}, h('b', {}, '투고처 선택'), ' (Journal) — choose the journal in the sidebar or, on a phone, from the ☰ menu.'),
+      h('span', {}, h('b', {}, '파일 선택'), ' (Choose file) — drop or pick the manuscript: HWP, HWPX, DOCX, TXT or MD. Check the role recognised for each paragraph (제목 title, 국문초록 abstract, 본문 body, 참고문헌 references …) and correct it if needed.'),
+      h('span', {}, h('b', {}, '적용'), ' (Apply) — builds the journal-styled document; review 미리보기 (preview), 정오표 (errata), 변경 사항 (changes) and 투고 전 확인 (checklist).'),
+      h('span', {}, h('b', {}, '저장'), ' (Save) — saves the HWP (▾ for HWPX). Open it in Hangul (or Hancom Docs) once before submitting.')),
+    h('p', { class: 'small muted', style: 'margin:8px 0 0' }, '투고 양식 및 규정 확인 (Journal rules) lists each journal’s submission system (usually JAMS), deadlines, fees, length limits, required forms and citation rules. Questions in English are welcome: jojanggun@naver.com.')));
   main.append(sec('문의 및 개선 제안',
     h('p', { style: 'margin:0' }, '잘못 인식되는 원고, 학회 규정 변경, 추가하고 싶은 학회가 있으면 아래로 보내 주세요. 원고 파일을 함께 보내 주시면 인식 규칙을 고치는 데 큰 도움이 됩니다.'),
     h('p', { style: 'margin:10px 0 0;font-size:15px' }, h('b', {}, '이융희'), ' · ', h('a', { href: 'mailto:jojanggun@naver.com?subject=' + encodeURIComponent('[투고틀] 문의 및 개선 제안') }, 'jojanggun@naver.com'))));

@@ -92,7 +92,8 @@ for (const id of ids) {
     // 체재 검사
     const has = (r) => (perRole[r] || []).length;
     const h1 = has('h1');
-    if (wantsToc) { if (!has('tocHead') && !has('toc')) pr.structure.push('목차 없음'); else if (has('toc') < h1) pr.structure.push(`목차 항목 ${has('toc')} < 장 제목 ${h1}`); }
+    const tocTable = outBlocks.some((b) => (b.objects || []).some((o) => o.info && o.info.toc));   // 원고가 목차를 표로 짠 경우(표째 옮김)
+    if (wantsToc && !tocTable) { if (!has('tocHead') && !has('toc')) pr.structure.push('목차 없음'); else if (has('toc') < h1) pr.structure.push(`목차 항목 ${has('toc')} < 장 제목 ${h1}`); }
     const src = (r) => blocks.some((b) => b.role === r);   // 원고에 그 요소가 있을 때만 산출물에도 있어야 한다
     if (src('abstract') && !has('abstract')) pr.structure.push('국문초록 없음'); if (src('keywords') && !has('keywords')) pr.structure.push('주제어 없음');
     if ((src('ref') || src('refHead')) && !has('refHead') && !has('ref')) pr.structure.push('참고문헌 없음'); if (src('abstractEn') && !has('abstractEn')) pr.structure.push('영문초록 없음');

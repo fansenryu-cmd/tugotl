@@ -7,7 +7,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
-<title>투고틀 — 문학 학회지 논문 양식 변환기</title>
+<title>투고틀 tugotl — KCI 학술지 논문 양식 변환기 · Manuscript formatter for Korean journals</title>
 <meta name="description" content="원고(HWP·HWPX·DOCX·TXT·MD)를 올리고 학회지를 고르면 그 학회의 양식에 맞춘 HWP를 만듭니다. 브라우저 안에서만 처리되고 원고는 전송되지 않습니다.">
 <style>
   :root {
@@ -43,31 +43,35 @@
   .hero .copy p { margin: 0; font-size: clamp(13px, 1.8vw, 16px); color: #3d3933; }
   main { max-width: 980px; }
   @media (max-width: 600px) { .hero img { aspect-ratio: 4 / 3; object-position: 70% 50%; } .hero .copy { width: 62%; } }
+  .en { color: var(--muted-fg); font-size: 15px; margin: -18px 0 24px; }
+  .en-block { display: block; margin-top: 8px; color: var(--muted-fg); }
+  .card span { display: block; }
   .hits { height: 20px; vertical-align: middle; }
 </style>
 </head>
 <body>
 <main>
   <section class="hero"><img src="hero.jpg" alt="흐트러진 초고가 오른쪽으로 갈수록 반듯하게 조판된 학술지 쪽으로 정리되는 그림" width="1600" height="900"><div class="copy"><div class="eyebrow">문학 학회지 논문 양식 변환기</div><h1>투고틀</h1><p>초고를 학회 양식으로, 기기 안에서.</p></div></section>
-  <p class="lead">원고를 올리고 학회지를 고르면, 그 학회의 바탕틀과 규정에 맞춘 HWP를 만듭니다. 내장 학회 82곳, AI 없이 규칙으로만 동작합니다.</p>
+  <p class="lead">원고를 올리고 학회지를 고르면, 그 학회의 바탕틀과 규정에 맞춘 HWP를 만듭니다. 내장 학회 <span data-n="all">190</span>곳, AI 없이 규칙으로만 동작합니다.</p>
+  <p class="en">A rule-based, offline formatter for papers submitted to Korean (KCI-listed) journals. Upload a manuscript, pick the journal, and get an HWP laid out to that journal’s template and rules. <span data-n="all">190</span> journals built in. No AI, no server — nothing leaves your device.</p>
   <div class="actions">
-    <a class="btn primary" href="투고틀.html">웹에서 바로 열기</a>
-    <a class="btn" href="https://github.com/fansenryu-cmd/tugotl/releases/latest/download/tugotl.html">내려받기 (오프라인용 HTML 한 개)</a>
+    <a class="btn primary" href="투고틀.html">웹에서 바로 열기 · Open in browser</a>
+    <a class="btn" href="https://github.com/fansenryu-cmd/tugotl/releases/latest/download/tugotl.html">내려받기 · Download (one offline HTML)</a>
   </div>
-  <p class="note">약 30 MB. 열어 둔 뒤 인터넷을 끊어도 동작합니다. 내려받은 파일은 더블클릭으로 브라우저에서 엽니다.</p>
-  <div class="privacy" style="border-color:var(--border);background:var(--card)"><b>휴대폰에서 쓰기.</b> ‘웹에서 바로 열기’로 연 뒤 브라우저 메뉴의 <b>홈 화면에 추가</b>(아이폰 사파리: 공유 → 홈 화면에 추가)를 누르면 앱처럼 설치되고, 한 번 연 뒤에는 인터넷 없이도 열립니다. 원고는 파일 앱·드라이브에서 고르고, 결과는 저장하거나 ▾ 메뉴의 <b>공유하기</b>로 파일 앱·메신저에 바로 보냅니다.</div>
+  <p class="note">약 30 MB. 열어 둔 뒤 인터넷을 끊어도 동작합니다. 내려받은 파일은 더블클릭으로 브라우저에서 엽니다.<br><span lang="en">About 30 MB. Keeps working offline once opened; open the downloaded file in Chrome or Edge. The interface is in Korean: choose the journal, drop the manuscript, press 적용 (Apply), then 저장 (Save).</span></p>
+  <div class="privacy" style="border-color:var(--border);background:var(--card)"><b>휴대폰에서 쓰기.</b> ‘웹에서 바로 열기’로 연 뒤 브라우저 메뉴의 <b>홈 화면에 추가</b>(아이폰 사파리: 공유 → 홈 화면에 추가)를 누르면 앱처럼 설치되고, 한 번 연 뒤에는 인터넷 없이도 열립니다. 원고는 파일 앱·드라이브에서 고르고, 결과는 저장하거나 ▾ 메뉴의 <b>공유하기</b>로 파일 앱·메신저에 바로 보냅니다.<span class="en-block" lang="en"><b>On a phone.</b> Open it in the browser and use <b>Add to Home Screen</b> (iPhone Safari: Share → Add to Home Screen) to install it as an app that opens offline. Pick the manuscript from Files or a cloud drive, and save the result or send it with <b>공유하기 (Share)</b> in the ▾ menu.</span></div>
 
   <div class="grid">
-    <div class="card"><b>입력</b><span>HWP · HWPX · DOCX · TXT · MD 원고</span></div>
-    <div class="card"><b>출력</b><span>학회 양식 HWP · HWPX, 체크리스트와 정오표</span></div>
-    <div class="card"><b>학회 82곳</b><span>KCI 등재지 79곳, 등재후보지 3곳</span></div>
-    <div class="card"><b>각주·참고문헌</b><span>쪽·면·p./pp.와 범위 기호를 학회 예시대로</span></div>
+    <div class="card"><b>입력 · Input</b><span>HWP · HWPX · DOCX · TXT · MD 원고 · manuscripts</span></div>
+    <div class="card"><b>출력 · Output</b><span>학회 양식 HWP · HWPX, 체크리스트와 정오표 · journal-styled HWP with checklist and errata</span></div>
+    <div class="card"><b>학회 <span data-n="all">190</span>곳 · Journals</b><span>KCI 등재지 <span data-n="acc">179</span>곳, 등재후보지 <span data-n="cand">11</span>곳 · <span data-n="acc">179</span> accredited, <span data-n="cand">11</span> candidate</span></div>
+    <div class="card"><b>각주·참고문헌 · Citations</b><span>쪽·면·p./pp.와 범위 기호를 학회 예시대로 · page units and range marks as each journal prescribes</span></div>
   </div>
 
-  <div class="privacy"><b>원고는 밖으로 나가지 않습니다.</b> 변환기는 브라우저 안에서만 처리하고 서버·외부 전송·AI 호출이 없습니다. 이 소개 페이지만 방문 수를 셉니다(쿠키 없음, hits.sh 집계 이미지 한 개).</div>
+  <div class="privacy"><b>원고는 밖으로 나가지 않습니다.</b> 변환기는 브라우저 안에서만 처리하고 서버·외부 전송·AI 호출이 없습니다. 이 소개 페이지만 방문 수를 셉니다(쿠키 없음, hits.sh 집계 이미지 한 개).<span class="en-block" lang="en"><b>Your manuscript never leaves your device.</b> The converter runs entirely in the browser with no server, upload or AI. Only this landing page counts visits (one cookie-free hits.sh image).</span></div>
 
   <footer>
-    <span>만든 사람 이융희 · <a href="https://github.com/fansenryu-cmd/tugotl">GitHub 저장소</a> · <a href="https://github.com/fansenryu-cmd/tugotl/releases">변경 내역</a></span>
+    <span>만든 사람 이융희 (Yunghee Lee) · <a href="https://github.com/fansenryu-cmd/tugotl">GitHub 저장소 · repository</a> · <a href="https://github.com/fansenryu-cmd/tugotl/releases">변경 내역 · releases</a></span>
     <img class="hits" src="https://hits.sh/fansenryu-cmd.github.io/tugotl.svg?label=%EB%B0%A9%EB%AC%B8&color=e8b14a&labelColor=2a2a2a" alt="방문 수" referrerpolicy="no-referrer">
   </footer>
 </main>

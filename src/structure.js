@@ -496,7 +496,7 @@ export function checklist(blocks, journal) {
 export function buildToc(blocks, journal) {
   const wants = (journal.structure || []).includes('toc') || !!(journal.template && journal.template.roles && (journal.template.roles.toc || journal.template.roles.tocHead));
   if (!wants) return { blocks, added: 0, reason: '학회 체재에 목차 없음' };
-  if (blocks.some((b) => b.role === 'toc' || b.role === 'tocHead')) return { blocks, added: 0, reason: '원고에 목차 있음' };
+  if (blocks.some((b) => b.role === 'toc' || b.role === 'tocHead' || (b.objects || []).some((o) => o.info && o.info.toc))) return { blocks, added: 0, reason: '원고에 목차 있음' };   // 표 안에 짠 목차(‘<목 차>’ 상자)도 목차로 친다
   const depth = journal.tocDepth === 2 ? ['h1', 'h2'] : ['h1'];
   const heads = blocks.filter((b) => depth.includes(b.role) && b.text.trim());
   if (!heads.length) return { blocks, added: 0, reason: '장 제목 없음' };

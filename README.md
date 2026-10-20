@@ -1,10 +1,19 @@
 # 투고틀 (tugotl) v1.3
 
+**KCI 학술지 투고용 논문 양식 변환기 · Manuscript formatter for Korean (KCI) academic journals**
+
+[![Downloads](https://img.shields.io/github/downloads/fansenryu-cmd/tugotl/total?label=%EB%82%B4%EB%A0%A4%EB%B0%9B%EA%B8%B0%20downloads&color=e8b14a)](https://github.com/fansenryu-cmd/tugotl/releases)
+[![Latest release](https://img.shields.io/github/v/release/fansenryu-cmd/tugotl?label=%EC%B5%9C%EC%8B%A0%20release&color=2a2a2a)](https://github.com/fansenryu-cmd/tugotl/releases/latest)
+[![Visits](https://hits.sh/fansenryu-cmd.github.io/tugotl.svg?label=%EB%B0%A9%EB%AC%B8%20visits&color=e8b14a&labelColor=2a2a2a)](https://fansenryu-cmd.github.io/tugotl/)
+[![License](https://img.shields.io/github/license/fansenryu-cmd/tugotl?label=license)](LICENSE)
+
 **AI의 개입 없이, 오로지 프로그램 규칙만으로, 내 PC 안에서 작동하며, 논문 정보를 어디에도 저장·전송하지 않는 논문 서지·양식 변환기.**
 
-문학 학회지에 투고할 원고(HWP·HWPX·DOCX·TXT·MD)를 올리고 학회지를 고르면, 그 학회의 양식과 규정에 맞춘 HWP를 만듭니다. 글꼴·크기·줄간격·여백·용지·각주 서식은 학회 양식 그대로이고, 원고의 문장은 바꾸지 않습니다(쪽수 단위·쪽수 범위 기호(~·-)·낫표·서지 표기만 각주와 참고문헌에서 학회 규정에 맞게 치환하며, 본문은 건드리지 않고, 설정에서 끌 수 있습니다). 내장 학회 82곳(KCI 등재지 79곳, 등재후보지 3곳).
+문학 학회지에 투고할 원고(HWP·HWPX·DOCX·TXT·MD)를 올리고 학회지를 고르면, 그 학회의 양식과 규정에 맞춘 HWP를 만듭니다. 글꼴·크기·줄간격·여백·용지·각주 서식은 학회 양식 그대로이고, 원고의 문장은 바꾸지 않습니다(쪽수 단위·쪽수 범위 기호(~·-)·낫표·서지 표기만 각주와 참고문헌에서 학회 규정에 맞게 치환하며, 본문은 건드리지 않고, 설정에서 끌 수 있습니다). 내장 학회 190곳(KCI 등재지 179곳, 등재후보지 11곳).
 
-## 그냥 쓰실 분 — HTML 파일 하나만 받으세요
+*In English:* a rule-based, offline formatter for papers submitted to Korean (KCI-listed) journals in literature, classics, culture studies and cultural content. Upload a manuscript, pick the journal, and get an HWP laid out to that journal’s template and rules — with no AI, no server, and nothing leaving your computer. See **[English — what this is and how to use it](#english--what-this-is-and-how-to-use-it)** below.
+
+## 그냥 쓰실 분 — HTML 파일 하나만 받으세요 · Just use it: one HTML file
 
 코드를 볼 필요가 없다면 저장소를 내려받지 마시고 배포본 하나만 받으면 됩니다.
 
@@ -17,33 +26,78 @@
 
 코드가 궁금하거나 학회를 직접 추가·수정하려는 분은 아래 **개발** 항목을 보십시오.
 
-## 내장 학회
+### English — what this is and how to use it
+
+**tugotl** (투고틀, “submission frame”) reformats a scholarly manuscript to the house style of a Korean academic journal listed in the **KCI** (Korea Citation Index). It is meant for anyone submitting to Korean humanities journals, including researchers outside Korea who write in Korean or English but do not work in Hangul (HWP), the word processor most Korean journals require.
+
+- **Input:** HWP · HWPX · DOCX · TXT · MD. **Output:** an HWP (and HWPX) file laid out in the journal’s own template or published specifications: paper size, margins, fonts, sizes, line spacing, footnote style, section order, abstract and keyword placement, tables and figures.
+- **Rules only, no AI.** The text of your paper is never rewritten. Only citation details in footnotes and references are normalised to the journal’s rules (page units such as 쪽/면/p./pp., page-range marks such as `~` or `-`, title brackets 「」『』), and each of those can be switched off.
+- **Private by design.** Everything runs inside your browser from a single offline HTML file. Nothing is uploaded, and no server or AI service is involved.
+- **Journal data:** submission system links (most use JAMS), deadlines, fees, length limits, required forms, and footnote/reference rules for every built-in journal, collected from each society’s official regulations.
+
+**Quick start:** download **[tugotl.html](https://github.com/fansenryu-cmd/tugotl/releases/latest/download/tugotl.html)** (about 30 MB) and open it in Chrome or Edge, or use it online at **https://fansenryu-cmd.github.io/tugotl/** (it can be installed on a phone with “Add to Home Screen” and then works offline). Pick the journal, drop your manuscript, press **적용 (Apply)**, check the preview, and press **저장 (Save)**. The interface is in Korean; the steps are the same four buttons every time.
+
+## 내장 학회 · Built-in journals
 
 <!-- journals:start -->
-내장 학회 **82곳** — KCI 등재지 79곳, 등재후보지 3곳. 등재지부터 학술지 이름 가나다순입니다.
+내장 학회 **190곳** — KCI 등재지 179곳, 등재후보지 11곳. 등재지부터 학술지 이름 가나다순입니다.
+
+**190 built-in journals** — 179 KCI-accredited (등재) and 11 KCI candidate (등재후보), in Korean alphabetical order. The 투고 column is the submission route (JAMS is the common online system for Korean journals); deadlines are month-day.
 
 이 표는 `node tools/gen_journal_list.mjs`로 `src/journals.js`에서 생성합니다.
 
-| 학술지 | 학회·기관 | 등급 | 투고 | 정기 마감(월-일) |
+| 학술지 Journal | 학회·기관 Society | 등급 Grade | 투고 Submission | 정기 마감 Deadlines (MM-DD) |
 |---|---|---|---|---|
+| 감성연구 | 감성인문학회·전남대학교 호남학연구원 | KCI 등재 | 이메일 | 01-20 · 07-20 |
 | 겨레어문학 | 겨레어문학회 | KCI 등재 | JAMS | 04-30 · 10-31 |
 | 고소설연구 | 한국고소설학회 | KCI 등재 | 자체 | 04-15 · 10-15 |
+| 고전과 해석 | 고전문학한문학연구학회 | KCI 등재(2022 유지) | JAMS | 02-28 · 06-30 · 10-31 |
+| 고전문학과 교육 | 한국고전문학교육학회 | KCI 등재(2020) | JAMS | 04-30 · 08-31 · 12-31 |
 | 고전문학연구 | 한국고전문학회 | KCI 등재 | JAMS | 04-15 · 10-15 |
+| 고전번역연구 | 한국고전번역학회 | KCI 등재 | JAMS | 10-31 |
+| 공동체문화와 민속 연구 | 국립경국대학교(구 안동대학교) 민속학연구소 | KCI 등재(2025) | JAMS | 01-30 · 07-30 |
+| 공연문화연구 | 한국공연문화학회 | KCI 등재 | JAMS | 12-31 · 06-30 |
 | 구보학보 | 구보학회 | KCI 등재(확인) | JAMS | 공지 |
+| 구비문학연구 | 한국구비문학회 | KCI 등재 | JAMS | 01-31 · 04-30 · 07-31 · 10-31 |
+| 국문학연구 | 국문학회 | KCI 등재(2022) | JAMS | 03-31 · 09-30 |
 | 국어국문학 | 국어국문학회 | KCI 우수등재 | JAMS | 01-31 · 04-30 · 07-31 · 10-31 |
 | 국어문학 | 국어문학회 | KCI 등재 | JAMS | 01-30 · 05-30 · 09-30 |
 | 국제어문 | 국제어문학회 | KCI 등재 | JAMS | 02-10 · 05-10 · 08-10 · 11-10 |
 | 국제언어문학 | 국제언어문학회 | KCI 등재 | JAMS | 03-10 · 07-10 · 11-10 |
 | 국제한인문학연구 | 국제한인문학회 | KCI 등재 | JAMS | 02-28 · 06-30 · 10-31 |
+| 국학연구 | 한국국학진흥원 | KCI 등재(2022) | JAMS | 공지 |
+| 규장각 | 서울대학교 규장각한국학연구원 | KCI 등재(2022 유지) | JAMS | 공지 |
 | 근대서지 | 근대서지학회 | KCI 등재 | JAMS | 05-15 · 11-15 |
 | 글로벌문화콘텐츠 | 글로벌문화콘텐츠학회 | KCI 등재 | 온라인 | 12-20 · 03-20 · 06-20 · 09-20 |
+| 글로컬 어문학 문화 연구 | 글로컬 어문학 문화 연구소 | KCI 등재(2023) | JAMS | 03-20 · 07-20 · 11-20 |
+| 남도문화연구 | 국립순천대학교 남도문화연구소 | KCI 등재(2021) | JAMS | 공지 |
+| 남도민속연구 | 남도민속학회 | KCI 등재 | JAMS | 04-30 · 10-31 |
 | 다문화콘텐츠연구 | 중앙대학교 문화콘텐츠기술연구원 | KCI 등재 | DBpia | 01-30 · 04-30 · 07-30 · 10-31 |
+| 대동문화연구 | 성균관대학교 대동문화연구원 | KCI 등재(2020 유지) | JAMS | 공지 |
+| 대동한문학(大東漢文學) | 대동한문학회 (구.교남한문학회) | KCI 등재(2020) | JAMS | 01-30 · 04-30 · 07-30 · 10-30 |
 | 대중서사연구 | 대중서사학회 | KCI 등재(확인) | JAMS | 12-31 · 04-30 · 08-31 |
+| 대중음악 | 한국대중음악학회 | KCI 등재(2023) | 학회 | 03-31 · 09-30 |
+| 대중음악콘텐츠 | 대중음악콘텐츠학회 | KCI 등재 | 학회 | 공지 |
+| 도서문화 | 국립목포대학교 도서문화연구원 | KCI 등재 | JAMS | 공지 |
+| 도시인문학연구 | 서울시립대학교 인문학연구소 | KCI 등재(2022 유지) | JAMS | 03-15 · 09-15 |
 | 돈암어문학 | 돈암어문학회 | KCI 등재 | JAMS | 04-30 · 10-31 |
+| 동남어문논집 | 동남어문학회 | KCI 등재 | JAMS | 03-31 · 09-30 |
+| 동방학지 | 연세대학교 국학연구원 | KCI 등재 | 학회 | 01-31 · 04-30 · 07-31 · 10-31 |
+| 동방한문학 | 동방한문학회 | KCI 등재(2020 유지) | JAMS | 01-31 · 04-30 · 07-31 · 10-31 |
+| 동북아 문화연구 | 동북아시아문화학회 | KCI 등재 | 학회 | 공지 |
+| 동서비교문학저널 | 한국동서비교문학학회 | KCI 등재 | JAMS | 02-15 · 05-15 · 08-15 · 11-15 |
+| 동아시아고대학 | 동아시아고대학회(東아시아古代學會) | KCI 등재 | 학회 | 02-10 · 05-10 · 08-10 · 11-10 |
 | 동아시아문화연구 | 한양대학교 동아시아문화연구소 | KCI 등재 | JAMS | 12-31 · 03-31 · 06-30 · 09-30 |
+| 동아인문학 | 동아인문학회 | KCI 등재 | 학회 | 공지 |
+| 동아한학연구 | 고려대학교 부설 한자한문연구소 | KCI 등재(2025) | JAMS | 공지 |
 | 동악어문학 | 동악어문학회 | KCI 등재 | JAMS | 12-31 · 04-30 · 08-31 |
+| 동양고전연구 | 동양고전학회 | KCI 등재 | JAMS | 공지 |
+| 동양학 | 단국대학교 동양학연구원 | KCI 등재(2021) | JAMS | 공지 |
+| 동양한문학연구 | 동양한문학회 | KCI 등재 | JAMS | 12-30 · 04-30 · 08-30 |
 | 동화와 번역 | 건국대학교 GLOCAL캠퍼스 동화와번역연구소 | KCI 등재 | 연구소 | 04-30 · 10-30 |
 | 드라마연구 | 한국드라마학회 | KCI 등재 | JAMS | 12-31 · 04-30 · 08-31 |
+| 디지털문화아카이브지 | 전북대학교 문화융복합아카이빙연구소 | KCI 등재(2023) | 학회 | 공지 |
+| 로컬리티 인문학 | 부산대학교 한국민족문화연구소 | KCI 등재 | JAMS | 03-05 · 09-05 |
 | 만화애니메이션연구 | 한국만화애니메이션학회 | KCI 등재 | 학회 | 02-01 · 05-01 · 08-01 · 11-01 |
 | 만화웹툰연구 | (사)한국만화웹툰학회 | KCI 등재(2025.01) | JAMS | 02-28 · 06-30 · 10-31 |
 | 문학과 영상 | 문학과영상학회 | KCI 등재 | JAMS | 03-15 · 08-15 · 11-15 |
@@ -51,19 +105,40 @@
 | 문학과환경 | 문학과환경학회 | KCI 등재 | JAMS | 02-10 · 05-10 · 08-10 · 11-10 |
 | 문학교육학 | 한국문학교육학회 | KCI 등재 | JAMS | 01-31 · 04-30 · 07-31 · 10-31 |
 | 문학치료연구 | 한국문학치료학회 | KCI 등재 | JAMS | 11-30 · 02-28 · 05-31 · 08-31 |
+| 문화·경영·기술 | 사단법인 아시아문화콘텐츠연구소 | KCI 등재 | 학회 | 공지 |
+| 문화기술의 융합 | (사)국제문화기술진흥원 | KCI 등재(2022 유지) | 학회 | 공지 |
 | 문화산업연구 | 한국문화산업학회 | KCI 등재 | JAMS | 공지 |
+| 문화연구(Cultural Studies) | 한국문화연구학회 | KCI 등재(2024) | JAMS | 공지 |
+| 문화예술경영학연구 | (사)한국문화예술경영학회 | KCI 등재 | 학회 | 공지 |
+| 문화와 사회 | 한국문화사회학회 | KCI 등재 | JAMS | 02-15 · 06-15 · 10-15 |
+| 문화와 예술연구 | 동방문화대학원대학교 문화예술콘텐츠연구소 | KCI 등재 | 학회 | 공지 |
 | 문화콘텐츠연구 | 건국대학교 글로컬문화전략연구소 | KCI 등재 | 자체 | 03-15 · 07-15 · 11-15 |
 | 미래문화 | 한양대학교 한국미래문화연구소 | KCI 등재(2025.01) | JAMS | 02-28 · 06-30 · 10-31 |
+| 민속학연구 | 국립민속박물관 | KCI 등재 | JAMS | 03-31 · 08-31 |
 | 민족문학사연구 | 민족문학사연구소(민족문학사학회) | KCI 등재 | JAMS | 02-28 · 06-30 · 10-31 |
+| 민족문화 | 한국고전번역원 | KCI 등재(2022) | JAMS | 01-31 · 05-31 · 09-30 |
+| 민족문화논총 | 영남대학교 민족문화연구소 | KCI 등재 | 학회 | 공지 |
+| 민족문화연구 | 고려대학교 민족문화연구원 | KCI 등재(2020) | JAMS | 공지 |
 | 반교어문연구 | 반교어문학회 | KCI 등재 | 온라인 | 02-28 · 06-30 · 10-31 |
+| 반영과 재현 | 영상문화지평연구소 | KCI 등재 | JAMS | 04-10 · 10-10 |
+| 배달말 | 배달말학회 | KCI 등재 | JAMS | 04-30 · 10-31 |
 | 비교문학 | 한국비교문학회 | KCI 등재 | JAMS | 12-31 · 04-30 · 08-31 |
+| 비교문화연구 | 경희대학교(국제캠퍼스) 비교문화연구소·글로벌인문학술원 | KCI 등재 | JAMS | 01-10 · 05-10 · 09-10 |
+| 비교민속학 | 비교민속학회 | KCI 등재 | JAMS | 03-15 · 09-15 |
 | 비교한국학 Comparative Korean Studies | 국제비교한국학회 | KCI 등재 | JAMS | 02-28 · 06-30 · 10-31 |
+| 비평과 이론 | 한국비평이론학회 | KCI 등재(2021 유지) | JAMS | 공지 |
 | 비평문학 | 한국비평문학회 | KCI 등재 | JAMS | 01-31 · 04-30 · 07-31 · 10-30 |
 | 사이間SAI | 국제한국문학문화학회(INAKOS) | KCI 등재 | JAMS | 03-31 · 09-30 |
 | 상허학보 | 상허학회 | KCI 등재 | JAMS | 12-31 · 04-30 · 08-31 |
+| 세계문학비교연구 | 세계문학비교학회 | KCI 등재 | JAMS | 02-15 · 05-15 · 08-15 · 11-15 |
 | 스토리앤이미지텔링 | 건국대학교 스토리앤이미지텔링연구소 | KCI 등재 | JAMS | 04-30 · 10-31 |
+| 시조학논총 | 한국시조학회 | KCI 등재 | JAMS | 01-31 · 07-31 |
+| 실천민속학연구 | 실천민속학회 | KCI 등재(2022) | JAMS | 12-15 · 06-15 |
+| 씨네포럼 | 동국대학교 영상미디어센터 | KCI 등재 | JAMS | 03-15 · 07-15 · 11-15 |
 | 아동청소년문학연구 | 한국아동청소년문학학회 | KCI 등재 | DBpia | 04-30 · 10-31 |
+| 아시아영화연구 | 부산대학교 영화연구소 | KCI 등재 | JAMS | 공지 |
 | 애니메이션연구 | 한국애니메이션학회 | KCI 등재(확인) | JAMS | 02-05 · 05-05 · 08-05 · 11-05 |
+| 어린이문학교육연구 | 한국어린이문학교육학회 | KCI 등재(2021) | 학회 | 12-31 · 03-31 · 06-30 · 09-30 |
 | 어문논집 | 민족어문학회 | KCI 등재(2021까지 확인, 현재 등급 확인 필요) | JAMS | 02-28 · 06-30 · 10-31 |
 | 어문논총 | 전남대학교 한국어문학연구소 | KCI 등재 | 연구소 | 12-31 · 06-30 |
 | 어문론집 | 중앙어문학회 | KCI 등재 | JAMS | 02-10 · 05-10 · 08-10 · 11-10 |
@@ -72,45 +147,100 @@
 | 어문연구(語文硏究) | 한국어문교육연구회 | KCI 등재 | JAMS | 02-10 · 05-10 · 08-10 · 11-10 |
 | 어문학 | 한국어문학회 | KCI 등재 | JAMS | 01-31 · 04-30 · 07-31 · 10-31 |
 | 여성문학연구 | 한국여성문학학회 | KCI 등재 | JAMS | 공지 |
+| 역사민속학 | 한국역사민속학회 | KCI 등재 | JAMS | 04-30 · 10-30 |
+| 연민학지 | 연민학회 | KCI 등재(2024) | JAMS | 01-15 · 07-15 |
+| 열상고전연구 | 열상고전연구회 | KCI 등재(2022) | JAMS | 12-31 · 04-30 · 08-31 |
+| 영남학 | 경북대학교 영남문화연구원 | KCI 등재 | 학회 | 01-31 · 04-30 · 07-31 · 10-31 |
 | 영상문화 | 한국영상문화학회 | KCI 등재(2023.01) | 자체 | 05-15 · 11-15 · 01-15 |
 | 영상문화콘텐츠연구 | 동국대학교 영상문화콘텐츠연구원 | KCI 등재 | JAMS | 04-30 · 08-31 · 12-31 |
+| 영주어문 | 영주어문학회 | KCI 등재(2021) | JAMS | 공지 |
 | 영화연구 | 한국영화학회 | KCI 등재 | JAMS | 01-23 · 04-23 · 07-23 · 10-23 |
+| 온지논총 | (사)온지학회 | KCI 등재 | JAMS | 03-10 · 06-10 · 09-10 · 12-10 |
+| 외국문학연구 | 한국외국어대학교 외국문학연구소 | KCI 등재(2021) | JAMS | 01-05 · 04-05 · 07-05 · 10-05 |
+| 우리말글 | 우리말글학회 | KCI 등재 | 학회 | 02-15 · 05-15 · 08-15 · 11-15 |
 | 우리文學硏究 | 우리문학회 | KCI 등재 | JAMS | 11-30 · 02-28 · 05-31 · 08-31 |
 | 우리어문연구 | 우리어문학회 | KCI 등재 | JAMS | 03-31 · 07-31 · 11-30 |
 | 이상리뷰 | 이상문학회 | KCI 등재(2022 선정) | 이메일 | 공지 |
 | 이화어문논집 | 이화어문학회 | KCI 등재 | 온라인 | 03-10 · 07-10 · 11-10 |
+| 인공지능인문학연구 | 중앙대학교 인문콘텐츠연구소(인공지능인문학연구소) | KCI 등재 | JAMS | 03-10 · 07-10 · 11-10 |
+| 인문과 예술 | 인문예술학회 | KCI 등재 | JAMS | 공지 |
 | 인문콘텐츠 | 인문콘텐츠학회 | KCI 우수등재 | DBpia | 02-10 · 05-10 · 08-10 · 11-10 |
+| 종교문화비평 | 사단법인 한국종교문화연구소 | KCI 등재(2020) | JAMS | 12-31 · 06-30 |
+| 지역과문화(구 창조산업연구) | 한국지역문화학회 | KCI 등재(2023) | 학회 | 공지 |
+| 청람어문교육 | 청람어문교육학회 | KCI 등재 | JAMS | 11-30 · 01-31 · 03-31 · 05-31 · 07-31 · 09-30 |
 | 춘원연구학보 | 춘원연구학회 | KCI 등재 | JAMS | 04-30 · 10-30 |
 | 콘텐츠와산업 | 한국콘텐츠산업학회 | KCI 등재(2024.01) | 학회 | 공지 |
+| 탈경계인문학 Trans-Humanities | 이화여자대학교 이화인문과학원 | KCI 등재(2022) | JAMS | 02-28 · 08-31 |
+| 탐라문화 | 제주대학교 탐라문화연구원 | KCI 등재 | JAMS | 01-31 · 05-31 · 09-30 |
+| 태동고전연구 | 한림대학교 도헌학술원 태동고전연구소 | KCI 등재(2021 유지) | 학회 | 04-30 · 10-31 |
+| 트랜스- | 성균관대학교 트랜스미디어연구소 | KCI 등재 | 학회 | 12-25 · 06-25 |
+| 판소리연구 | 판소리학회 | KCI 등재 | JAMS | 02-28 · 08-31 |
 | 픽션과 논픽션 | 픽션과논픽션학회 | KCI 등재(2024.01) | 이메일 | 공지 |
+| 한국게임학회 논문지 | (사)한국게임학회 | KCI 등재 | 학회 | 공지 |
 | 한국고전여성문학연구 | 한국고전여성문학회 | KCI 등재 | 학회 | 03-31 · 09-30 |
+| 韓國古典硏究(한국고전연구) | 한국고전연구학회 | KCI 등재(2022) | 학회 | 12-31 · 03-31 · 06-30 · 09-30 |
 | 한국극예술연구 | 한국극예술학회 | KCI 등재 | JAMS | 03-31 · 07-31 · 11-30 |
 | 한국근대문학연구 | 한국근대문학회 | KCI 등재 | JAMS | 02-28 · 08-31 |
+| 한국무속학 | 한국무속학회 | KCI 등재(2020 유지) | JAMS | 06-30 · 12-31 |
 | 한국문예비평연구 | 한국현대문예비평학회 | KCI 등재 | JAMS | 01-30 · 04-30 · 07-30 · 10-30 |
 | 한국문예창작 | 한국문예창작학회 | KCI 등재 | JAMS | 02-28 · 06-30 · 10-31 |
 | 한국문학과 예술 | 숭실대학교 한국문학과예술연구소 | KCI 등재 | JAMS | 02-10 · 05-10 · 08-10 · 11-10 |
 | 한국문학논총 | 한국문학회 | KCI 등재(확인) | 학회 | 공지 |
 | 한국문학연구 | 동국대학교 한국문학연구소 | KCI 등재 | JAMS | 01-31 · 05-31 · 09-30 |
 | 한국문학이론과 비평 | 한국문학이론과비평학회 | KCI 등재 | JAMS | 01-05 · 05-05 · 09-05 |
+| 한국문화 | 서울대학교 규장각한국학연구원 | KCI 등재 | JAMS | 공지 |
+| 한국문화연구 | 이화여자대학교 한국문화연구원 | KCI 등재 | JAMS | 04-30 · 10-28 |
+| 한국민속학 | (사)한국민속학회 | KCI 등재 | JAMS | 공지 |
+| 한국민요학 | 한국민요학회 | KCI 등재 | JAMS | 02-28 · 06-30 · 10-30 |
+| 한국민족문화 | 부산대학교 한국민족문화연구소 | KCI 등재(2020) | JAMS | 공지 |
+| 한국시가문화연구 | 한국시가문화학회 | KCI 등재(2021) | JAMS | 01-15 · 07-15 |
+| 한국시가연구 | 한국시가학회 | KCI 등재 | JAMS | 12-31 · 06-30 |
 | 한국시학연구 | 한국시학회 | KCI 등재 | JAMS | 02-28 · 06-30 · 10-31 |
 | 한국아동문학연구 | 한국아동문학학회 | KCI 등재 | JAMS | 04-30 · 10-30 |
+| 한국어문교육 | 고려대학교 한국어문교육연구소 | KCI 등재 | JAMS | 공지 |
 | 한국언어문학 | 한국언어문학회 | KCI 등재 | JAMS | 01-31 · 05-31 · 09-30 |
 | 한국언어문화 | 한국언어문화학회 | KCI 등재 | JAMS | 02-20 · 06-20 · 10-20 |
+| 한국엔터테인먼트산업학회논문지 | (사)한국엔터테인먼트산업학회 | KCI 등재 | 학회 | 공지 |
+| 한국연극학 | 한국연극학회 | KCI 등재 | JAMS | 02-28 · 06-30 · 10-30 |
+| 한국전통문화연구 | 한국전통문화대학교 전통문화연구소 | KCI 등재 | 학회 | 03-30 · 09-30 |
 | 한국출판학연구 | (사)한국출판학회 | KCI 등재 | JAMS | 공지 |
 | 한국콘텐츠학회논문지 | 한국콘텐츠학회 | KCI 등재 | 자체 | 공지 |
+| 한국학(구 정신문화연구) | 한국학중앙연구원 | KCI 등재 | JAMS | 공지 |
+| 한국학논집 | 계명대학교 한국학연구원 | KCI 등재 | JAMS | 01-30 · 04-30 · 07-30 · 10-30 |
+| 한국학연구 | 고려대학교 세종캠퍼스 한국학연구소 | KCI 등재(2021) | JAMS | 공지 |
+| 한국학연구 | 인하대학교 한국학연구소 | KCI 등재 | JAMS | 01-10 · 04-10 · 07-10 · 10-10 |
+| 한국한문학연구 | 한국한문학회 | KCI 등재 | JAMS | 02-28 · 06-30 · 10-31 |
 | 한국현대문학연구 | 한국현대문학회 | KCI 등재 | JAMS | 02-28 · 06-30 · 10-31 |
+| 한류문화연구 | 한국한류문화학회 | KCI 등재(2025) | 학회 | 공지 |
+| 漢文古典硏究 | 한국한문고전학회 | KCI 등재 | JAMS | 05-10 · 11-10 |
+| 한문학논집(漢文學論集) | 근역한문학회 | KCI 등재(2020) | JAMS | 공지 |
+| 한문학보 | 우리한문학회 | KCI 등재 | JAMS | 04-30 · 10-31 |
+| 한민족문화연구 | 한민족문화학회 | KCI 등재 | JAMS | 01-31 · 04-30 · 07-31 · 10-31 |
 | 한민족어문학 | 한민족어문학회 | KCI 등재 | 학회 | 01-31 · 04-30 · 07-31 · 10-31 |
 | 한성어문학 | 한성어문학회 | KCI 등재 | 학회 | 01-15 · 05-15 · 09-15 |
 | 한중인문학연구 | 한중인문학회 | KCI 등재 | 자체 | 01-30 · 04-30 · 07-30 · 10-30 |
+| 해항도시문화교섭학 | 한국해양대학교 국제해양문제연구소 | KCI 등재(2023) | JAMS | 03-10 · 09-10 |
 | 현대문학의 연구 | 한국문학연구학회 | KCI 등재 | JAMS | 01-01 · 05-01 · 09-01 |
 | 현대문학이론연구 | 현대문학이론학회 | KCI 등재 | JAMS | 03-10 · 07-10 · 11-10 |
 | 현대소설연구 | 한국현대소설학회 | KCI 등재(확인) | JAMS | 공지 |
+| 현대영화연구 | 한양대학교 현대영화연구소 | KCI 등재 | JAMS | 01-01 · 05-01 · 09-01 |
+| 호남학 | 전남대학교 호남학연구원 | KCI 등재 | JAMS | 05-15 · 11-15 |
+| 횡단인문학 | 숙명여자대학교 숙명인문학연구소 | KCI 등재 | 학회 | 04-30 · 08-31 · 12-31 |
+| PREVIEW : 디지털영상학술지 | (사)한국디지털영상학회 | KCI 등재(2025) | JAMS | 03-20 · 07-20 · 11-20 |
+| 김동명문학연구 | 김동명학회 | KCI 등재후보(2025) | JAMS | 공지 |
 | 문화와 내러티브 | 문화와 내러티브 학회 | KCI 등재후보(2025.01) | JAMS | 공지 |
+| 백록어문교육 | 백록어문교육학회 | KCI 등재후보(2024) | JAMS | 04-15 · 10-15 |
+| 스마트융합콘텐츠논문지 | (사)스마트융합콘텐츠학회 | KCI 등재후보(2024) | 학회 | 공지 |
 | 스토리콘텐츠 | 경희대학교 K-컬처·스토리콘텐츠연구소 | KCI 등재후보(2025.01) | 온라인 | 공지 |
+| 심훈학보 | 심훈학회 | KCI 등재후보(2025) | 학회 | 04-30 · 10-31 |
 | 콘텐츠문화연구 | 콘텐츠문화학회 | KCI 등재후보(2025.01) | 온라인 | 03-10 · 07-10 · 11-10 |
+| 한국글로벌문화학회지 | 한국글로벌문화학회 | KCI 등재후보(2025) | JAMS | 공지 |
+| 한남어문학 | 한남어문학회 | KCI 등재후보(2024) | 학회 | 02-20 · 05-20 · 08-20 · 11-20 |
+| 한류연구(The Journal of Koreanology Reviews, 韓流硏究) | 재단법인 코디사재단(KODISA Foundation) | KCI 등재후보(2024) | 학회 | 공지 |
+| International Journal of K-Culture/K-Culture융합연구 | K-Culture 융합연구소 | KCI 등재후보(2025) | JAMS | 공지 |
 <!-- journals:end -->
 
-## 화면과 흐름
+## 화면과 흐름 · How it works on screen
 
 왼쪽 사이드바에서 **투고처 선택** → 하위 메뉴 **투고 양식 및 규정 확인** / **투고처 이동(JAMS 등)**.
 오른쪽 작업 화면에 원고를 끌어다 놓으면 즉시 열리고 문단 역할(제목·초록·주제어·장 제목·본문·인용·참고문헌·영문초록)이 인식됩니다 → **적용** → 미리보기 / 정오표 / 변경 사항 / 투고 전 확인 → **저장**(저장 위치를 그때그때 고름).
@@ -132,13 +262,17 @@
 
 변환하지 않는 것: Word 원고의 글상자·차트·수식(개수만 경고), 머리말·꼬리말. 변환 뒤 한글에서 넣습니다.
 
-## 왜 이렇게 만들었나
+**English.** Choose the target journal in the left sidebar (on a phone, in the drawer). Drop or pick the manuscript: paragraph roles (title, abstract, keywords, headings, body, block quotes, references, English abstract) are recognised and can be corrected one by one. **Apply** shows a page preview, an errata sheet (footnote citations checked against the reference list), a list of every change, and a pre-submission checklist; **Save** writes the HWP. Tables and figures are carried over with their captions; footnotes inside table cells keep running numbers with the body. Settings are limited to six switches (citation style, section reordering, anonymised copy for review, keeping blank lines, errata, automatic table of contents). Not converted: text boxes, charts and equations from Word files, and running headers/footers.
+
+## 왜 이렇게 만들었나 · Why
 
 - 학회마다 양식이 다르고 자주 바뀌어 매번 손으로 맞추는 일이 반복됩니다. 그 일을 **규칙**으로 고정해 두고 싶었습니다.
 - 논문 원고는 심사 전 비공개 자료입니다. 그래서 **서버도, AI도, 전송도 없이** 브라우저 메모리 안에서만 처리합니다.
 - 학회 규정은 그대로 따라야 합니다. 글꼴·크기·여백은 프로그램이 고르지 않고 **학회 양식 파일과 규정 수치**를 씁니다.
 
-## 변환 원리
+**English.** Every society has its own template and the templates change often, so authors re-format the same paper by hand for each submission. tugotl fixes that work into rules. Manuscripts under review are confidential, so the program has no server, no AI and no network access. Fonts, sizes and margins are never chosen by the program; they come from the society’s template file or its published numbers.
+
+## 변환 원리 · How the conversion works
 
 1. 바탕틀 .hwp를 rhwp로 열어 용지·여백·스타일·각주 설정을 읽습니다.
 2. 학회 데이터(`src/journals.js`)의 `template.roles`가 역할마다 바탕틀의 **예시 문단 번호**(`para`, 여러 구역이면 `sec`) 또는 **스타일 이름**(`style`)을 가리킵니다. 그 문단의 문단 모양·글자 모양 ID를 읽어 둡니다.
@@ -146,7 +280,9 @@
 4. 바탕틀이 없는 학회는 규정 수치(`format`) 또는 일반 양식(`GENERIC_FORMAT`)으로 빈 문서에 서식을 만듭니다.
 5. 구조 인식(`src/structure.js`), 서지 변환(`src/cite.js`), 정오표(`src/errata.js`)는 전부 정규식과 규칙입니다.
 
-## 개발
+**English.** The journal’s template HWP is opened with [rhwp](https://github.com/edwardkim/rhwp) (an HWP engine compiled to WebAssembly) to read page setup, styles and footnote settings. Each role points to an example paragraph or a named style in the template. The template body is emptied, the manuscript is written into it as HWPX XML role by role, and the result is reloaded and saved as HWP. Journals without a template file use their published numbers or a generic layout. Role recognition, citation conversion and the errata check are regular expressions and rules.
+
+## 개발 · Development
 
 ```bash
 npm install
@@ -168,7 +304,7 @@ python -m http.server 8787      # dev.html은 서버에서 열어야 함
 새 판 배포: 태그를 붙인 뒤 GitHub Releases에 `dist/tugotl.html`을 첨부합니다. 첨부 이름이 `tugotl.html`이면 소개 페이지·README의 내려받기 링크(`releases/latest/download/tugotl.html`)가 바뀌지 않고 새 판을 가리킵니다. 한글 이름으로 올리면 GitHub가 `default.html`로 바꿔 링크가 끊깁니다.
 
 ```
-src/journals.js   학회 82곳 데이터, 역할 정의, 일반 양식
+src/journals.js   학회 190곳 데이터, 역할 정의, 일반 양식
 src/engine.js     rhwp 래퍼: 바탕틀 분석, 역할→모양, HWPX XML 생성, 저장
 src/parse.js      원고 파서 (HWP/HWPX: rhwp, DOCX: 선형 스캐너, TXT/MD), 입력 상한
 src/objects.js    표·그림 개체: 원고 HWPX에서 떼어 내기, 글자·문단 모양·테두리·그림 파일을 학회 문서로 옮겨 심기, 판면 폭 맞추기
@@ -183,15 +319,17 @@ tools/            빌드·검증 스크립트
 docs/             학회 조사·규정 요지·첨부 원본·감사 보고서
 ```
 
-## 학회 추가·수정
+## 학회 추가·수정 · Adding or correcting a journal
 
 `src/journals.js`의 항목을 복사해 고치거나, 앱의 **학회 추가**에 JSON을 붙여 넣습니다. 핵심은 `template.roles`와 `structure`, `footnote.pageUnit`, `blanks`입니다. 바탕틀 문단 번호는 학회 추가 화면에 .hwp를 넣으면 목록으로 보여 줍니다. 내장 학회 id와 같은 id, 내장 바탕틀과 같은 키는 받지 않습니다.
 
 학회 규정이 바뀌었거나 양식 파일이 새로 나왔다면 이슈로 알려 주세요. 규정 전문이나 양식 파일을 함께 올려 주시면 반영이 빠릅니다.
 
-## 보안·개인정보
+**English.** Copy an entry in `src/journals.js`, or paste a JSON entry into the app’s **학회 추가 (Add journal)** screen (stored only in that browser, with export and import). If a society’s rules or template have changed, please open an issue with the regulation text or template file attached.
 
-- 사용량은 두 가지만 셉니다. GitHub Releases의 배포본 내려받기 횟수, 그리고 배포 주소 첫 화면(소개 페이지)의 방문 수(쿠키 없는 hits.sh 집계 이미지)입니다. 변환기 HTML 자체는 아무것도 밖으로 보내지 않습니다.
+## 보안·개인정보 · Privacy and security
+
+- 사용량은 두 가지만 셉니다. GitHub Releases의 배포본 내려받기 횟수, 그리고 배포 주소 첫 화면(소개 페이지)의 방문 수(쿠키 없는 hits.sh 집계 이미지)입니다. 변환기 HTML 자체는 아무것도 밖으로 보내지 않습니다. 맨 위 배지에서 바로 보이고, 버전별 숫자는 `node tools/usage.mjs`로 봅니다. 웹에서 연 변환기 화면은 세지 않습니다(원고를 다루는 화면에서는 어떤 외부 접속도 하지 않기 때문).
 
 - 원고·결과는 브라우저 메모리에서만 처리되며 파일을 닫으면 사라집니다. 서버·외부 전송·AI 호출이 없습니다.
 - 남는 것: 사용자가 추가한 학회·바탕틀, 설정값, 직접 입력한 마감(localStorage). 학회 추가 화면의 "사용자 데이터 초기화"로 지웁니다.
@@ -199,7 +337,17 @@ docs/             학회 조사·규정 요지·첨부 원본·감사 보고서
 - 입력 상한: 파일 64 MB, DOCX·HWPX 내부 XML 48 MB, 문단 2만 개, HWPX 한 문단 20만 자, 텍스트 600만 자.
 - TXT·MD 표기: 각주 `[^1]` … `[^1]: 내용`(정의는 파일 끝에 모아 쓰고, 정의 아래 네 칸 들여 쓴 줄은 같은 각주의 다음 문단 — 본문 문단은 들여 쓰지 않음), 강조 `*기울임*`·`**굵게**`(낱말 경계에서만 — 저자 이름 뒤 `*` 표시는 글자로 남음), 장 제목 `#`, 인용 `>`.
 
-## 변경 내역
+**English.** Manuscripts and results stay in browser memory and disappear when the page is closed. The only things stored (in the browser’s localStorage) are journals you added yourself, settings and deadlines you typed in. Usage is counted in exactly two places: release downloads on GitHub and visits to the landing page (a cookie-free hits.sh image). Both are shown in the badges at the top; per-release numbers come from `node tools/usage.mjs`. The converter page itself is never counted, because it makes no outside connection at all (its Content Security Policy blocks it).
+
+## 변경 내역 · Changelog
+
+**v1.4 (2026-10-21)** — 학회 108곳 추가(82곳 → 190곳), 표·그림, 휴대폰, 화면 그림, 한영 안내.
+- **학회 확장**: KCI 문학·고전문학·한문학·구비민속·문화연구·대중문화·영상·문화콘텐츠·한국학 분야 등재지·등재후보지 108곳 추가(등재 179 · 등재후보 11). 학회 공식 규정만으로 수집하고, Sonnet 5.5·Haiku 5.5 에이전트가 108곳 전부를 원문과 따로 대조한 뒤 엇갈린 항목은 원문을 다시 확인해 반영. 기록은 [docs/audit/journal_expansion_2026-10-20.md](docs/audit/journal_expansion_2026-10-20.md).
+- **표·그림**: 한글·Word 원고의 표·그림을 옮김(칸 안·캡션 각주 포함). 목차를 표로 짠 원고는 목차를 다시 만들지 않음.
+- **휴대폰**: 서랍형 메뉴·아래쪽 버튼 막대·구조/결과 전환, 홈 화면 설치·오프라인.
+- **화면 그림 6종**과 **한영 안내**(README·소개 페이지·앱 도움말 영어 절, 영문 주소 tugotl.html), 사용량 배지.
+
+*v1.4 in English:* 108 more KCI journals in literature, classics, Sino-Korean literature, folklore, culture studies, film and cultural content (190 in total: 179 accredited, 11 candidate), each collected from the society’s official rules and cross-checked against the source by two independent model passes. Tables and figures are now carried over (including footnotes inside cells and captions). A phone layout with home-screen install and offline use, six illustrations, English guidance in the README, landing page and in-app help, and usage badges.
 
 **v1.3 (2026-10-15)** — 화면 정리, 학회 양식 정제, 역할 인식 3회차.
 - 학회 선택 목록을 등재지·등재후보지 순, 학술지 이름 가나다순으로. 자료 수집용 내부 분류(양식 파일·규정 수치·일반 서식)는 화면에서 뺌.
@@ -233,7 +381,7 @@ docs/             학회 조사·규정 요지·첨부 원본·감사 보고서
 
 **v1.0 (2026-10-13)** — 공개 저장소 첫 판. 내장 학회 52곳.
 
-## 라이선스
+## 라이선스 · License
 
 | 대상 | 라이선스 | 권리자 |
 |---|---|---|
@@ -248,6 +396,8 @@ docs/             학회 조사·규정 요지·첨부 원본·감사 보고서
 
 **보증 없음.** 이 프로그램은 학회 규정을 규칙으로 옮긴 것이고 규정은 수시로 바뀝니다. 투고 전에 학회 공지와 산출 파일을 반드시 직접 확인하십시오. 산출물로 인한 반려·불이익에 대해 저자는 책임지지 않습니다(MIT 라이선스의 무보증 조항).
 
+**English.** The source code is MIT-licensed (© 2026 Yunghee Lee / 이융희). The bundled HWP engine rhwp and JSZip are MIT. Journal templates, forms and regulation files belong to the respective societies; they are included unchanged (or with sample text blanked) only to help authors submit to those journals, and will be removed on request. **No warranty:** society rules change often, so always check the journal’s current notice and the saved file before submitting.
+
 ## 감사의 말
 
 - **Edward Kim** — 브라우저 안에서 HWP를 읽고 쓰게 해 준 [rhwp](https://github.com/edwardkim/rhwp). 이 엔진이 없었다면 "서버 없이 내 PC 안에서"라는 전제가 성립하지 않았습니다.
@@ -256,6 +406,10 @@ docs/             학회 조사·규정 요지·첨부 원본·감사 보고서
 - JSZip(Stuart Knightley 외), esbuild(Evan Wallace), Pretendard 글꼴 프로젝트.
 - 이 프로그램의 코드와 문서는 AI 코딩 도구(Claude, Anthropic)의 도움을 받아 작성했고, 설계·검증·최종 확인은 저자가 했습니다.
 
-## 문의
+**English.** Thanks to Edward Kim for rhwp, which makes reading and writing HWP inside a browser possible; to the editorial boards of the societies for publishing their rules and templates; to drjunoh (ece.drjunoh.chatgpt.site) for the original idea; and to the JSZip, esbuild and Pretendard projects. The code and documents were written with the help of an AI coding tool (Claude, Anthropic); design, verification and final review are the author’s. The converter itself uses no AI.
+
+## 문의 · Contact
 
 이융희 · jojanggun@naver.com — 잘못 인식되는 원고, 규정 변경, 추가할 학회. 원고 파일을 함께 보내 주시면 인식 규칙을 고치는 데 큰 도움이 됩니다.
+
+Yunghee Lee (이융희) · jojanggun@naver.com — misrecognised manuscripts, rule changes, journals to add. Issues and pull requests are welcome in Korean or English.

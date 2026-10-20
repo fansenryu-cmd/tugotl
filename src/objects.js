@@ -55,7 +55,10 @@ export function describeObject(xml, tag) {
   const cap = /<hp:caption\b[\s\S]*?<\/hp:caption>/.exec(xml);
   const caption = cap ? [...cap[0].matchAll(/<hp:t\b[^>]*>([\s\S]*?)<\/hp:t>/g)].map((t) => t[1].replace(/<[^>]+>/g, '')).join('').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&amp;/g, '&').trim() : '';
   const w = num(/<hp:sz width="(\d+)"/), h = num(/<hp:sz width="\d+"[^>]*height="(\d+)"/);
-  return { rows: tag === 'tbl' ? num(/rowCnt="(\d+)"/) : 0, cols: tag === 'tbl' ? num(/colCnt="(\d+)"/) : 0, width: w, height: h, caption };
+  // 목차를 표 안에 짠 원고(‘<목 차>’ 상자): 첫 글이 목차·차례·Contents이면 목차 표로 본다(목차 자동 생성을 건너뛰게)
+  const first = tag === 'tbl' ? [...xml.matchAll(/<hp:t\b[^>]*>([\s\S]*?)<\/hp:t>/g)].map((t) => t[1].replace(/<[^>]+>/g, '')).join('').replace(/&lt;/g, '<').replace(/&gt;/g, '>').trim().slice(0, 40) : '';
+  const toc = /^[<〈＜《\[【(（]?\s*(목\s*차|차\s*례|contents|table of contents)\s*[>〉＞》\]】)）]?/i.test(first);
+  return { rows: tag === 'tbl' ? num(/rowCnt="(\d+)"/) : 0, cols: tag === 'tbl' ? num(/colCnt="(\d+)"/) : 0, width: w, height: h, caption, ...(toc ? { toc: true } : {}) };
 }
 
 // ───────── 학회 문서로 옮겨 심기 ─────────
