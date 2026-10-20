@@ -1,5 +1,5 @@
 // 투고틀 UI — 왼쪽: 투고처 선택·메뉴, 오른쪽: 원고 변환(드롭 → 적용 → 미리보기 → 저장) / 투고 양식·규정 / 투고 일정 / 학회 추가
-import { JOURNALS, ROLE_DEFS, SECTION_LABELS, GENERIC_FORMAT } from './journals.js';
+import { JOURNALS, ROLE_DEFS, SECTION_LABELS, GENERIC_FORMAT, AREAS, AREA_OF } from './journals.js';
 import { FORMS } from './forms.js';
 import { CITE_STYLES, restyleCitations } from './cite.js';
 import { buildErrata } from './errata.js';
@@ -14,7 +14,7 @@ const fmtDate = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2
 const DOW = ['일', '월', '화', '수', '목', '금', '토'];
 const fmtKo = new Intl.DateTimeFormat('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' });
 
-const LS = { journals: 'tugotl.customJournals', templates: 'tugotl.customTemplates', opts: 'tugotl.options', journal: 'tugotl.journal', schedule: 'tugotl.schedule', skin: 'tugotl.skin', welcomed: 'tugotl.welcomed' };
+const LS = { journals: 'tugotl.customJournals', templates: 'tugotl.customTemplates', opts: 'tugotl.options', journal: 'tugotl.journal', schedule: 'tugotl.schedule', skin: 'tugotl.skin', welcomed: 'tugotl.welcomed', area: 'tugotl.area' };
 // 화면 그림(assets/img → 빌드가 data: 주소로 넣음). 없으면 그림 없이 그린다
 const IMG = (n) => (window.TUGOTL_IMG && typeof window.TUGOTL_IMG[n] === 'string' ? window.TUGOTL_IMG[n] : null);
 const art = (n, cls) => (IMG(n) ? h('img', { class: cls, src: IMG(n), alt: '', decoding: 'async' }) : null);
@@ -99,7 +99,7 @@ function sanitizeFormat(f, depth, rolesMap) {
 const sanitizeTemplates = (t) => { const out = {}; if (!t || typeof t !== 'object') return out; for (const [k, v] of Object.entries(t)) if (/^[a-z0-9_-]{2,32}$/i.test(k) && !BUILTIN_TPL.has(k) && typeof v === 'string' && v.length < 40 * 1048576 && /^[A-Za-z0-9+/=]+$/.test(v)) out[k] = v; return out; };
 const state = {
   view: 'convert', tab: 'preview', jtab: 'docs', ready: false, journals: [], templates: {}, templateInfo: {}, forms: {},
-  manuscript: null, baseBlocks: null, blocks: null, journalId: lsGet(LS.journal, null), result: null, dirty: false,
+  manuscript: null, baseBlocks: null, blocks: null, journalId: lsGet(LS.journal, null), area: (AREAS.some((a) => a.id === lsGet(LS.area, '')) ? lsGet(LS.area, '') : ''), result: null, dirty: false,
   options: Object.assign({ cite: 'journal', reorder: true, keepSourceBlanks: false, dropAuthor: false, errata: true, toc: true }, lsGet(LS.opts, {})),
 };
 
@@ -180,14 +180,18 @@ function openSide(open) {
   document.body.classList.toggle('drawer', !!open);
   if (open) side.querySelector('select, button')?.focus();
 }
+// 분야 거르기: 한 학술지가 여러 분야에 들 수 있다. 사용자가 추가한 학회는 ‘전체’에서만 보인다
+const inArea = (j, a) => !a || (AREA_OF[j.id] || []).includes(a);
 function renderSide() {
-  const sel = $('#jsel'); sel.replaceChildren(h('option', { value: '' }, '학회지를 고르세요…'));
+  const area = $('#jarea');
+  if (area) area.replaceChildren(h('option', { value: '' }, `전체 분야 (${state.journals.length})`), ...AREAS.map((a) => { const n = state.journals.filter((j) => inArea(j, a.id)).length; return h('option', { value: a.id, title: a.en, selected: a.id === state.area ? '' : null }, `${a.label} (${n})`); }));
+  const sel = $('#jsel'); sel.replaceChildren(h('option', { value: '' }, state.area ? '이 분야의 학회지를 고르세요…' : '학회지를 고르세요…'));
   // 등재지 → 등재후보지 → 그 밖(등급 미기재·사용자 학회) 순, 묶음 안은 학술지 이름 가나다순
   const tier = (j) => (/후보/.test(j.grade || '') ? 1 : /등재/.test(j.grade || '') ? 0 : 2);
   const byName = (a, b) => (a.journal || '').localeCompare(b.journal || '', 'ko');
   const groups = [['등재지', (j) => tier(j) === 0], ['등재후보지', (j) => tier(j) === 1], ['그 밖의 학회', (j) => tier(j) === 2]];
   for (const [label, test] of groups) {
-    const items = state.journals.filter(test).sort(byName); if (!items.length) continue;
+    const items = state.journals.filter((j) => test(j) && (inArea(j, state.area) || j.id === state.journalId)).sort(byName); if (!items.length) continue;   // 고른 학회는 분야가 달라도 목록에 남긴다
     sel.append(h('optgroup', { label: `${label} (${items.length})` }, ...items.map((j) => h('option', { value: j.id, selected: j.id === state.journalId ? '' : null }, `${j.journal} — ${j.society}${j.custom ? ' (사용자)' : ''}`))));
   }
   const j = journal(); const meta = $('#jmeta'); const sub = $('#jsub'); meta.replaceChildren(); sub.replaceChildren();
@@ -686,7 +690,7 @@ function renderHelp(main) {
       '학회 규정 그대로: 글꼴·크기·여백·줄간격·체재 순서·쪽수 단위는 각 학회의 양식 파일과 규정 수치를 그대로 씁니다. 프로그램이 임의로 고르지 않습니다.',
       '구성: 왼쪽에서 투고처를 고르고, 오른쪽에 원고를 놓고, 적용해 미리보고, 저장합니다. 투고처별 규정·서류·일정은 같은 화면에서 봅니다.')));
   main.append(sec('기본 흐름',
-    ol([h('b', {}, '투고처 선택'), ' — 왼쪽 위에서 학회지를 고릅니다. 목록은 등재지·등재후보지 순, 학술지 이름 가나다순입니다. 고른 학회의 양식과 규정에 맞춰 서식을 입힙니다.'],
+    ol([h('b', {}, '투고처 선택'), ' — 왼쪽 위에서 학회지를 고릅니다. 목록은 등재지·등재후보지 순, 학술지 이름 가나다순입니다. 바로 위 분야 칸(국어국문학 종합·현대문학·고전문학·구비민속·문학교육·비교문학·문화연구·대중문화·문화콘텐츠)으로 목록을 좁힐 수 있습니다. 고른 학회의 양식과 규정에 맞춰 서식을 입힙니다.'],
       [h('b', {}, '원고 놓기'), ' — HWP·HWPX·DOCX·TXT·MD 원고를 화면에 끌어다 놓거나 ‘파일 선택’을 누릅니다. 놓는 즉시 열리고, 왼쪽에 문단별 역할(제목·초록·장 제목·본문·인용·참고문헌·영문초록)이 인식되어 나옵니다. TXT·MD 원고는 각주를 [^1] … [^1]: 내용 꼴로, 강조를 *기울임*·**굵게**(낱말 경계에서만, 저자 이름 뒤 * 표시는 글자로 남음)로, 장 제목을 # 로, 인용을 > 로 읽습니다. 각주 정의 아래 네 칸 들여 쓴 줄은 같은 각주의 다음 문단입니다.'],
       [h('b', {}, '역할 확인'), ' — 잘못 잡힌 역할은 목록에서 직접 바꿉니다. 역할은 서식을 정하는 기준이므로 제목·참고문헌·영문초록이 맞게 잡혔는지 먼저 보세요.'],
       [h('b', {}, '적용'), ' — 학회 양식이 입혀진 쪽을 오른쪽 ‘미리보기’에서 보고, ‘변경 사항’에서 무엇이 바뀌었는지(체재 재배열, 쪽수·서지 표기, 빈 줄) 확인합니다. 저장 전에 설정이나 역할을 고쳤다면 ‘다시 적용’을 누릅니다. 각주가 많은 쪽은 미리보기에서 본문과 각주가 겹쳐 보일 수 있습니다(쪽 아래에 노란 표시). 미리보기 엔진의 한계일 뿐이며, 저장한 HWP는 한글이 열 때 다시 배치하므로 겹치지 않습니다.'],
@@ -737,7 +741,7 @@ function renderHelp(main) {
   // 해외 연구자용 영어 안내(화면은 한글이지만 단추 네 개로 끝난다)
   main.append(h('section', { class: 'card', lang: 'en', style: 'margin-bottom:14px' }, h('h2', { style: 'font-size:16px;margin-bottom:10px' }, 'In English — for researchers submitting to Korean journals'),
     h('p', { style: 'margin:0 0 8px' }, 'tugotl reformats your manuscript to the house style of a Korean (KCI-listed) journal and saves it as HWP, the format most Korean journals require. It uses rules only (no AI) and runs entirely in this browser; nothing is uploaded.'),
-    ol(h('span', {}, h('b', {}, '투고처 선택'), ' (Journal) — choose the journal in the sidebar or, on a phone, from the ☰ menu.'),
+    ol(h('span', {}, h('b', {}, '투고처 선택'), ' (Journal) — choose the journal in the sidebar or, on a phone, from the ☰ menu. The field box above it narrows the list by area (Korean literature, modern, classical, folklore, education, comparative, culture studies, popular culture, cultural content).'),
       h('span', {}, h('b', {}, '파일 선택'), ' (Choose file) — drop or pick the manuscript: HWP, HWPX, DOCX, TXT or MD. Check the role recognised for each paragraph (제목 title, 국문초록 abstract, 본문 body, 참고문헌 references …) and correct it if needed.'),
       h('span', {}, h('b', {}, '적용'), ' (Apply) — builds the journal-styled document; review 미리보기 (preview), 정오표 (errata), 변경 사항 (changes) and 투고 전 확인 (checklist).'),
       h('span', {}, h('b', {}, '저장'), ' (Save) — saves the HWP (▾ for HWPX). Open it in Hangul (or Hancom Docs) once before submitting.')),
@@ -761,6 +765,7 @@ const SKINS = new Set(['', 'dark', 'paper', 'mono', 'navy', 'type', 'slack', 'vi
 const applySkin = (k) => { if (!SKINS.has(k)) k = ''; if (k) document.documentElement.setAttribute('data-skin', k); else document.documentElement.removeAttribute('data-skin'); document.querySelectorAll('#skins .sw').forEach((b) => { const on = (b.dataset.skin || '') === k; b.classList.toggle('on', on); b.setAttribute('aria-checked', on ? 'true' : 'false'); }); };
 applySkin(typeof lsGet(LS.skin, '') === 'string' ? lsGet(LS.skin, '') : '');
 document.querySelectorAll('#skins .sw').forEach((b) => b.addEventListener('click', () => { const k = b.dataset.skin || ''; applySkin(k); lsSet(LS.skin, k); }));
+$('#jarea')?.addEventListener('change', (e) => { state.area = e.target.value || ''; lsSet(LS.area, state.area); renderSide(); });
 $('#jsel').addEventListener('change', (e) => { state.journalId = e.target.value || null; lsSet(LS.journal, state.journalId); if (state.journalId) lsSet(LS.welcomed, true); if (state.view === 'journal' && !state.journalId) state.view = 'convert'; recompute(true); if (narrow()) openSide(false); render(); });
 // 화면 어디에 놓아도 원고가 열린다
 const mainEl = $('#main'); let dragDepth = 0;

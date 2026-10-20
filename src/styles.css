@@ -34,6 +34,7 @@ h1, h2, h3, h4 { margin: 0; font-weight: 600; letter-spacing: -0.01em; text-wrap
 .side-sec { display: flex; flex-direction: column; gap: 6px; }
 .side-label { font-size: 11.5px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--side-dim); padding: 0 10px; }
 .side select { background: var(--side-bg-2); color: var(--side-fg); border: 1px solid var(--side-line); border-radius: var(--radius-sm); min-height: 36px; padding: 6px 30px 6px 10px; width: 100%; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23c9b3cb' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 9px center; appearance: none; }
+.side select.jarea { min-height: 30px; padding-top: 4px; padding-bottom: 4px; margin-bottom: 6px; font-size: 12.5px; color: var(--side-dim); }
 .side select option, .side select optgroup { color: #111; background: #fff; }
 .side-meta { font-size: 12px; color: var(--side-dim); padding: 0 10px; min-height: 0; line-height: 1.45; }
 .side-meta b { color: var(--side-fg); font-weight: 600; }
