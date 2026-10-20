@@ -56,8 +56,10 @@ export function describeObject(xml, tag) {
   const caption = cap ? [...cap[0].matchAll(/<hp:t\b[^>]*>([\s\S]*?)<\/hp:t>/g)].map((t) => t[1].replace(/<[^>]+>/g, '')).join('').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&amp;/g, '&').trim() : '';
   const w = num(/<hp:sz width="(\d+)"/), h = num(/<hp:sz width="\d+"[^>]*height="(\d+)"/);
   // 목차를 표 안에 짠 원고(‘<목 차>’ 상자): 첫 글이 목차·차례·Contents이면 목차 표로 본다(목차 자동 생성을 건너뛰게)
-  const first = tag === 'tbl' ? [...xml.matchAll(/<hp:t\b[^>]*>([\s\S]*?)<\/hp:t>/g)].map((t) => t[1].replace(/<[^>]+>/g, '')).join('').replace(/&lt;/g, '<').replace(/&gt;/g, '>').trim().slice(0, 40) : '';
-  const toc = /^[<〈＜《\[【(（]?\s*(목\s*차|차\s*례|contents|table of contents)\s*[>〉＞》\]】)）]?/i.test(first);
+  // 첫 칸 첫 문단 전체가 목차 제목일 때만(‘차례대로 …’·‘Contents of …’로 시작하는 일반 표는 아니다). 캡션 글은 빼고 본다
+  const p1 = tag === 'tbl' ? (/<hp:p\b[\s\S]*?<\/hp:p>/.exec(xml.replace(/<hp:caption\b[\s\S]*?<\/hp:caption>/g, '')) || [''])[0] : '';
+  const first = [...p1.matchAll(/<hp:t\b[^>]*>([\s\S]*?)<\/hp:t>/g)].map((t) => t[1].replace(/<[^>]+>/g, '')).join('').replace(/&lt;/g, '<').replace(/&gt;/g, '>').trim();
+  const toc = /^[<〈＜《\[【(（]?\s*(목\s*차|차\s*례|contents|table of contents)\s*[>〉＞》\]】)）]?$/i.test(first);
   return { rows: tag === 'tbl' ? num(/rowCnt="(\d+)"/) : 0, cols: tag === 'tbl' ? num(/colCnt="(\d+)"/) : 0, width: w, height: h, caption, ...(toc ? { toc: true } : {}) };
 }
 
@@ -143,18 +145,22 @@ export function makeImporter(opts) {
     const f = Math.max(0.05, (limit - margin) / w); stats.scaled++;
     const sc = (v) => Math.max(1, Math.round(v * f));
     if (tag === 'tbl') {
-      // 표 자체 크기와 칸 너비. 표 안의 표·그림은 그대로 두면 칸을 넘으니 같이 줄인다
-      return x.replace(/<hp:sz width="(\d+)"/g, (m0, v) => `<hp:sz width="${sc(v)}"`).replace(/<hp:cellSz width="(\d+)"/g, (m0, v) => `<hp:cellSz width="${sc(v)}"`)
-        .replace(/<hp:curSz width="(\d+)" height="(\d+)"/g, (m0, a, b) => `<hp:curSz width="${sc(a)}" height="${sc(b)}"`);
+      // 표 자체 크기와 칸 너비. 표 안의 표·그림은 그대로 두면 칸을 넘으니 같이 줄인다 — 칸 안 그림은 가로세로·확대 행렬을 함께 줄여 비율을 지킨다
+      const pics = []; const y = x.replace(/<hp:pic\b[\s\S]*?<\/hp:pic>/g, (pm) => { pics.push(scalePic(pm, f, sc)); return `<!--tgpic${pics.length - 1}-->`; });
+      return y.replace(/<hp:sz width="(\d+)"/g, (m0, v) => `<hp:sz width="${sc(v)}"`).replace(/<hp:cellSz width="(\d+)"/g, (m0, v) => `<hp:cellSz width="${sc(v)}"`)
+        .replace(/<hp:curSz width="(\d+)" height="(\d+)"/g, (m0, a, b) => `<hp:curSz width="${sc(a)}" height="${sc(b)}"`)
+        .replace(/<!--tgpic(\d+)-->/g, (m0, i) => pics[+i]);
     }
-    if (tag === 'pic') {
-      return x.replace(/<hp:sz width="(\d+)"([^>]*?)height="(\d+)"/, (m0, a, mid, b) => `<hp:sz width="${sc(a)}"${mid}height="${sc(b)}"`)
-        .replace(/<hp:curSz width="(\d+)" height="(\d+)"/, (m0, a, b) => `<hp:curSz width="${sc(a)}" height="${sc(b)}"`)
-        .replace(/<hc:scaMatrix e1="([\d.]+)"([^>]*?)e5="([\d.]+)"/, (m0, a, mid, b) => `<hc:scaMatrix e1="${(+a * f).toFixed(8)}"${mid}e5="${(+b * f).toFixed(8)}"`)
-        .replace(/<hp:rotationInfo angle="(-?\d+)" centerX="(\d+)" centerY="(\d+)"/, (m0, a, cx, cy) => `<hp:rotationInfo angle="${a}" centerX="${sc(cx)}" centerY="${sc(cy)}"`)
-        .replace(/lastWidth="(\d+)"/, (m0, v) => `lastWidth="${sc(v)}"`);
-    }
+    if (tag === 'pic') return scalePic(x, f, sc);
     return x.replace(/<hp:sz width="(\d+)"([^>]*?)height="(\d+)"/, (m0, a, mid, b) => `<hp:sz width="${sc(a)}"${mid}height="${sc(b)}"`);   // 도형 묶음: 겉 크기만(속 도형 좌표는 한글이 비율로 맞춘다)
+  }
+  // 그림 한 장을 f배로: 크기·현재 크기·확대 행렬·회전 중심·마지막 폭
+  function scalePic(x, f, sc) {
+    return x.replace(/<hp:sz width="(\d+)"([^>]*?)height="(\d+)"/, (m0, a, mid, b) => `<hp:sz width="${sc(a)}"${mid}height="${sc(b)}"`)
+      .replace(/<hp:curSz width="(\d+)" height="(\d+)"/, (m0, a, b) => `<hp:curSz width="${sc(a)}" height="${sc(b)}"`)
+      .replace(/<hc:scaMatrix e1="([\d.]+)"([^>]*?)e5="([\d.]+)"/, (m0, a, mid, b) => `<hc:scaMatrix e1="${(+a * f).toFixed(8)}"${mid}e5="${(+b * f).toFixed(8)}"`)
+      .replace(/<hp:rotationInfo angle="(-?\d+)" centerX="(\d+)" centerY="(\d+)"/, (m0, a, cx, cy) => `<hp:rotationInfo angle="${a}" centerX="${sc(cx)}" centerY="${sc(cy)}"`)
+      .replace(/lastWidth="(\d+)"/, (m0, v) => `lastWidth="${sc(v)}"`);
   }
 
   // header.xml에 옮겨 온 목록을 붙인다(charPr은 엔진의 글자 모양 목록이 붙인다)

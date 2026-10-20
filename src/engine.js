@@ -109,8 +109,11 @@ function charPropsOf(doc, fmt, fontName) {
   return p;
 }
 function paraPropsOf(fmt) {
+  // 내어쓰기: 학회 데이터는 Word·CSS처럼 ‘들여쓰기 −X, 왼쪽 여백 +X’(첫 줄 0, 다음 줄 X)로 적는다. 한글의 내어쓰기는 왼쪽 여백을 두고 다음 줄만 X 미는 방식이라
+  // 그대로 쓰면 첫 줄 X, 다음 줄 2X가 된다(한글 2024 실측, review13). 이 꼴이면 왼쪽 여백을 0으로 둔다
+  const hang = (fmt.indent || 0) < 0 && Math.abs((fmt.marginLeft || 0) + fmt.indent) < 0.05;
   const p = { alignment: fmt.align || 'justify', lineSpacing: fmt.lineSpacing || 160, lineSpacingType: 'Percent',
-    indent: U.margin(fmt.indent || 0), marginLeft: U.margin(fmt.marginLeft || 0), marginRight: U.margin(fmt.marginRight || 0),
+    indent: U.margin(fmt.indent || 0), marginLeft: hang ? 0 : U.margin(fmt.marginLeft || 0), marginRight: U.margin(fmt.marginRight || 0),
     spacingBefore: U.spacing(fmt.spacingBefore || 0), spacingAfter: U.spacing(fmt.spacingAfter || 0) };
   p.pageBreakBefore = !!fmt.pageBreakBefore;   // 명시적으로 꺼야 임시 서식 문단이 앞 역할(예: 영문초록 제목)의 쪽 나눔을 물려받지 않는다
   return p;
@@ -427,9 +430,10 @@ export async function buildDocument({ journal, templateBytes, blocks, onLog }) {
     const at = (o) => Math.max(0, Math.min(text.length, o.offset ?? text.length));
     const objs = (b.objects || []).map((o) => ({ o, imp: importerFor(o.res) }));
     const placed = new Set(objs.filter((x) => x.imp).map((x) => x.o.id));
+    const ordOf = (it) => (it.obj ? it.obj.ord : it.f.ord); const ordCmp = (a, c) => (typeof ordOf(a) === 'number' && typeof ordOf(c) === 'number' ? ordOf(a) - ordOf(c) : 0);
     const fnItems = (b.footnotes || []).filter((f) => !(f.objId && placed.has(f.objId))).map((f) => ({ f, at: at(f) }));
     const objItems = objs.filter((x) => x.imp).map((x) => ({ obj: x.o, imp: x.imp, at: at(x.o) }));
-    const fns = [...fnItems, ...objItems].map((it, k) => ({ ...it, k })).sort((a, c) => a.at - c.at || (a.obj ? 1 : 0) - (c.obj ? 1 : 0) || a.k - c.k);
+    const fns = [...fnItems, ...objItems].map((it, k) => ({ ...it, k })).sort((a, c) => a.at - c.at || ordCmp(a, c) || (a.obj ? 1 : 0) - (c.obj ? 1 : 0) || a.k - c.k);   // 같은 자리면 원고의 컨트롤 순서(표 뒤 각주가 표 안 각주보다 앞 번호가 되지 않게), 순서를 모르면 각주 먼저
     if (objs.some((x) => !x.imp)) objLost += objs.filter((x) => !x.imp).length;
     // 글자처럼 한 줄에 나란히 놓인 개체(그림 두 장 등)는 합친 폭이 판면을 넘지 않게 폭을 나눠 준다(원고처럼 나란히 — 한글은 넘치면 줄을 바꿔 위아래로 쌓는다)
     const inlineW = (o) => (/<hp:pos\b[^>]*treatAsChar="1"/.test(o.xml) && o.info ? o.info.width + (+((/<hp:outMargin left="(\d+)" right="(\d+)"/.exec(o.xml) || [0, 0, 0]).slice(1).reduce((a, v) => a + +v, 0))) : 0);

@@ -227,9 +227,13 @@ export function reorderSections(blocks, journal) {
   const order = journal.structure || ['front', 'toc', 'abstractKo', 'body', 'references', 'abstractEn', 'tail'];
   const groups = {}; const seq = [];
   let cur = null;
-  for (const b of blocks) {
+  // 표·그림·캡션은 앞 묶음을 따르되, 초록·목차·앞부분과 본문 사이에 끼어 있으면 뒤따르는 본문으로 보낸다(주제어 뒤·첫 장 앞의 표가 초록을 따라 옮겨지지 않게)
+  const nextGroup = (k) => { for (let q = k + 1; q < blocks.length; q++) { const r = blocks[q].role; if (r === 'blank' || r === 'skip' || FLOAT_ROLES.has(r) || r === 'toc' || r === 'tocHead') continue; return ROLE_GROUP[r] || 'body'; } return null; };
+  for (let k = 0; k < blocks.length; k++) {
+    const b = blocks[k];
     const tocObj = b.role === 'object' && (b.objects || []).some((o) => o.info && o.info.toc);   // 표 상자에 짠 목차는 목차 묶음으로 옮긴다
-    const g = tocObj ? 'toc' : b.role === 'blank' || (FLOAT_ROLES.has(b.role) && cur) ? cur : (ROLE_GROUP[b.role] || 'body');
+    const floatG = FLOAT_ROLES.has(b.role) && cur ? (/^(abstractKo|toc|front)$/.test(cur) && nextGroup(k) === 'body' ? 'body' : cur) : null;
+    const g = tocObj ? 'toc' : floatG || (b.role === 'blank' ? cur : (ROLE_GROUP[b.role] || 'body'));
     if (b.role === 'skip') continue;
     if (g === null || g === undefined) continue;
     if (!groups[g]) { groups[g] = []; seq.push(g); }

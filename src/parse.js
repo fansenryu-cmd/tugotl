@@ -88,7 +88,7 @@ async function parseHwp(bytes, ext) {
             // 표·그림은 XML을 통째로 옮긴다. 자리는 rhwp의 컨트롤 위치(없으면 XML에서 센 글자 수)
             const offset = ctrlPos && typeof ctrlPos[kth] === 'number' && ctrlPos[kth] >= 0 ? to16(ctrlPos[kth]) : Math.min(text.length, o.xmlOffset);
             const id = `o${++objSeq}`;
-            objects.push({ id, tag: o.tag, kind: o.kind, xml: o.xml, pre: o.pre, offset, info: o.info, res: objRes });
+            objects.push({ id, tag: o.tag, kind: o.kind, xml: o.xml, pre: o.pre, offset, ord: kth, info: o.info, res: objRes });   // ord: 원고의 컨트롤 순서(같은 글자 위치의 각주·개체 차례)
             if (o.kind === 'table') tables++; else if (o.kind === 'picture') pictures++; else shapes++;
             objMoved++;
             // 칸·캡션·글상자 안의 각주: 문단 각주 목록에 ‘개체 소속’으로 싣는다(인용 변환·정오표 대조를 같이 받고, 엔진이 개체 안 제자리에 넣는다)
@@ -117,7 +117,7 @@ async function parseHwp(bytes, ext) {
             // rhwp는 묶음 빈칸(nbSpace)을 보통 빈칸으로 주므로, 빈칸 종류만 다른 HWPX 글이 있으면 그쪽을 쓴다
             if (meta) for (let k = 0; k < fnLines.length; k++) { const mp = meta.paras[k]; if (mp && mp.text !== fnLines[k] && mp.text.replace(/[\u00a0\u2007]/g, ' ') === fnLines[k]) fnLines[k] = mp.text; }
             const paras = fnLines.map((t, k) => { const mp = meta && meta.paras[k]; const ok = mp && mp.runs.length && mp.runs.map((r) => r.text).join('') === t; return { text: t, runs: ok ? mp.runs : [] }; });
-            footnotes.push({ offset, text: fnLines.join('\n'), paras, ...(noNumber ? { noNumber: true } : {}), ...(numAt > 0 ? { numAt } : {}), ...(meta && meta.restart ? { restart: meta.restart } : {}) });
+            footnotes.push({ offset, ord: kth, text: fnLines.join('\n'), paras, ...(noNumber ? { noNumber: true } : {}), ...(numAt > 0 ? { numAt } : {}), ...(meta && meta.restart ? { restart: meta.restart } : {}) });
             fnTotal++;
           }
         }
@@ -301,7 +301,9 @@ async function parseDocx(bytes) {
   let tables = 0, pictures = 0, fnTotal = 0, enTotal = 0; let wordNum = 0, afterMark = false;   // Word는 사용자 지정 표시 각주를 세지 않는다
   // 표는 떼어 두고 그 자리에 표 자리 문단을 남긴다(문서 순서대로 각주 번호를 세기 위해 표는 그 문단 차례에 만든다). 변경 추적 삭제분은 먼저 뺀다
   const tblXmls = [];
-  const bodyXml = stripElements(stripElements(xml, 'w:del'), 'w:tbl', (full) => { tables++; tblXmls.push(full); return `<w:p><w:r><w:tgobj w:k="${tblXmls.length - 1}"/></w:r></w:p>`; });
+  // Word가 같은 그림·글상자를 새 형식(mc:Choice)과 대체 형식(mc:Fallback)으로 두 번 저장한 경우 대체 형식은 버린다(그림이 두 장 들어가지 않게)
+  const noAlt = stripElements(xml, 'mc:AlternateContent', (full) => (/<mc:Choice\b/.test(full) ? stripElements(full, 'mc:Fallback') : full));
+  const bodyXml = stripElements(stripElements(noAlt, 'w:del'), 'w:tbl', (full) => { tables++; tblXmls.push(full); return `<w:p><w:r><w:tgobj w:k="${tblXmls.length - 1}"/></w:r></w:p>`; });
   // 그림 파일: word/_rels/document.xml.rels의 관계 ID → word/media/… 바이트
   const relsXml = await part('word/_rels/document.xml.rels', false);
   const relMap = {}; for (const m of relsXml.matchAll(/<Relationship\b[^>]*>/g)) { const id = attr(m[0], 'Id'); const tg = attr(m[0], 'Target'); const mode = attr(m[0], 'TargetMode'); if (id && tg && mode !== 'External') relMap[id] = tg; }
@@ -335,7 +337,9 @@ async function parseDocx(bytes) {
   if (!paras.length && /<w:p[\s>\/]/.test(bodyXml)) throw new Error('DOCX 본문을 읽지 못했습니다(문단 구조가 깨져 있습니다). Word에서 다시 저장한 뒤 올려 주세요.');   // 문단 태그는 있는데 짝이 맞는 것이 없다 — 조용히 빈 원고를 내지 않는다
   if (paras.length > MAX_PARAS) throw new Error(`문단이 ${MAX_PARAS.toLocaleString()}개를 넘는 원고는 열 수 없습니다.`);
   for (const pe of paras) {
-    const body = pe.body;
+    // 표 자리 문단은 표 표시 하나만 든 최상위 문단뿐이다. 글상자 안 표의 자리 표시는 원래 표로 되돌려(그 글·각주를 바깥 문단 글로 읽는다) 바깥 문단 글이 사라지지 않게 한다
+    const only = /^\s*<w:r><w:tgobj w:k="(\d+)"\/><\/w:r>\s*$/.exec(pe.body);
+    const body = only ? pe.body : pe.body.replace(/<w:p><w:r><w:tgobj w:k="(\d+)"\/><\/w:r><\/w:p>/g, (m, k) => { tables--; return tblXmls[+k]; });
     const pPr = (elements(body, 'w:pPr')[0] || { body: '' }).body;
     const styleId = attr((/<w:pStyle\b[^>]*\/>/.exec(pPr) || [''])[0], 'w:val');
     const styleName = styleId ? (styleNames[styleId] || styleId) : '';
@@ -345,7 +349,7 @@ async function parseDocx(bytes) {
     const marginLeft = twip(attr(indXml, 'w:left') || attr(indXml, 'w:start'));
     const indent = twip(attr(indXml, 'w:firstLine')) - twip(attr(indXml, 'w:hanging'));
     // 표 자리 문단: 표를 이 차례에 만든다(칸 안 각주가 앞뒤 본문 각주와 문서 순서대로 번호를 받는다)
-    const tg = /<w:tgobj w:k="(\d+)"\/>/.exec(body);
+    const tg = only;
     if (tg) {
       const tfns = []; let t = null;
       try { t = tableXml(R, tblXmls[+tg[1]], { ...tblApi, cellPara: (b2) => tblApi.cellPara(b2, tfns) }); } catch { t = null; }

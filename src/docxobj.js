@@ -97,7 +97,8 @@ export function tableXml(R, tbl, api) {
   const styleId = attr((/<w:tblStyle\b[^>]*\/>/.exec(tblPr) || [''])[0], 'w:val');
   const tb = (elements(tblPr, 'w:tblBorders')[0] || { body: '' }).body || api.tableStyleBorders(styleId) || '';
   const tbOn = (side) => sideOn(tb, side) || (side === 'left' && sideOn(tb, 'start')) || (side === 'right' && sideOn(tb, 'end')) || false;
-  const rows = elements(tbl, 'w:tr');
+  const rows = elements(tbl, 'w:tr').filter((tr) => elements(tr.body, 'w:tc').length);   // 칸 없는 행은 버린다(한글에서 빈 쪽을 만든다)
+  if (!rows.length) return null;   // 행이 없는 표는 옮기지 않는다(부른 쪽이 ‘옮기지 못함’으로 센다)
   // 칸 배치: gridSpan(가로 합치기), vMerge(세로 합치기)
   const cells = []; const occupied = [];
   rows.forEach((tr, r) => {
@@ -105,11 +106,11 @@ export function tableXml(R, tbl, api) {
     let c = +(attr((/<w:gridBefore\b[^>]*\/>/.exec(trPr) || [''])[0], 'w:val') || 0);
     const hRule = /<w:trHeight\b[^>]*\/>/.exec(trPr); const minH = hRule ? +(attr(hRule[0], 'w:val') || 0) * TWIP : 0;
     for (const tc of elements(tr.body, 'w:tc')) {
-      const tcPr = (elements(tc.body, 'w:tcPr')[0] || { body: '' }).body;
+      const tcPr = /^\s*<w:tcPr\b/.test(tc.body) ? (elements(tc.body, 'w:tcPr')[0] || { body: '' }).body : '';   // 칸 맨 앞의 tcPr만(없으면 칸 속 표의 설정을 읽지 않게)
       const span = Math.max(1, +(attr((/<w:gridSpan\b[^>]*\/>/.exec(tcPr) || [''])[0], 'w:val') || 1));
       const vm = /<w:vMerge\b([^>]*)\/?>/.exec(tcPr); const vmVal = vm ? (attr(vm[1], 'w:val') || 'continue') : null;
       const tcW = +(attr((/<w:tcW\b[^>]*\/>/.exec(tcPr) || [''])[0], 'w:w') || 0) * TWIP;
-      if (vmVal === 'continue') { const up = cells.filter((x) => x.c === c && x.r + x.rs === r).pop(); if (up) up.rs++; c += span; continue; }
+      if (vmVal === 'continue') { const up = cells.filter((x) => x.c === c && x.r + x.rs === r).pop(); if (up) { up.rs++; if (/<w:t\b[^>]*>[^<]*\S|<w:drawing\b|<w:footnoteReference\b/.test(tc.body)) (up.more ||= []).push(tc); } c += span; continue; }   // 세로로 합친 칸의 이어진 칸에 글이 있으면 위 칸 끝에 붙인다
       cells.push({ r, c, cs: span, rs: 1, tc, tcPr, tcW, minH });
       c += span;
     }
@@ -132,13 +133,13 @@ export function tableXml(R, tbl, api) {
       const va = { center: 'CENTER', bottom: 'BOTTOM' }[(attr((/<w:vAlign\b[^>]*\/>/.exec(x.tcPr) || [''])[0], 'w:val') || '').toLowerCase()] || 'TOP';
       // 칸 안: 문단과 표(칸 속 표)를 순서대로
       const parts = [];
-      const body = x.tc.body.replace(/<w:tcPr\b[\s\S]*?<\/w:tcPr>/, '');
+      const body = [x.tc, ...(x.more || [])].map((t) => t.body.replace(/^\s*<w:tcPr\b[\s\S]*?<\/w:tcPr>/, '')).join('');
       const nested = elements(body, 'w:tbl'); let pos = 0; const chunks = [];
       for (const nt of nested) { chunks.push(body.slice(pos, nt.start)); chunks.push({ tbl: nt }); pos = body.indexOf('</w:tbl>', nt.start) >= 0 ? nt.start + (`<w:tbl${nt.attrs}>${nt.body}</w:tbl>`).length : body.length; }
       chunks.push(body.slice(pos));
       for (const ch of chunks) {
         if (typeof ch === 'string') { for (const p of elements(ch, 'w:p')) { const cp = api.cellPara(p.body, footnotes); parts.push(`<hp:p id="0" paraPrIDRef="${R.paraShape(cp.align)}" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0">${runsXml(R, cp.runs, cp.inserts)}</hp:p>`); } }
-        else { const inner = tableXml(R, `${ch.tbl.body}`, api); for (const f of inner.footnotes) footnotes.push(f); parts.push(`<hp:p id="0" paraPrIDRef="${R.paraShape('left')}" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0"><hp:run charPrIDRef="${R.charShape({})}">${inner.xml}<hp:t></hp:t></hp:run></hp:p>`); }
+        else { const inner = tableXml(R, `${ch.tbl.body}`, api); if (!inner) continue; for (const f of inner.footnotes) footnotes.push(f); parts.push(`<hp:p id="0" paraPrIDRef="${R.paraShape('left')}" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0"><hp:run charPrIDRef="${R.charShape({})}">${inner.xml}<hp:t></hp:t></hp:run></hp:p>`); }
       }
       if (!parts.length) parts.push(`<hp:p id="0" paraPrIDRef="${R.paraShape('left')}" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0"><hp:run charPrIDRef="${R.charShape({})}"><hp:t></hp:t></hp:run></hp:p>`);
       const w = colW(x.c, x.cs, x.tcW); const h = rowH.slice(x.r, x.r + x.rs).reduce((a, v) => a + v, 0);

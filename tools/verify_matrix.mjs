@@ -45,7 +45,7 @@ function expectedShapes(j, bytes) {
     d.free();
   } else {
     const fmt = j.format || GENERIC_FORMAT;
-    for (const [role, f] of Object.entries(fmt.roles || {})) exp[role] = { font: f.font || fmt.font, size: f.size, bold: !!f.bold, align: f.align, ls: f.lineSpacing, indent: f.indent || 0, ml: f.marginLeft || 0, src: '규정값' };
+    for (const [role, f] of Object.entries(fmt.roles || {})) exp[role] = { font: f.font || fmt.font, size: f.size, bold: !!f.bold, align: f.align, ls: f.lineSpacing, indent: f.indent || 0, ml: (f.indent || 0) < 0 && Math.abs((f.marginLeft || 0) + f.indent) < 0.05 ? 0 : (f.marginLeft || 0), src: '규정값' };   // 엔진은 Word식 내어쓰기(−X, +X)를 한글식(−X, 0)으로 쓴다
   }
   return exp;
 }
