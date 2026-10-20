@@ -165,6 +165,18 @@ export async function resolveRoles(doc, journal, log, hasTemplate) {
   // 표·그림 문단(가운데, 줄 간격 100% — 큰 표의 줄 높이에 줄 간격이 곱해지지 않게)과 그 밑 주석(왼쪽, 작은 글자)은 학회가 따로 정하지 않았으면 본문 글꼴로 만든다
   const bodyFont = (shapes.body && shapes.body.font) || (fmt && fmt.font);
   const bodyPt = shapes.body && shapes.body.size ? shapes.body.size / 100 : (fmt && fmt.roles && fmt.roles.body && fmt.roles.body.size) || 10;
+  // 바탕틀 없이 규정 수치(format)만 있는 학회: 규정에 없는 제목·장 제목·초록 역할이 본문 모양으로 떨어지지 않게,
+  // 대체 사슬에 학회가 정한 역할이 하나도 없으면 일반 양식 값을 학회 본문 크기에 비례해 채운다(h2가 h1만 있으면 기존대로 h1을 따른다)
+  const ownFmt = !hasTpl && journal.format && journal.format !== GENERIC_FORMAT;
+  const scaled = (g) => ({ ...g, size: Math.round(g.size * bodyPt) / 10 });   // 일반 양식 본문 10pt 기준
+  if (ownFmt) {
+    const given = new Set(Object.keys(shapes));
+    for (const role of ['title', 'titleEn', 'author', 'abstractHead', 'abstract', 'h1', 'h2', 'h3', 'refHead', 'abstractEnHead']) {
+      if (given.has(role) || (roles[role] && roles[role].like) || !GENERIC_FORMAT.roles[role]) continue;
+      if ((ROLE_FALLBACK[role] || []).some((a) => given.has(a))) continue;
+      shapes[role] = fromFormat(role, scaled(GENERIC_FORMAT.roles[role])); shapes[role].src += ' (일반 양식 비율)';
+    }
+  }
   if (!shapes.object && !(roles.object && roles.object.like)) shapes.object = fromFormat('object', { ...GENERIC_FORMAT.roles.object, size: bodyPt, font: bodyFont });
   if (!shapes.objNote && !(roles.objNote && roles.objNote.like)) shapes.objNote = fromFormat('objNote', { ...GENERIC_FORMAT.roles.objNote, size: Math.max(7, Math.round((bodyPt - 1) * 10) / 10), font: bodyFont });
   // like / fallback 해결
@@ -183,6 +195,7 @@ export async function resolveRoles(doc, journal, log, hasTemplate) {
   if (journal.template) { const fromTpl = await templateFootnoteIds(doc); if (fromTpl) footnote = fromTpl; }
   if (!footnote && fmt && fmt.roles && fmt.roles.footnote) footnote = fromFormat('footnote', fmt.roles.footnote);
   if (!footnote) { const s = byName['각주']; if (s) footnote = { ps: s.paraShapeId, cs: s.charShapeId, styleId: s.id, src: '스타일 ‘각주’' }; }
+  if (!footnote && ownFmt) footnote = fromFormat('footnote', scaled(GENERIC_FORMAT.roles.footnote));   // 규정에 각주 수치가 없으면 본문 모양 대신 일반 양식 각주(본문 비례)
   if (scratch.length) log?.(`서식 등록용 임시 문단 ${scratch.length}개 생성(삭제 예정)`);
   return { shapes, footnote, scratch };
 }
@@ -240,8 +253,10 @@ export async function buildDocument({ journal, templateBytes, blocks, onLog }) {
   if (templateBytes) { doc = new HwpDocument(templateBytes); log(`바탕틀 ‘${journal.template?.name || journal.template?.file}’ 열기 — 문단 ${doc.getParagraphCount(0)}개, ${doc.pageCount()}쪽`); }
   else { doc = HwpDocument.createEmpty(); log('바탕틀 없음 — 빈 문서 생성'); }
 
-  if (fmt && fmt.page) {
-    const p = fmt.page;
+  // 바탕틀이 없으면 규정 용지에 빠진 값(또는 용지 전체)을 일반 양식 용지로 채운다 — 빈 문서 기본 여백으로 떨어지지 않게
+  const page = !templateBytes && fmt ? { ...GENERIC_FORMAT.page, ...(fmt.page || {}) } : fmt && fmt.page;
+  if (page) {
+    const p = page;
     doc.setPageDef(0, JSON.stringify({ width: U.mm(p.width), height: U.mm(p.height), marginLeft: U.mm(p.left), marginRight: U.mm(p.right), marginTop: U.mm(p.top), marginBottom: U.mm(p.bottom), marginHeader: U.mm(p.header), marginFooter: U.mm(p.footer), marginGutter: U.mm(p.gutter || 0), landscape: false, binding: 0 }));
     log(`용지 설정 — ${p.width} × ${p.height} mm, 여백 위 ${p.top} · 아래 ${p.bottom} · 왼쪽 ${p.left} · 오른쪽 ${p.right} · 머리말 ${p.header} · 꼬리말 ${p.footer} mm`);
   } else {
