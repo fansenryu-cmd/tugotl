@@ -14,7 +14,10 @@ const fmtDate = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2
 const DOW = ['일', '월', '화', '수', '목', '금', '토'];
 const fmtKo = new Intl.DateTimeFormat('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' });
 
-const LS = { journals: 'tugotl.customJournals', templates: 'tugotl.customTemplates', opts: 'tugotl.options', journal: 'tugotl.journal', schedule: 'tugotl.schedule', skin: 'tugotl.skin' };
+const LS = { journals: 'tugotl.customJournals', templates: 'tugotl.customTemplates', opts: 'tugotl.options', journal: 'tugotl.journal', schedule: 'tugotl.schedule', skin: 'tugotl.skin', welcomed: 'tugotl.welcomed' };
+// 화면 그림(assets/img → 빌드가 data: 주소로 넣음). 없으면 그림 없이 그린다
+const IMG = (n) => (window.TUGOTL_IMG && typeof window.TUGOTL_IMG[n] === 'string' ? window.TUGOTL_IMG[n] : null);
+const art = (n, cls) => (IMG(n) ? h('img', { class: cls, src: IMG(n), alt: '', decoding: 'async' }) : null);
 const lsGet = (k, d) => { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch { return d; } };
 // 저장은 성공 여부를 돌려준다(용량 초과·비공개 창에서 조용히 실패하지 않도록)
 const lsSet = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch { return false; } };
@@ -228,8 +231,13 @@ function renderConvert(main) {
   if (!m) {
     // 휴대폰 파일 앱은 모르는 확장자(.hwp)를 흐리게 막는 경우가 있어, 터치 기기에서는 형식 제한을 두지 않고 열 때 확인한다
     const input = h('input', { type: 'file', accept: touch() ? null : '.hwp,.hwpx,.hml,.docx,.txt,.md', 'aria-label': '원고 파일', onchange: (e) => { const f = e.target.files[0]; if (f) openFile(f); } });
+    // 처음 연 사람에게만 세 단계 안내(투고처를 고르거나 닫으면 다시 보이지 않음)
+    if (!j && !lsGet(LS.welcomed, false)) main.append(h('section', { class: 'welcome', 'aria-label': '처음 사용 안내' }, art('welcome', 'welcome-art'),
+      h('div', {}, h('h2', {}, '투고틀을 처음 여셨네요'), h('p', {}, '원고를 학회 양식으로 바꾸는 데 세 단계면 됩니다. 원고는 이 기기 밖으로 나가지 않습니다.'),
+        h('ol', {}, h('li', {}, h('b', {}, '투고처 고르기'), ' — 학회지를 고르면 그 학회의 양식과 규정을 불러옵니다.'), h('li', {}, h('b', {}, '원고 넣기'), ' — HWP·HWPX·DOCX를 놓거나 고르면 문단 역할을 읽습니다.'), h('li', {}, h('b', {}, '적용하고 저장'), ' — 미리 보고 확인한 뒤 HWP로 저장합니다.')),
+        h('div', { class: 'row', style: 'margin-top:12px' }, narrow() ? h('button', { class: 'btn', onclick: () => openSide(true) }, '투고처 고르기') : null, h('button', { class: 'btn ghost sm', onclick: () => { lsSet(LS.welcomed, true); render(); } }, '안내 닫기')))));
     const dz = h('div', { class: 'dropzone', role: 'button', tabindex: '0', onclick: () => input.click(), onkeydown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); input.click(); } } },
-      h('div', {}, h('strong', {}, touch() ? '원고 파일을 고르세요' : '원고 파일을 이 화면에 끌어다 놓으세요'), h('p', {}, touch() ? 'HWP · HWPX · DOCX · TXT · MD — 파일 앱·드라이브에서 고르면 바로 열리고, ‘적용’을 누르면 학회 양식이 입혀진 결과를 저장 전에 미리 봅니다.' : 'HWP · HWPX · DOCX · TXT · MD — 놓는 즉시 열리고, ‘적용’을 누르면 학회 양식이 입혀진 결과를 저장 전에 미리 봅니다.'), h('span', { class: touch() ? 'btn' : 'btn ghost' }, '파일 선택'), input));
+      h('div', {}, art('empty', 'dz-art'), h('strong', {}, touch() ? '원고 파일을 고르세요' : '원고 파일을 이 화면에 끌어다 놓으세요'), h('p', {}, touch() ? 'HWP · HWPX · DOCX · TXT · MD — 파일 앱·드라이브에서 고르면 바로 열리고, ‘적용’을 누르면 학회 양식이 입혀진 결과를 저장 전에 미리 봅니다.' : 'HWP · HWPX · DOCX · TXT · MD — 놓는 즉시 열리고, ‘적용’을 누르면 학회 양식이 입혀진 결과를 저장 전에 미리 봅니다.'), h('span', { class: touch() ? 'btn' : 'btn ghost' }, '파일 선택'), input));
     main.append(dz);
     main.append(h('p', { class: 'hero', style: 'margin-top:18px' }, h('b', {}, '원고 내용은 바꾸지 않습니다.'), ' 학회 바탕틀의 글꼴·크기·줄간격·여백·각주 설정을 물려받고, 체재 순서와 쪽수·쪽수 범위 기호·낫표·서지 표기만 각주와 참고문헌에서 규칙대로 맞춥니다. 표·그림은 칸 안·캡션의 각주까지 그대로 옮깁니다. AI는 쓰지 않습니다.'));
     return;
@@ -252,7 +260,14 @@ function renderConvert(main) {
   right.append(h('div', { class: 'pane-h' }, h('div', { class: 'tabs', role: 'tablist' }, ...tabs.map(([k, l]) => h('button', { type: 'button', role: 'tab', 'aria-selected': k === state.tab ? 'true' : 'false', class: k === state.tab ? 'on' : '', onclick: () => { state.tab = k; render(); } }, l))), h('span', { class: 'grow' }), state.result ? h('span', { class: 'small muted' }, `${state.result.pages}쪽 · ${state.result.elapsed} ms${state.dirty ? ' · 설정이 바뀜 — 다시 적용' : ''}`) : null));
   const rb = h('div', { class: 'pane-b' });
   if (!state.result) rb.append(h('div', { class: 'placeholder' }, h('div', {}, h('b', {}, '적용'), '을 누르면 ', j ? `${j.journal} 양식` : '학회 양식', '이 입혀진 쪽을 여기에서 미리 보고, 바뀐 내용을 확인한 뒤 저장합니다.')));
-  else if (state.tab === 'preview') rb.append(pagesView(state.result));
+  else if (state.tab === 'preview') {
+    // 적용을 마친 직후: 결과 요약과 저장 단추(닫으면 이 결과에서는 다시 보이지 않음)
+    const r = state.result;
+    if (!r.doneHidden) rb.append(h('div', { class: 'done-card', role: 'status' }, art('done', 'done-art'),
+      h('div', {}, h('h3', {}, '적용을 마쳤습니다'), h('p', {}, `${j ? j.journal + ' 양식' : '학회 양식'} · ${r.pages}쪽 · 각주 ${r.stats?.footnotes ?? 0}개${m.parsed.counts.tables ? ` · 표 ${m.parsed.counts.tables}개` : ''}${m.parsed.counts.pictures ? ` · 그림 ${m.parsed.counts.pictures}개` : ''}. 아래 미리보기를 확인하고 저장하세요.`),
+        h('div', { class: 'row' }, h('button', { class: 'btn', disabled: state.dirty ? '' : null, onclick: () => saveResult('hwp') }, 'HWP로 저장'), h('button', { class: 'btn ghost', onclick: () => { state.tab = 'check'; render(); } }, '투고 전 확인 보기'), h('button', { class: 'btn ghost sm', 'aria-label': '완료 안내 닫기', onclick: () => { r.doneHidden = true; render(); } }, '닫기')))));
+    rb.append(pagesView(state.result));
+  }
   else if (state.tab === 'errata') rb.append(errataView(state.result));
   else if (state.tab === 'changes') rb.append(changesView(state.result));
   else if (state.tab === 'check') rb.append(h('ul', { class: 'check' }, ...state.result.checklist.map((c) => h('li', { class: c.ok ? 'ok' : (c.warn ? 'warn' : 'no') }, c.text))));
@@ -604,6 +619,7 @@ function renderSchedule(main) {
   for (const j of state.journals) for (const d of nextDeadlines(j)) rows.push({ j, ...d });
   rows.sort((a, b) => a.date - b.date);
   main.append(h('div', { class: 'topbar' }, h('h1', {}, '투고 일정'), h('span', { class: 'sub' }, `오늘 ${fmtKo.format(new Date())} 기준 · 중복 투고 금지`)));
+  const banner = art('schedule', 'sched-banner'); if (banner) main.append(banner);
   main.append(h('div', { class: 'card' }, h('table', { class: 'sched' }, h('thead', {}, h('tr', {}, h('th', {}, '마감'), h('th', {}, '남은 날'), h('th', {}, '학회지'), h('th', {}, '호'), h('th', {}, '발간'), h('th', {}, '분량'), h('th', {}, '비고'))),
     h('tbody', {}, ...rows.map((r) => { const left = daysLeft(r.date); return h('tr', { class: left < 0 ? 'past' : (left <= 14 ? 'soon' : '') }, h('td', { class: 'due' }, `${r.deadline} (${DOW[r.date.getDay()]})`), h('td', {}, left < 0 ? '지남' : `D-${left}`), h('td', {}, h('a', { href: '#', onclick: (e) => { e.preventDefault(); state.journalId = r.j.id; lsSet(LS.journal, r.j.id); state.view = 'journal'; state.jtab = 'schedule'; recompute(true); render(); } }, r.j.journal), h('div', { class: 'small muted' }, r.j.society)), h('td', {}, r.issue), h('td', {}, r.publish || ''), h('td', { class: 'small' }, r.j.length?.text || ''), h('td', { class: 'small muted' }, r.note || '')); })))));
 }
@@ -737,7 +753,7 @@ const SKINS = new Set(['', 'dark', 'paper', 'mono', 'navy', 'type', 'slack', 'vi
 const applySkin = (k) => { if (!SKINS.has(k)) k = ''; if (k) document.documentElement.setAttribute('data-skin', k); else document.documentElement.removeAttribute('data-skin'); document.querySelectorAll('#skins .sw').forEach((b) => { const on = (b.dataset.skin || '') === k; b.classList.toggle('on', on); b.setAttribute('aria-checked', on ? 'true' : 'false'); }); };
 applySkin(typeof lsGet(LS.skin, '') === 'string' ? lsGet(LS.skin, '') : '');
 document.querySelectorAll('#skins .sw').forEach((b) => b.addEventListener('click', () => { const k = b.dataset.skin || ''; applySkin(k); lsSet(LS.skin, k); }));
-$('#jsel').addEventListener('change', (e) => { state.journalId = e.target.value || null; lsSet(LS.journal, state.journalId); if (state.view === 'journal' && !state.journalId) state.view = 'convert'; recompute(true); if (narrow()) openSide(false); render(); });
+$('#jsel').addEventListener('change', (e) => { state.journalId = e.target.value || null; lsSet(LS.journal, state.journalId); if (state.journalId) lsSet(LS.welcomed, true); if (state.view === 'journal' && !state.journalId) state.view = 'convert'; recompute(true); if (narrow()) openSide(false); render(); });
 // 화면 어디에 놓아도 원고가 열린다
 const mainEl = $('#main'); let dragDepth = 0;
 mainEl.append(h('div', { class: 'dropline', 'aria-hidden': 'true' }));
@@ -754,8 +770,12 @@ function safeBoot() {
   }
 }
 safeBoot();
-loadAssets().then(() => { state.ready = true; setStatus('엔진 준비됨 · 오프라인 처리', 'ready'); render(); })
-  .catch((e) => { console.error(e); setStatus('엔진 로드 실패: ' + (e.message || e), 'err'); });
+// 휴대폰: 엔진(약 8MB)을 불러오는 동안 첫 화면 그림을 깐다
+const splash = $('#splash');
+if (splash && narrow() && IMG('splash')) { splash.style.backgroundImage = `url("${IMG('splash')}")`; splash.hidden = false; }
+const hideSplash = () => { if (splash && !splash.hidden) { splash.classList.add('out'); setTimeout(() => { splash.hidden = true; }, 260); } };
+loadAssets().then(() => { state.ready = true; setStatus('엔진 준비됨 · 오프라인 처리', 'ready'); hideSplash(); render(); })
+  .catch((e) => { console.error(e); setStatus('엔진 로드 실패: ' + (e.message || e), 'err'); const sm = $('#splash-msg'); if (sm) sm.textContent = '엔진을 불러오지 못했습니다'; setTimeout(hideSplash, 1500); });
 // 웹 배포본(https)에서는 오프라인 캐시(서비스 워커)를 등록해 홈 화면 앱처럼 인터넷 없이 연다. 내려받은 파일(file://)에서는 하지 않는다
 if (location.protocol === 'https:' && 'serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => { /* sw.js가 없는 곳 */ });
 // 테스트용 훅(브라우저 콘솔에서 파일을 넣을 때) — UI 동작에는 영향 없음

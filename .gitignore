@@ -18,3 +18,6 @@ Thumbs.db
 # 배포본은 release/ 에 올린다(dist는 빌드 작업 폴더)
 # 외부 논문 말뭉치 검증(추출 텍스트·산출물·기록 전부) — 공개 저장소에 올리지 않음
 tests/corpus/
+
+# 디자인 그림 원본(Codex 생성 PNG, 수 MB) — 앱에는 assets/img의 줄인 JPG만 넣는다
+assets/raw/

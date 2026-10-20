@@ -1,0 +1,30 @@
+{
+  "_about": "투고틀 화면 그림. Codex CLI의 그림 생성으로 만든다(node tools/gen_assets.mjs <이름…>). 원본 PNG는 assets/raw/(git 제외), 앱에 넣는 것은 assets/img/<이름>.jpg(width 픽셀로 줄인 JPEG). hero는 소개 페이지용이라 site/hero.jpg로 간다. 모든 그림은 글자·숫자·로고 없이.",
+  "model": "gpt-5.6-sol",
+  "assets": {
+    "empty": {
+      "width": 560, "where": "원고 변환 첫 화면 파일 놓는 칸(원고를 넣기 전)",
+      "prompt": "A minimal, modern editorial illustration for an empty-state screen of a Korean academic manuscript formatter app. Subject: three overlapping paper sheets with faint typographic grid lines, a small footnote marker, warm amber accent (#e8b14a) on a near-black background (#141414), flat vector style, no text, no letters, square."
+    },
+    "hero": {
+      "width": 1600, "out": "site/hero.jpg", "where": "배포 사이트 소개 페이지 맨 위 띠(왼쪽에 이름·소개 글자를 얹음)",
+      "prompt": "Wide 16:9 landing-page hero banner for a Korean academic paper formatting app. Calm editorial composition: a stack of manuscript pages flowing from a messy draft on the left into neatly typeset journal pages on the right, subtle grid lines, soft paper texture, muted ivory and charcoal with a single warm amber accent. Modern, minimal, premium, lots of negative space on the left for headline text."
+    },
+    "welcome": {
+      "width": 560, "where": "처음 사용 안내 카드(투고처를 고르기 전, 닫을 수 있음)",
+      "prompt": "Square onboarding illustration in a light theme: an open hardcover academic journal with a ribbon bookmark, a fountain pen, and floating footnote markers as small circles connected by thin lines to the page bottom. Flat geometric vector style, cream background (#f7f4ec), deep red accent (#b23a2a), ink-black lines."
+    },
+    "schedule": {
+      "width": 1600, "where": "투고 일정 화면 머리 띠(3:1)",
+      "prompt": "Ultra-wide 3:1 dashboard header artwork for a submission-deadline calendar: abstract isometric calendar tiles and paper envelopes arranged in a gentle rhythm, navy (#1f2a44) and cream palette with gold (#c9a961) highlights, soft shadows, modern SaaS aesthetic."
+    },
+    "splash": {
+      "width": 720, "where": "휴대폰에서 엔진을 불러오는 동안 화면 전체(9:16)",
+      "prompt": "Tall 9:16 mobile app splash screen artwork: a single elegant folded paper form transforming into a smartphone-sized document, glowing violet (#6d28d9) gradient background with subtle grain, centered composition, glassmorphism highlights, contemporary and polished."
+    },
+    "done": {
+      "width": 560, "where": "적용을 마친 뒤 결과 미리보기 맨 위 완료 카드",
+      "prompt": "Square success-state illustration: a finished, perfectly aligned manuscript page with a checkmark seal and a few confetti-like small geometric shapes (circles, squares), monochrome black and white line art with one blue (#1b3fe0) accent, Swiss typographic minimalism, generous whitespace."
+    }
+  }
+}

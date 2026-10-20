@@ -21,6 +21,10 @@ const css = fs.readFileSync(path.join(root, 'src/styles.css'), 'utf8');
 const templates = fs.readdirSync(path.join(root, 'templates')).filter((f) => f.endsWith('.hwp'));
 const forms = fs.existsSync(path.join(root, 'forms')) ? fs.readdirSync(path.join(root, 'forms')).filter((f) => f.endsWith('.hwp')) : [];
 const formTags = forms.map((f) => `<script type="text/plain" data-form="${f.replace(/"/g, '')}">${fs.readFileSync(path.join(root, 'forms', f)).toString('base64')}</script>`).join('\n');
+// 화면 그림(assets/img/*.jpg)은 data: 주소로 묶어 넣는다(오프라인 한 파일, CSP img-src data:)
+const imgDir = path.join(root, 'assets', 'img');
+const imgs = fs.existsSync(imgDir) ? Object.fromEntries(fs.readdirSync(imgDir).filter((f) => /\.(jpe?g|png|webp)$/i.test(f)).map((f) => [f.replace(/\.[^.]+$/, ''), `data:image/${/png$/i.test(f) ? 'png' : /webp$/i.test(f) ? 'webp' : 'jpeg'};base64,${fs.readFileSync(path.join(imgDir, f)).toString('base64')}`])) : {};
+const imgTag = `<script>window.TUGOTL_IMG=${JSON.stringify(imgs)};</script>`;
 const tplTags = templates.map((f) => `<script type="text/plain" data-template="${f.replace(/\.hwp$/, '')}">${fs.readFileSync(path.join(root, 'templates', f)).toString('base64')}</script>`).join('\n');
 
 function assemble({ inlineWasm }) {
@@ -30,7 +34,7 @@ function assemble({ inlineWasm }) {
   // 치환 문자열에 $& $` $' 같은 패턴이 들어 있어도 그대로 넣도록 함수형 replace를 쓴다
   return html
     .replace('/*__CSS__*/', () => css)
-    .replace('<!--__ASSETS__-->', () => `${wasmTag}\n${inlineWasm ? tplTags + '\n' + formTags : ''}`)
+    .replace('<!--__ASSETS__-->', () => `${imgTag}\n${wasmTag}\n${inlineWasm ? tplTags + '\n' + formTags : ''}`)
     .replace('<!--__APP__-->', () => `<script>${js}</script>`)
     .replace('__BUILD__', () => new Date().toISOString().slice(0, 16).replace('T', ' '));
 }
