@@ -390,6 +390,8 @@ docs/             학회 조사·규정 요지·첨부 원본·감사 보고서
 | 소스 코드 `src/`, `tools/`, 투고틀이 쓴 문서 | [MIT](LICENSE) | 이융희 (2026) |
 | HWP 엔진 [rhwp](https://github.com/edwardkim/rhwp) (`@rhwp/core` 0.8.7, 배포본에 내장) | MIT | Edward Kim |
 | [JSZip](https://github.com/Stuk/jszip) 3.10.1 (배포본에 내장) | MIT 또는 GPL-3.0-or-later 중 MIT 선택 | Stuart Knightley 외 |
+| [pako](https://github.com/nodeca/pako) 1.0.11 (배포본에 내장, JSZip이 쓰고 각주 모양 고치기에도 씀) | MIT | Vitaly Puzrin, Andrei Tuputcyn |
+| [cfb](https://github.com/SheetJS/js-cfb) 1.2.2 (배포본에 내장, HWP 복합 파일 다시 묶기) | Apache-2.0 | SheetJS LLC |
 | [esbuild](https://github.com/evanw/esbuild) 0.25.0 (빌드 전용, 배포본에 없음) | MIT | Evan Wallace |
 | 학회 바탕틀 `templates/`, 투고 서식 `forms/`, 규정 원본 `docs/첨부/` | 각 학회·연구소 저작. 투고자에게 공개 배포된 자료를 투고 편의를 위해 원본 그대로 수록. 해당 학회 투고 용도로만 사용. 권리자 요청 시 즉시 제거 | 각 학회 |
 | 학회 정보 데이터 `src/journals.js` | 학회가 공개한 규정·공고를 요약한 것(MIT로 배포). 원문과 출처는 `docs/` | — |
@@ -398,17 +400,17 @@ docs/             학회 조사·규정 요지·첨부 원본·감사 보고서
 
 **보증 없음.** 이 프로그램은 학회 규정을 규칙으로 옮긴 것이고 규정은 수시로 바뀝니다. 투고 전에 학회 공지와 산출 파일을 반드시 직접 확인하십시오. 산출물로 인한 반려·불이익에 대해 저자는 책임지지 않습니다(MIT 라이선스의 무보증 조항).
 
-**English.** The source code is MIT-licensed (© 2026 Yunghee Lee / 이융희). The bundled HWP engine rhwp and JSZip are MIT. Journal templates, forms and regulation files belong to the respective societies; they are included unchanged (or with sample text blanked) only to help authors submit to those journals, and will be removed on request. **No warranty:** society rules change often, so always check the journal’s current notice and the saved file before submitting.
+**English.** The source code is MIT-licensed (© 2026 Yunghee Lee / 이융희). The bundled HWP engine rhwp, JSZip and pako are MIT; cfb (SheetJS) is Apache-2.0. Journal templates, forms and regulation files belong to the respective societies; they are included unchanged (or with sample text blanked) only to help authors submit to those journals, and will be removed on request. **No warranty:** society rules change often, so always check the journal’s current notice and the saved file before submitting.
 
 ## 감사의 말
 
 - **Edward Kim** — 브라우저 안에서 HWP를 읽고 쓰게 해 준 [rhwp](https://github.com/edwardkim/rhwp). 이 엔진이 없었다면 "서버 없이 내 PC 안에서"라는 전제가 성립하지 않았습니다.
 - **각 학회·연구소 편집위원회** — 투고 규정과 논문 양식을 공개해 주신 덕분에 규칙으로 옮길 수 있었습니다. 수록된 자료의 권리는 각 학회에 있으며, 수정·제거 요청은 언제든 반영합니다.
 - **착상** — 이 프로그램은 **ece.drjunoh.chatgpt.site**의 drjunoh 님 아이디어에서 영감을 얻어, 문학 학회지 투고에 맞게 "AI 없이·로컬에서·저장하지 않고"라는 방향으로 새로 만든 것입니다.
-- JSZip(Stuart Knightley 외), esbuild(Evan Wallace), Pretendard 글꼴 프로젝트.
+- JSZip(Stuart Knightley 외), pako(Vitaly Puzrin·Andrei Tuputcyn), cfb(SheetJS), esbuild(Evan Wallace), Pretendard 글꼴 프로젝트.
 - 이 프로그램의 코드와 문서는 AI 코딩 도구(Claude, Anthropic)의 도움을 받아 작성했고, 설계·검증·최종 확인은 저자가 했습니다.
 
-**English.** Thanks to Edward Kim for rhwp, which makes reading and writing HWP inside a browser possible; to the editorial boards of the societies for publishing their rules and templates; to drjunoh (ece.drjunoh.chatgpt.site) for the original idea; and to the JSZip, esbuild and Pretendard projects. The code and documents were written with the help of an AI coding tool (Claude, Anthropic); design, verification and final review are the author’s. The converter itself uses no AI.
+**English.** Thanks to Edward Kim for rhwp, which makes reading and writing HWP inside a browser possible; to the editorial boards of the societies for publishing their rules and templates; to drjunoh (ece.drjunoh.chatgpt.site) for the original idea; and to the JSZip, pako, cfb (SheetJS), esbuild and Pretendard projects. The code and documents were written with the help of an AI coding tool (Claude, Anthropic); design, verification and final review are the author’s. The converter itself uses no AI.
 
 ## 문의 · Contact
 

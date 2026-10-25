@@ -689,6 +689,39 @@ copy of the Program in return for a fee.
                      END OF TERMS AND CONDITIONS
 ```
 
+### pako 1.0.11 — MIT
+deflate/inflate 구현. 저작자 Vitaly Puzrin, Andrei Tuputcyn. https://github.com/nodeca/pako
+JSZip이 내부에서 쓰고, 투고틀은 저장한 HWP의 구역 스트림을 풀고 다시 묶을 때(각주 모양 레코드 고치기, src/hwpfix.js) 씁니다.
+
+```
+(The MIT License)
+
+Copyright (C) 2014-2017 by Vitaly Puzrin and Andrei Tuputcyn
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+```
+
+### cfb 1.2.2 — Apache-2.0
+복합 파일(Compound File Binary, OLE) 읽기·쓰기. 저작자 SheetJS LLC. https://github.com/SheetJS/js-cfb
+HWP 5.0 파일은 복합 파일이라, 각주 모양 레코드를 고친 구역 스트림을 다시 묶을 때 씁니다(src/hwpfix.js). 수정하지 않고 그대로 씁니다.
+Copyright (C) 2013-present SheetJS LLC. Licensed under the Apache License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0). 전문은 프로그램 도움말의 라이선스 고지와 node_modules/cfb/LICENSE에 있습니다.
+
 ## 2. 빌드 도구 (배포본에 포함되지 않음)
 
 ### esbuild 0.25.0 — MIT

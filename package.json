@@ -6,6 +6,7 @@
   "type": "module",
   "dependencies": {
     "@rhwp/core": "^0.8.7",
+    "cfb": "^1.2.2",
     "jszip": "^3.10.1"
   },
   "devDependencies": {

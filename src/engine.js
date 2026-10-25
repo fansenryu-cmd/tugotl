@@ -4,6 +4,7 @@ import init, { HwpDocument } from '../node_modules/@rhwp/core/rhwp.js';
 import JSZip from 'jszip';
 import { ROLE_FALLBACK, GENERIC_FORMAT, ROLE_DEFS, FLOAT_ROLES } from './journals.js';
 import { makeImporter } from './objects.js';
+import { fixHwpBytes } from './hwpfix.js';
 const ROLE_GROUP = Object.fromEntries(ROLE_DEFS.map((r) => [r.id, r.group]));
 
 export { HwpDocument };
@@ -547,7 +548,8 @@ export async function buildDocument({ journal, templateBytes, blocks, onLog }) {
   if (reflowed !== null) log(`줄 배치 계산 — 문단 ${reflowed}개`);
   const rep = doc2.exportHwpWithReport();
   const loss = J(rep.contentLoss()) || {};
-  const hwp = rep.takeBytes();
+  // rhwp 0.8.7의 각주 모양 레코드 배치를 한글 배치로 고친다(구분선 길이·선 위 여백 — hwpfix.js)
+  const hwp = fixHwpBytes(rep.takeBytes(), (m, k) => log(m, k));
   const hwpx = doc2.exportHwpx();
   doc2.free();
   if (loss.count) log(`저장 중 손실 보고 ${loss.count}건: ${JSON.stringify(loss.losses).slice(0, 300)}`, 'warn');
