@@ -1,6 +1,6 @@
 // 투고틀 오프라인 캐시 — 한 번 연 앱(투고틀.html)을 기기에 두고 인터넷 없이 연다.
 // 앱 파일은 원고를 서버로 보내지 않는다. 이 워커도 같은 사이트의 정적 파일만 저장한다.
-const CACHE = 'tugotl-a1feff5b1e8b';
+const CACHE = 'tugotl-10624b0b2790';
 // 설치 때는 소개 페이지와 아이콘만 받는다. 32MB 앱 파일은 사용자가 실제로 열 때 저장한다(소개 페이지만 본 사람에게 큰 파일을 내려받게 하지 않는다)
 const CORE = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png'];
 const APP = ['./%ED%88%AC%EA%B3%A0%ED%8B%80.html', './tugotl.html'];

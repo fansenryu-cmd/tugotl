@@ -364,7 +364,7 @@ main.over .dropline { display: block; }
       <div class="mast-status" id="status" role="status" aria-live="polite"><span class="dot" aria-hidden="true"></span><span id="status-text">엔진 준비 중…</span></div>
       <div class="skins" id="skins" role="radiogroup" aria-label="화면 스킨"><span class="sk-label">스킨</span><button type="button" class="sw sw-default" data-skin="" role="radio" aria-label="다크 스튜디오(기본)" title="다크 스튜디오(기본)"></button><button type="button" class="sw sw-paper" data-skin="paper" role="radio" aria-label="종이·서지" title="종이·서지"></button><button type="button" class="sw sw-mono" data-skin="mono" role="radio" aria-label="모노크롬 미니멀" title="모노크롬 미니멀"></button><button type="button" class="sw sw-navy" data-skin="navy" role="radio" aria-label="네이비·크림" title="네이비·크림"></button><button type="button" class="sw sw-type" data-skin="type" role="radio" aria-label="타이포 편집" title="타이포 편집"></button><button type="button" class="sw sw-slack" data-skin="slack" role="radio" aria-label="보라(슬랙식, 이전 기본)" title="보라(슬랙식, 이전 기본)"></button><button type="button" class="sw sw-violet" data-skin="violet" role="radio" aria-label="바이올렛" title="바이올렛"></button></div>
       <div class="mast-note" id="status-note" hidden>본 투고 양식 편집은 프로그램 규칙에 따른 것으로 완벽한 편집이 아닙니다. 저장한 원고는 투고 전에 반드시 저자가 직접 확인해 주세요.</div>
-      <div class="side-fine">원고는 이 브라우저 안에서만 처리되며 전송되지 않습니다 · <a href="https://github.com/edwardkim/rhwp" target="_blank" rel="noopener">rhwp</a> · v1.4 · 빌드 2026-10-25 09:48</div>
+      <div class="side-fine">원고는 이 브라우저 안에서만 처리되며 전송되지 않습니다 · <a href="https://github.com/edwardkim/rhwp" target="_blank" rel="noopener">rhwp</a> · v2.0 · 빌드 2026-10-25 10:55</div>
     </div>
   </aside>
   <main id="main" tabindex="-1"></main>
@@ -3774,7 +3774,7 @@ main.over .dropline { display: block; }
           }
           return o;
         }
-        function find(cfb, path) {
+        function find2(cfb, path) {
           var UCFullPaths = cfb.FullPaths.map(function(x) {
             return x.toUpperCase();
           });
@@ -4681,7 +4681,7 @@ main.over .dropline { display: block; }
         function cfb_gc(cfb) {
           rebuild_cfb(cfb, true);
         }
-        exports2.find = find;
+        exports2.find = find2;
         exports2.read = read;
         exports2.parse = parse;
         exports2.write = write;
@@ -14447,6 +14447,8 @@ main.over .dropline { display: block; }
       documents: [],
       marks: { paper: "\uADDC\uC815\uC5D0 \uC5C6\uC74C", book: "\uADDC\uC815\uC5D0 \uC5C6\uC74C", work: "\uD45C 1. / Table 1.(\uD45C \uC704), \uADF8\uB9BC 1. / Figure 1.(\uADF8\uB9BC \uC544\uB798) \u2014 \uD55C\uAE00\xB7\uC601\uBB38 \uBCD1\uAE30", emph: "\uADDC\uC815\uC5D0 \uC5C6\uC74C" },
       footnote: { pageUnit: "keep", example: "\uAC01\uC8FC, \uBBF8\uC8FC \uC791\uC131 \uBD88\uAC00 (\uCC38\uACE0 \uBB38\uD5CC, \uBCF8\uBB38 \uB0B4\uC6A9\uC73C\uB85C \uC791\uC131)", rules: ["\uAC01\uC8FC\xB7\uBBF8\uC8FC \uBD88\uAC00 \u2014 \uBCF8\uBB38\uC5D0\uC11C \uC624\uB984\uCC28\uC21C \uBC88\uD638 [1]\uB85C \uCC38\uACE0\uBB38\uD5CC \uC778\uC6A9", "\uC800\uC790\uC57D\uB825\xB7\uAC8C\uC7AC\uD655\uC815\uC77C\xB7\uAD50\uC2E0\uC800\uC790\uB294 \uCCAB \uCABD \uC544\uB798 * \uC8FC(Asia\uC2E0\uBA85\uC870 7.5)"] },
+      noteLine: { length: -4 },
+      // 각주 구분선: 양식 ‘JCCT_PaperFormat.hwp’ 설정
       references: { order: "\uBCF8\uBB38 \uC778\uC6A9 \uC21C\uC11C(\uC624\uB984\uCC28\uC21C \uBC88\uD638)", rules: ["\uBAA8\uB4E0 \uCC38\uACE0\uBB38\uD5CC\uC740 \uC601\uC5B4\uB85C \uC791\uC131(\uC2E0\uBA85\uC870 9pt)", "\uC9C4\uD765\uC6D0 \uBC1C\uAC04 \uB17C\uBB38\uC9C0(JIIBC, IJASC, IJIBC, IJACT, JCCT)\uC5D0\uC11C \uAC01 1\uAC1C(\uCD1D 5\uAC1C) \uC774\uC0C1 \uC778\uC6A9 \uC694\uCCAD", "\uC2E4\uC81C \uB9C1\uD06C \uAC00\uB2A5\uD55C DOI \uD45C\uC2DC", "\uBC88\uD638\uB294 \uBCF8\uBB38 \uC778\uC6A9 \uC21C\uC11C\uC640 \uC77C\uCE58"] },
       layout: { paper: "188 \xD7 258 mm(\uC591\uC2DD HWP)", margins: "\uC704 0 \xB7 \uBA38\uB9AC\uB9D0 28 \xB7 \uAF2C\uB9AC\uB9D0 20 \xB7 \uC544\uB798 0 \xB7 \uC67C\uCABD 20 \xB7 \uC624\uB978\uCABD 20 mm(\uC591\uC2DD HWP), \uBCF8\uBB38 2\uB2E8(\uB2E8 \uB108\uBE44 71, \uAC04\uACA9 6 mm)", body: "\uC2E0\uBA85\uC870 9pt, \uC7A5\uD3C9 96, \uC790\uAC04 -8, \uB4E4\uC5EC\uC4F0\uAE30 10, \uC904\uAC04\uACA9 160", quote: "\uADDC\uC815\uC5D0 \uC5C6\uC74C", footnote: "\uAC01\uC8FC\xB7\uBBF8\uC8FC \uBD88\uAC00", headings: "\uC7A5 \uC81C\uBAA9 \uC911\uACE0\uB515 11(\u2160. \uC11C \uB860), \uC808 \uC81C\uBAA9 \uC2E0\uBA85\uC870 9(1. 2. 3.), \uD56D 1)", title: "\uAD6D\uBB38 \uC81C\uBAA9 \uC2E0\uBA85\uC870 16pt \uBCFC\uB4DC \uAC00\uC6B4\uB370 / \uC601\uBB38 \uC81C\uBAA9 Times New Roman 14pt \uBCFC\uB4DC \uAC00\uC6B4\uB370 / \uC800\uC790 \uC911\uACE0\uB515 10pt \uAC00\uC6B4\uB370 / \uC601\uBB38 \uC800\uC790 Times New Roman 11pt \uAC00\uC6B4\uB370" },
       copyright: "\uADDC\uC815\uC744 \uCC3E\uC9C0 \uBABB\uD568",
@@ -14617,6 +14619,8 @@ main.over .dropline { display: block; }
       documents: ["\uB17C\uBB38\uC811\uC218 \uCE74\uB4DC", "\uAC8C\uC7AC \uD655\uC815 \uD6C4 \uC800\uC790 \uC131\uBA85\xB7\uC18C\uC18D\xB7200\uC790 \uC774\uB0B4 \uC57D\uB825\xB7\uC0AC\uC9C4"],
       marks: { paper: "\uCC38\uACE0\uBB38\uD5CC\uC758 \uB17C\uBB38\xB7\uB3C4\uC11C\uBA85 \uBAA8\uB450 \u201C \u201D (\uC601\uBB38 \uD45C\uAE30)", book: "\u201C\uB3C4\uC11C\uBA85\u201D (\uADDC\uC815 \uC81C9\uC870)", work: "\uADF8\uB9BC\xB7\uD45C\uB294 \uC601\uBB38: [Fig. 1], [Table 1] \u2014 \uADF8\uB9BC \uC81C\uBAA9 \uD558\uB2E8 \uAC00\uC6B4\uB370, \uD45C \uC81C\uBAA9 \uC0C1\uB2E8 \uAC00\uC6B4\uB370. \uC218\uC2DD (eq. 1)", emph: "\uADDC\uC815\uC5D0 \uC5C6\uC74C" },
       footnote: { pageUnit: "keep", pageRangeLatin: "-", pageRangeBy: "\uCC38\uACE0\uBB38\uD5CC \uADDC\uC815 \uC608\uC2DC(pp. 61-68)", example: "\u2026\uC804\uB7B5\uC0C1\uD488\uC785\uB2C8\uB2E4[1,2,3]. (\uC591\uC2DD \uC608\uC2DC \u2014 \uD2C0\uB9B0 \uD45C\uAE30: [1],[2],[3], [1~3], ~\uC774\uB2E4.[1])", rules: ["\uBCF8\uBB38 \uBC14\uB85C \uB4A4 [ ] \uC548\uC5D0 \uCC38\uACE0\uBB38\uD5CC \uBC88\uD638(\uC778\uC6A9 \uC21C \uBC88\uD638\uC81C) \u2014 [1,2,3] \uAF34", "\uAEBD\uC1E0 \u2018]\u2019 \uB2E4\uC74C\uC5D0 \uB9C8\uCE68\uD45C\xB7\uC27C\uD45C", "\uAC01\uC8FC\uB294 \uBC18\uAD04\uD638 \uBC88\uD638 1), \uAC01 \uD398\uC774\uC9C0 \uC624\uB978\uCABD \uB2E8 \uC544\uB798(\uC591\uC2DD)"] },
+      noteLine: { length: -4 },
+      // 각주 구분선: 양식 ‘논문지_양식.hwp’ 설정
       references: { order: "\uC778\uC6A9 \uC21C\uC11C(\uBC88\uD638\uC21C), \uC601\uBB38\uC73C\uB85C \uAE30\uC220", rules: ["\uD559\uC220\uC9C0: [\uBC88\uD638], \uC800\uC790, \u201C\uC81C\uBAA9\u201D, \uD559\uC220\uC9C0\uBA85, \uAD8C, \uD638, \uCABD\uC218, \uBC1C\uD589\uB144\uB3C4", "\uB2E8\uD589\uBCF8: [\uBC88\uD638], \uC800\uC790, \u201C\uB3C4\uC11C\uBA85\u201D, \uCABD\uC218, \uBC1C\uD589\uC18C, \uBC1C\uD589\uB144\uB3C4", '[1] F. I. Parke, "Parameterized models for facial animation", IEEE Computer Graphics and Applications, Vol. 2, No. 9, pp. 61-68, 1982.', '[2] Gene, G. and Charles. L, "Matrix computations", 3rd Ed., p.345, Jones Hopkins, 1996.', '[3] Gil Dong Hong, "Computer Game", pp.123-140, Game Publisher, 1999.', "\uC591\uC2DD \uC608\uC2DC\uB294 pp18-21\uCC98\uB7FC \uC810 \uC5C6\uC774 \uC801\uD600 \uC788\uC74C \u2014 \uADDC\uC815 \uC608\uC2DC(pp. 61-68)\uB97C \uB530\uB97C \uAC83"] },
       layout: { paper: "190 \xD7 260 mm (\uC591\uC2DD \u2018\uB17C\uBB38\uC2DC \uC8FC\uC758\uC0AC\uD56D\u2019)", margins: "\uC704 15 \xB7 \uC544\uB798 16 \xB7 \uC67C\uCABD 20 \xB7 \uC624\uB978\uCABD 20 \xB7 \uBA38\uB9AC\uB9D0 20 \xB7 \uAF2C\uB9AC\uB9D0 8 mm", body: "9pt \uC904\uAC04 164%(\uC591\uC2DD, \uD55C\uC591\uC2E0\uBA85\uC870), 2\uB2E8", quote: "\uADDC\uC815\uC5D0 \uC5C6\uC74C", footnote: "\uC591\uC2DD 8pt \uC904\uAC04 140%\uB85C \uBCF4\uC784, \uBC18\uAD04\uD638 \uBC88\uD638, \uC624\uB978\uCABD \uB2E8 \uC544\uB798", headings: "1. \uC7A5 10.5pt \uC904\uAC04 300% \uAC00\uC6B4\uB370 / 1.1 \uC808 10pt \uC904\uAC04 240% / 1.1.1 9pt \uC904\uAC04 165% (\uC2E0\uBA85 \uD0DC\uACE0\uB515). \uBC88\uD638 1. \u2013 1.1 \u2013 1.1.1 \u2013 \uAC00 \u2013 1) \u2013 \uAC00) \u2013 (1)", title: "\uAD6D\uBB38 \uC81C\uBAA9 15pt(\uC591\uC2DD, \uC724\uACE0\uB515) / \uC800\uC790\xB7\uC18C\uC18D\xB7\uC774\uBA54\uC77C 10.5pt 140% / \uC601\uBB38 \uC81C\uBAA9 12pt 130% / \uC694\uC57D\xB7ABSTRACT \uC81C\uBAA9 10.5pt, \uB0B4\uC6A9 8.5pt 140% / \uADF8\uB9BC\xB7\uD45C \uC81C\uBAA9 8.5pt 140% / REFERENCES 10.5pt 300%, \uB0B4\uC6A9 8.5pt 140%" },
       labels: { abstractHead: "\uC694  \uC57D", abstractEnHead: "ABSTRACT", refHead: "REFERENCES" },
@@ -14873,6 +14877,8 @@ main.over .dropline { display: block; }
       documents: ["\uB17C\uBB38\uD22C\uACE0\uC608\uC815\uC2E0\uCCAD\uC11C\xB7\uC811\uC218\uBD84\uACFC \uC601\uC5ED \uAD6C\uBD84(\uC774\uBA54\uC77C)", "\uB17C\uBB38\uD22C\uACE0\uC2E0\uCCAD\uC11C \uBC0F \uC800\uC790\uC810\uAC80\uD45C(hwp)", "KCI \uB17C\uBB38 \uC720\uC0AC\uB3C4 \uAC80\uC0AC \uD30C\uC77C"],
       marks: { paper: "APA 7 \u2014 \uB17C\uBB38 \uC81C\uBAA9 \uD45C\uC9C0 \uC5C6\uC74C", book: "\uCC45 \uC81C\uBAA9\xB7\uC800\uB110\uBA85\xB7\uAD8C(volume) \uC774\uD0E4\uB9AD", work: "<\uD45C 1> \uD45C\uC81C\uBAA9(Tab.1 Table Title), <\uADF8\uB9BC 1>(Fig 1.) \u2014 \uD55C\xB7\uC601 \uBCD1\uAE30 \uB610\uB294 \uC601\uBB38", emph: "\uADDC\uC815\uC5D0 \uC5C6\uC74C" },
       footnote: { pageUnit: "keep", pageRange: "\u2013", pageRangeLatin: "\u2013", pageRangeBy: "\uC791\uC131\uC548\uB0B4 \u2018\uD398\uC774\uC9C0\uB294 \uD558\uC774\uD508(\u2013)\uC73C\uB85C \uC5F0\uACB0 (\uC608: 147\u2013153)\u2019 \u2014 \uC2E4\uC81C \uAE00\uC790\uB294 en dash(U+2013)", example: "(Bura, 2020) / (\uC774\uC131\uC740, 2021) / (Shu & Psao, 2019) / (\uC774\uC131\uC740 & \uAE40\uD604\uC219, 2022) / (Seo et al., 2018) / (\uC774\uC131\uC740 \uC678, 2023) / (Kim, 2024, p. 25)", rules: ["APA 7\uD310 \uBCF8\uBB38 \uB0B4 \uC778\uC6A9 \u2014 \uAE30\uC874 \uBC88\uD638\uC2DD([1]) \uD3D0\uC9C0", "3\uC778 \uC774\uC0C1\uC740 \uCCAB \uC800\uC790 + et al.(\uAD6D\uBB38\uC740 \u2018\uC678\u2019)", "\uC9C1\uC811 \uC778\uC6A9\uC740 \uCABD\uC218 \uD3EC\uD568: (Kim, 2024, p. 25) \u2014 p. \uB4A4 \uD55C \uCE78", "\uC778\uC6A9\uACFC \uCC38\uACE0\uBB38\uD5CC\uC758 \uC800\uC790\uBA85\xB7\uC5F0\uB3C4 \uC77C\uCE58 \uD544\uC218, \uBD88\uC77C\uCE58 \uC2DC \uC218\uC815 \uB610\uB294 \uBC18\uB824", "\uC0AC\uC0AC\uB294 1\uCABD\uC5D0, \uAD50\uC2E0\uC800\uC790 \uD45C\uC2DC"] },
+      noteLine: { length: -4 },
+      // 각주 구분선: 양식 ‘KOEN논문투고양식-2026.hwp’ 설정
       references: { order: "\uAD6D\uBB38\uC11C \u2192 \uB3D9\uC591\uC11C \u2192 \uC11C\uC591\uC11C(\uB3D9\uC591\uC11C \uC790\uBAA8\uC21C, \uC11C\uC591\uC11C \uC54C\uD30C\uBCB3\uC21C, \uAC19\uC740 \uC800\uC790\uB294 \uC5F0\uB300\uC21C). \uCC38\uACE0\uBB38\uD5CC\uC740 \uAD6D\uBB38 \uBC0F \uC601\uBB38\uC73C\uB85C, \uCD5C\uC18C 15\uD3B8 \uC774\uC0C1", rules: ["APA 7\uD310: \uC800\uC790\uBA85(\uC5F0\uB3C4). \uB17C\uBB38 \uC81C\uBAA9. \uC800\uB110\uBA85, \uAD8C(\uD638), \uCABD\uC218. DOI \uB610\uB294 URL", "\uD55C\uD61C\uC815, & \uD55C\uD0DC\uC6B0. (2012). \uD50C\uB808\uC774\uC5B4\uC758 \uAC8C\uC784 \uC758\uC874\uB3C4\uC640 \uC778\uC0DD\uD0DC\uB3C4 \uAC04\uC758 \uAD00\uACC4. \uD55C\uAD6D\uC5D4\uD130\uD14C\uC778\uBA3C\uD2B8\uC0B0\uC5C5\uD559\uD68C\uB17C\uBB38\uC9C0, 6(3), 147\u2013153.", "Kim, Y. W. (2024). Game aesthetics and cognitive immersion. Journal of Entertainment Industry Studies, 18(2), 45\u201362. https://doi.org/10.1234/jeis.2024.18.2.45", "Reeves, B. (1999). The media equation: How people treat computers, television, and new media like real people and places. Cambridge University Press. (\uCD9C\uD310 \uB3C4\uC2DC \uC5C6\uC74C)", "\uC800\uB110\uBA85\xB7\uAE30\uAD00\uBA85 \uC57D\uC5B4 \uAE08\uC9C0(IEEE\xB7ACM\xB7ETRI \uC608\uC678), int'l\xB7proc.\xB7conf. \uAE08\uC9C0", "2\uC778 \uC774\uC0C1\uC740 \uB9C8\uC9C0\uB9C9 \uC800\uC790 \uC55E &", "\uC6F9: Bura, S. (2019, May 25). Emotion engineering in videogames. http://www.stephanebura.com (\uC811\uADFC\uC77C \uC0DD\uB7B5)", "\uD559\uC704\uB17C\uBB38: \uC784\uB0A8\uC218. (2015). \uC5D4\uD130\uD14C\uC778\uBA3C\uD2B8\uC0B0\uC5C5\uC5D0 \uB300\uD55C \uC800\uC791\uAD8C\uBC95\uC0C1 \uBCF4\uD638\uC5D0 \uAD00\uD55C \uC5F0\uAD6C: \uC74C\uC545\uC0B0\uC5C5\uC744 \uC911\uC2EC\uC73C\uB85C. \uC804\uB0A8\uB300\uD559\uAD50 \uB300\uD559\uC6D0 \uBC15\uC0AC\uD559\uC704\uB17C\uBB38."] },
       layout: { paper: "A4(\uC591\uC2DD 210\xD7297)", margins: "\uC704 24 \xB7 \uC544\uB798 25 \xB7 \uC67C\uCABD 25 \xB7 \uC624\uB978\uCABD 25 \xB7 \uBA38\uB9AC\uB9D0 14 \xB7 \uAF2C\uB9AC\uB9D0 0 mm(\uC591\uC2DD), 2\uB2E8 \uD3B8\uC9D1", body: "\uD734\uBA3C\uBA85\uC870 10pt, \uC7A5\uD3C9 90, \uC790\uAC04 -7, \uC904\uAC04\uACA9 160%, \uB4E4\uC5EC\uC4F0\uAE30 10pt(\uC591\uC2DD). \uC601\uBB38\uC740 Times New Roman", quote: "\uADDC\uC815\uC5D0 \uC5C6\uC74C", footnote: "\uC591\uC2DD\uC5D0 \uAC01\uC8FC \uC608 \uC5C6\uC74C(\uAD50\uC2E0\uC800\uC790\xB7\uC0AC\uC0AC\uB294 1\uCABD \uD558\uB2E8 Times New Roman 9)", headings: "\u2160. \uC911\uACE0\uB515 11pt \uC9C4\uD558\uAC8C \uAC00\uC6B4\uB370 / 1.1 \uC911\uACE0\uB515 10pt \uC9C4\uD558\uAC8C \uC67C\uCABD / (1) 10pt \uC9C4\uD558\uAC8C / \uAC00. 10pt \uC9C4\uD558\uAC8C", title: "\uC601\uBB38\uC81C\uBAA9 Times New Roman 16 bold \uAC00\uC6B4\uB370(1\uCABD), \uAD6D\uBB38\uC81C\uBAA9 \uD734\uBA3C\uBA85\uC870 11 \uC9C4\uD558\uAC8C \uAC00\uC6B4\uB370(\uB17C\uBB38 \uB05D)" },
       labels: { abstractHead: "\uC694  \uC57D", abstractEnHead: "A B S T R A C T", refHead: "References" },
@@ -15266,6 +15272,8 @@ main.over .dropline { display: block; }
       documents: ["\uC800\uC791\uAD8C\uD65C\uC6A9\uB3D9\uC758 \uBC0F \uC5F0\uAD6C\uC724\uB9AC\uC11C\uC57D\uC11C(JAMS \uB3D9\uC758)", "\uB17C\uBB38\uC720\uC0AC\uB3C4\uAC80\uC0AC\uACB0\uACFC\uC11C"],
       marks: { paper: "\uAD6D\uBB38 \uB17C\uBB38 \uFF62 \uFF63, \uC678\uAD6D \uB17C\uBB38 \u201C \u201D", book: "\uAD6D\uBB38 \uC11C\uBA85\xB7\uAC8C\uC7AC\uC9C0 \u300E \u300F(\uC6D0\uBB38 \u300E\u300F), \uC678\uAD6D \uC11C\uBA85\xB7\uAC8C\uC7AC\uC9C0 \uC774\uD0E4\uB9AD", work: "\uADDC\uC815\uC5D0 \uC5C6\uC74C", emph: "\uC2E0\uBB38\xB7\uC7A1\uC9C0 \uAC8C\uC7AC\uC9C0 \u226A \u226B. \uC678\uAD6D Ibid\xB7op. cit \uC774\uD0E4\uB9AD" },
       footnote: { pageUnit: "\uCABD", pageRange: "\uFF5E", pageRangeLatin: "\uFF5E", pageSpaceLatin: true, pageRangeBy: "\uC9D1\uD544\uC694\uAC15 \uC608\uC2DC(42\uFF5E50\uCABD, pp. 40\uFF5E50 \u2014 \uC804\uAC01 \uBB3C\uACB0 U+FF5E, \uAD6D\uC678 pp. \uB4A4 \uD55C \uCE78). \uC791\uC131\uC608\uC2DC HWP\uB294 369\u2012393\uCABD(U+2012)", example: "\uD64D\uAE38\uB3D9, \uFF62\uD55C\uAD6D\uD559\uC758 \uBAA9\uB85D\uD654\uC640 \uC804\uC0B0\uC815\uBCF4\uD654\uFF63, \u300E\uC815\uC2E0\uBB38\uD654\uC5F0\uAD6C\u300F, \uC81C17\uAD8C \uC81C3\uD638(1994), 42\uFF5E50\uCABD. / \uD64D\uAE38\uB3D9, \u300E\uD55C\uAD6D\uC815\uCE58\uC0AC\u300F(\uD55C\uAD6D\uD559\uC911\uC559\uC5F0\uAD6C\uC6D0, 1992), 42\uCABD. / Hong, Gildong, \u201CHistory and the Issue of Korean Unification,\u201D The Review of Korean Studies, Vol. 20, No. 2(1991), pp. 40\uFF5E50.", rules: ["\uB17C\uC800 \uC778\uC6A9\xB7\uC790\uB8CC \uC8FC\xB7\uC124\uBA85 \uC8FC \uBAA8\uB450 \uAC01\uC8FC", "\uAD6D\uBB38 \u2018p\u2019, \u2018pp\u2019, \u2018\uBA74\u2019\uC740 \uBAA8\uB450 \u2018\uCABD\u2019\uC73C\uB85C \uD1B5\uC77C. \uC678\uAD6D\uC740 p., pp.", "\uC800\uC11C: \uC800\uC790\uBA85, \u300E\uC11C\uBA85\u300F(\uBC1C\uD589\uCC98, \uC5F0\uB3C4), \uCABD \u2014 \uAD6D\uB0B4 \uBC1C\uD589\uC9C0 \uC0DD\uB7B5", "\uC5EC\uB7EC \uB17C\uC800\uB294 \uC138\uBBF8\uCF5C\uB860, \uB3D9\uC77C \uC800\uC790\uB77C\uB3C4 \uB2E4\uC2DC \uBA85\uAE30", "\uACF5\uC800 2\uC778 \uBAA8\uB450, 3\uC778 \uC774\uC0C1\uC740 \uB450 \uBC88\uC9F8\uBD80\uD130 <\u25CB\u25CB\u25CB \uC678> / <Hong, Gildong, et. al.>", "\uC911\uBCF5: \uC704\uC758 \uB17C\uBB38\xB7\uC704\uC758 \uCC45, \uC55E\uC758 \uB17C\uBB38\xB7\uC55E\uC758 \uCC45, \uAC19\uC740 \uC800\uC790 \uC5EC\uB7FF\uC740 \u2018\uD64D\uAE38\uB3D9, \uC55E\uC758 \uCC45(1987a), 43\uCABD.\u2019 / Ibid, op. cit(\uC774\uD0E4\uB9AD)", "\uC2E0\uBB38: \u226A\uD55C\uAD6D\uC2E0\uBB38\u226B, 1988\uB144 12\uC6D4 25\uC77C\uC790.", "\uBC88\uC5ED\uC11C: \uADF8\uB808\uACE0\uB9AC \uD64D(\uC800), \uD64D\uAE38\uB3D9\u2024\uAE40\uCCA0\uC218(\uC5ED), \u300E1950\uB144\uB300 \uBBF8\uAD6D\uC0AC \uC5F0\uAD6C\u300F(\uC2E0\uC9C4, 2001), 32\uCABD.", "\uD55C\uC801: \u300E\u4E09\u570B\u53F2\u8A18\u300F \u65B0\u7F85\u672C\u7D00 \u6587\u6B66\u738B 2\uB144 6\uC6D4\uC870. / \u300E\u9AD8\u9E97\u53F2\u300F \u4E16\u5BB6 \u9756\u5B97 3\uB144 3\uC6D4 \u7532\u620C. (\uAD04\uD638 \uCABD\uC218 \uBC29\uC2DD \uC4F0\uC9C0 \uC54A\uC74C)"] },
+      noteLine: { length: 45, width: 0.1 },
+      // 각주 구분선: 양식 ‘한국학 게재논문 작성예시.hwp’ 설정
       references: { order: "\uD55C\uAD6D\uC5B4 \u2192 \uC77C\uBB38 \u2192 \uC911\uBB38 \u2192 \uC601\uBB38 \u2192 \uC720\uB7FD\uC5B4. \uD55C\uAD6D\uC5B4\xB7\uC601\uBB38\uC740 \uAC00\uB098\uB2E4\xB7ABC\uC21C. (\uC791\uC131\uC608\uC2DC: 1\uCC28 \uC790\uB8CC / \uB2E8\uD589\uBCF8 / \uB17C\uBB38\uC73C\uB85C \uB098\uB214)", rules: ["\uBCF8\uBB38\xB7\uAC01\uC8FC\uC5D0\uC11C \uC5B8\uAE09\uD55C \uBB38\uD5CC\uB9CC", "\uB05D\uC5D0 \uB9C8\uCE68\uD45C, \uC11C\uBA85 \uB4A4 \uB9C8\uCE68\uD45C\uB85C \uAD6C\uBD84: \uD64D\uAE38\uB3D9, \u300E\uD55C\uAD6D\uC815\uCE58\uD559\uAC1C\uB860\u300F. \uC131\uB0A8: \uD55C\uAD6D\uD559\uC911\uC559\uC5F0\uAD6C\uC6D0, 1981.", "\uD64D\uAE38\uB3D9, \uFF62\uD55C\uAD6D\uC758 \uC804\uD1B5\uC0AC\uD68C\uC640 \uAC00\uC871 \uAC00\uCE58 \uC5F0\uAD6C\uFF63.\u300E\uC815\uC2E0\uBB38\uD654\uC5F0\uAD6C\u300F1\uAD8C 1\uD638, 1999, 40\uFF5E73\uCABD.", "\uB17C\uBB38\uC740 \uAC8C\uC7AC\uC9C0 \uCABD\uC218(\uD55C\uAE00)\xB7pp.(\uC601\uBB38) \uD544\uC218", 'Hong, Gildong, "Collective Memory, \u2026" The Review of Korean Studies, Vol. 20, No. 4, 1998, pp. 40\uFF5E75.'] },
       layout: { paper: "\uC791\uC131\uC608\uC2DC HWP: 155 \xD7 240 mm", margins: "\uC791\uC131\uC608\uC2DC HWP: \uC704 15(\uBCF8\uBB38 \uAD6C\uC5ED 30) \xB7 \uC544\uB798 24 \xB7 \uC67C\uCABD 24 \xB7 \uC624\uB978\uCABD 22 \xB7 \uBA38\uB9AC\uB9D0 0 \xB7 \uAF2C\uB9AC\uB9D0 15 mm", body: "\uC791\uC131\uC608\uC2DC HWP: sm3\uC2E0\uBA85\uC870TT 10.2pt, \uC790\uAC04 -5, \uC904\uAC04\uACA9 190%", quote: "\uC791\uC131\uC608\uC2DC HWP: \uC778\uC6A9\uBB38 9.5pt 190%", footnote: "\uC791\uC131\uC608\uC2DC HWP: \uAC01\uC8FC 8.5pt 150%", headings: "\uC791\uC131\uC608\uC2DC: \u2160. (13pt) \u2013 1. (11.5pt) \u2013 1) (10pt)", title: "\uC791\uC131\uC608\uC2DC: \uC81C\uBAA9 sm2\uC2E0\uBA85\uC870TT 16.5pt, \uC800\uC790 \uC18C\uAC1C 10pt, \uBAA9\uCC28 10pt, \uCC38\uACE0\uBB38\uD5CC\xB7\uAD6D\uBB38\uCD08\uB85D \uBA38\uB9AC KoPub\uBC14\uD0D5\uCCB4 Bold 9.5pt, \uCC38\uACE0\uB17C\uC800 9pt, \uAD6D\uBB38\uCD08\uB85D 9.8pt, Abstracts 14.5pt \uAC00\uC6B4\uB370, \uC601\uBB38\uCD08\uB85D 9pt" },
       labels: { abstractHead: "\uAD6D\uBB38\uCD08\uB85D", abstractEnHead: "Abstracts", refHead: "\uCC38\uACE0\uBB38\uD5CC" },
@@ -15430,6 +15438,8 @@ main.over .dropline { display: block; }
       documents: ["\uC5F0\uAD6C\uC724\uB9AC\uADDC\uC815 \uC900\uC218 \uD655\uC778\uC11C", "\uC800\uC791\uAD8C \uC774\uC591 \uB3D9\uC758\uC11C"],
       marks: { paper: "\uAD6D\uB0B4 \uB17C\uBB38 \uFF62 \uFF63, \uAD6C\uBBF8 \uB17C\uBB38 \u201C \u201D", book: "\uAD6D\uB0B4 \uCC45\xB7\uD559\uC220\uC9C0 \u300E \u300F(\uADDC\uC815 PDF\uC5D0\uC11C\uB294 \uACB9\uB0AB\uD45C\uAC00 \uCD94\uCD9C\uB418\uC9C0 \uC54A\uC74C, \uC591\uC2DD\uC740 \u300E\u300F), \uAD6C\uBBF8 \uC800\uC11C\xB7\uAC8C\uC7AC\uC9C0 \uC774\uD0E4\uB9AD", work: "\uC601\uD654 \uB4F1 \uC791\uD488 < >(\uC608: <\uCE5C\uAD6C>). \uD45C\xB7\uADF8\uB9BC <\uD45C 1>, <\uADF8\uB9BC 1>, \uC790\uB8CC <\uC790\uB8CC 1> : \u25CB\u25CB\u25CB", emph: "\uADDC\uC815\uC5D0 \uC5C6\uC74C" },
       footnote: { pageUnit: "\uCABD", pageRange: "~", pageRangeLatin: "~", pageRangeBy: "\uADDC\uC815 \uAC01\uC8FC \uC608\uC2DC(123~125\uCABD, pp.23~24, pp.71~80). \uB2E8, \uC591\uC2DD HWP \uAC01\uC8FC \uC608\uC2DC\uB294 31-43\uCABD\xB7325-327\uCABD(\uD558\uC774\uD508)", example: "\uC6081) \uD64D\uAE38\uB3D9, \u300E\uCD98\uD5A5\uC804 \uC5F0\uAD6C\u300F, \uBD80\uC0B0: \uC138\uC885\uCD9C\uD310\uC0AC, 2008, 287\uCABD. / \uC6083) Quentin Skinner, Hobbes and Republican Liberty, Cambridge: Cambridge University Press, 2008, pp.23~24. / \uC608) \uD64D\uAE38\uB3D9, \uFF62\uCD98\uD5A5\uC804\uC758 \uC0AC\uC124 \uAD6C\uC131\uC6D0\uB9AC\uFF63, \u300E\uD55C\uAD6D\uBBFC\uC871\uBB38\uD654\u300F\uC81C9\uC9D1, \uBD80\uC0B0\uB300\uD559\uAD50 \uD55C\uAD6D\uBBFC\uC871\uBB38\uD654\uC5F0\uAD6C\uC18C, 1997. 12, 123~125\uCABD.", rules: ["\uC800\uC11C: \uC800\uC790 \uC774\uB984, \uCC45\uC774\uB984, \uAC04\uD589\uC9C0\uC5ED: \uCD9C\uD310\uC0AC, \uCD9C\uD310\uB144\uB3C4, \uC778\uC6A9 \uCABD\uC218(\uAC04\uD589 \uC9C0\uC5ED \uC0DD\uB7B5 \uAC00\uB2A5)", "\uBC88\uC5ED\uC11C: \uC6D0\uC800\uC790, \uC6D0\uC11C \uC774\uB984, \uC5ED\uC790 \uC774\uB984, \uC5ED\uC11C \uC774\uB984, \uAC04\uD589\uC9C0\uC5ED: \uCD9C\uD310\uC0AC, \uCD9C\uD310\uB144\uB3C4, \uCABD\uC218", "\uB17C\uBB38: \uC800\uC790, \uFF62\uB17C\uBB38\uFF63, \uD559\uC220\uC9C0 \uAD8C\xB7\uD638, \uBC1C\uD589\uAE30\uAD00, \uBC1C\uD589\uB144\uB3C4, \uCABD\uC218", "\uAD6C\uBBF8 \uB17C\uBB38 \u201C \u201D, \uC800\uC11C\xB7\uAC8C\uC7AC\uC9C0 \uC774\uD0E4\uB9AD: Valerie Bryson, \u201CMarxism and Feminism: \u2026\u201D, Journal of Political Ideologies, Vol.9, No.1, February, 2004, p.23.", "\uD559\uC704\uB17C\uBB38: \uC800\uC790, \uB17C\uBB38\uC81C\uBAA9, \uC218\uC5EC\uAE30\uAD00 \uD559\uC704\uAD6C\uBD84, \uC5F0\uB3C4", "\uC2E0\uBB38: \uD55C\uACA8\uB808\uC2E0\uBB38, 1998. 3. 25. / \uC778\uD130\uB137: \uC8FC\uC18C (\uAC80\uC0C9\uC77C: 2004. 9. 10.)", "\u6F22\u7C4D: \u8AD6\u8A9E\u53771, \u5B78\u800C. / \u82F1\u7956\u5BE6\u9304\u537751, \u82F1\u7956 16\u5E74 6\u6708 \u58EC\u7533(3\u65E5).", "\uBC14\uB85C \uC704 \uC778\uC6A9 \u2018\uAC19\uC740 \uCC45\u2019\xB7\u2018\uAC19\uC740 \uB17C\uBB38\u2019\xB7\u2018\uAC19\uC740 \uAE00(Ibid.)\u2019, \uC55E\uC11C \uC778\uC6A9 \u2018\uC55E\uC758 \uCC45\u2019\xB7\u2018\uC55E\uC758 \uB17C\uBB38\u2019\xB7\u2018\uC55E\uC758 \uAE00(op. cit.)\u2019", "\uACF5\uB3D9\uC9D1\uD544\uC740 \uC774\uB984 \uC6B0\uCE21 \uC0C1\uB2E8 *, ** \uD6C4 \uAC01\uC8FC\uC5D0 \u2018* \uC81C1\uC800\uC790, \uC18C\uC18D \uC9C1\uC704(\uC774\uBA54\uC77C)\u2019 / \uD559\uC704\uB17C\uBB38 \uCD95\uC57D\uBCF8\uC740 \uC81C\uBAA9 \uC6B0\uCE21 (*)"] },
+      noteLine: { length: -3, width: 0.5, color: "#AEAEAE" },
+      // 각주 구분선: 양식 ‘로컬리티-편집양식.hwp’ 설정
       references: { order: "\uD55C\uAD6D\uC5B4\uBB38\uD5CC \u2192 \uC678\uAD6D\uC5B4\uBB38\uD5CC(\uB3D9\uC591\uC11C \u2192 \uC11C\uC591\uC11C). \uC131\uC774 \uC55E\uC73C\uB85C, \uAC00\uB098\uB2E4\xB7abc\uC21C, \uAC19\uC740 \uD544\uC790\uB294 \uC5F0\uB300\uC21C", rules: ["\uC6081) \uD64D\uAE38\uB3D9, \u300E\uCD98\uD5A5\uC804 \uC5F0\uAD6C\u300F, \uBD80\uC0B0: \uC138\uC885\uCD9C\uD310\uC0AC, 1998.", "\uC6082) \uD64D\uAE38\uB3D9, \uFF62\uCD98\uD5A5\uC804\uC758 \uC0AC\uC124\uAD6C\uC131 \uC6D0\uB9AC\uFF63, \u300E\uD55C\uAD6D\uBBFC\uC871\uBB38\uD654\u300F\uC81C9\uC9D1, \uBD80\uC0B0\uB300\uD559\uAD50 \uD55C\uAD6D\uBBFC\uC871\uBB38\uD654\uC5F0\uAD6C\uC18C, 1997.", "\uC6083) McMahon, Darrin M., Happiness: A History, A Grove Press, 2006.", "\uC6084) Bryson, Valerien, \u201CMarxism and Feminism: Can the \u2018unhappy marriage\u2019 be saved?\u201D, Journal of Political Ideologies, Vol.9, No.1, February, 2004.", "\uCC38\uACE0\uBB38\uD5CC\uC5D0\uB294 \uCABD\uC218\uB97C \uC4F0\uC9C0 \uC54A\uC74C(\uC608\uC2DC \uAE30\uC900)"] },
       layout: { paper: "\uC591\uC2DD HWP: A4 210 \xD7 297 mm(\uD310\uBA74 105 \xD7 175 mm \uAF34)", margins: "\uC591\uC2DD HWP: \uC704 61 \xB7 \uC544\uB798 61 \xB7 \uC67C\uCABD 52.5 \xB7 \uC624\uB978\uCABD 52.5 \xB7 \uBA38\uB9AC\uB9D0 0 \xB7 \uAF2C\uB9AC\uB9D0 11 \xB7 \uC81C\uBCF8 0 mm", body: "\uC591\uC2DD HWP: KoPub\uBC14\uD0D5\uCCB4 Light 10.4pt, \uC7A5\uD3C9 96, \uC790\uAC04 0, \uC904\uAC04\uACA9 174%, \uC591\uCABD \uC815\uB82C", quote: "\uC591\uC2DD HWP: KoPub\uBC14\uD0D5\uCCB4 Light 9.5pt, 168%", footnote: "\uC591\uC2DD HWP: KoPub\uBC14\uD0D5\uCCB4 Light 8.5pt, 135%", headings: "\uBCF8\uBB38 \uBD84\uB958\uBC88\uD638 1, 1), (1), \u2460 \uC21C(\uADDC\uC815). \uC591\uC2DD: \uC7A5\uC81C\uBAA9 KoPub\uBC14\uD0D5\uCCB4 Medium 13pt 174%", title: "\uC591\uC2DD HWP: \uAD6D\uBB38\uCD08\uB85D KoPub\uBC14\uD0D5\uCCB4 Light 9pt \uC7A5\uD3C995 165% / \uCC28\uB840 KoPub\uB3CB\uC6C0\uCCB4 Light 9pt 140% / \uCC38\uACE0\uBB38\uD5CC 9pt 145% / \uC601\uBB38\uC81C\uBAA9 KoPub\uBC14\uD0D5\uCCB4 Bold 12pt \uAC00\uC6B4\uB370 / \uC601\uBB38\uC774\uB984 10pt \uC624\uB978\uCABD / \uC601\uBB38\uCD08\uB85D 10.4pt 160% / \uBA38\uB9AC \uBB38\uAD6C(|\uAD6D\uBB38\uCD08\uB85D| \uB4F1) KoPub\uB3CB\uC6C0\uCCB4 Medium 9pt" },
       labels: { abstractHead: "|\uAD6D\uBB38\uCD08\uB85D|", abstractEnHead: "|Abstract|", refHead: "|\uCC38\uACE0\uBB38\uD5CC|" },
@@ -16045,6 +16055,8 @@ main.over .dropline { display: block; }
       documents: ["\uB17C\uBB38 HWP \uD30C\uC77C\uACFC PDF \uD30C\uC77C(\uC9C0\uC815 \uC591\uC2DD)", "\uBB38\uD5CC \uC720\uC0AC\uB3C4 \uAC80\uC0AC(\uD45C\uC808) \uACB0\uACFC \uD655\uC778\uC11C", "\uC218\uC815 \uC2DC \uC2EC\uC0AC\uC758\uACAC \uB2F5\uBCC0\uC11C(PDF)", "\uAC8C\uC7AC \uD655\uC815 \uD6C4 \uC5F0\uAD6C\uC724\uB9AC \uC11C\uC57D \uBC0F \uC800\uC791\uAD8C \uC591\uB3C4 \uB3D9\uC758\uC11C"],
       marks: { paper: "APA 7\uD310", book: "APA 7\uD310(\uC601\uBB38 \uCC45 \uC81C\uBAA9 \uC774\uD0E4\uB9AD)", work: "\uC601\uD654 \uC81C\uBAA9 < > (\uC678\uAD6D\uC5B4 \uC6D0\uC81C \uBCD1\uAE30: \uC601\uD654 <\uC2DC\uC6D4 Octobre>), \uD45C <\uD45C n>, \uADF8\uB9BC <\uADF8\uB9BC n>", emph: "\uADDC\uC815\uC5D0 \uC5C6\uC74C" },
       footnote: { pageUnit: "keep", example: "\uADDC\uC815\uC5D0 \uC608\uC2DC \uC5C6\uC74C \u2014 \uC778\uC6A9\uC740 APA \uC2A4\uD0C0\uC77C(7\uD310)", rules: ["\uC778\uC6A9 \uBC0F \uCC38\uACE0\uBB38\uD5CC\uC740 APA \uC2A4\uD0C0\uC77C(7\uD310)", "\uC0AC\uC0AC(acknowledgements)\uB294 \uC81C\uBAA9 \uC606 * \uAC01\uC8FC", "\uC678\uAD6D\uC5B4 \uACE0\uC720\uBA85\uC0AC\uB294 \uCC98\uC74C \uD55C \uBC88\uB9CC \uD55C\uAE00\uACFC \uC6D0\uC5B4 \uBCD1\uAE30, \uC774\uD6C4 \uD55C\uAE00\uB9CC. \uD55C \uBC88 \uC4F4 \uC6D0\uC5B4 \uBC18\uBCF5 \uAE08\uC9C0"] },
+      noteLine: { length: -4 },
+      // 각주 구분선: 양식 ‘트랜스-논문투고양식.hwp’ 설정
       references: { order: "APA 7\uD310", rules: ["APA \uC2A4\uD0C0\uC77C(7\uD310)", "\uC2DD\uBCC4\uC815\uBCF4(DOI \uB4F1) \uAE30\uC7AC"] },
       layout: { paper: "A4 210 \xD7 297 mm", margins: "\uC704 20 \xB7 \uBA38\uB9AC\uB9D0 15 \xB7 \uC67C\uCABD 30 \xB7 \uC624\uB978\uCABD 30 \xB7 \uC544\uB798 15 \xB7 \uAF2C\uB9AC\uB9D0 15 mm", body: "\uBC14\uD0D5\uCCB4 10pt, \uC7A5\uD3C9 100%, \uC790\uAC04 0%, \uC904\uAC04\uACA9 160%, \uB4E4\uC5EC\uC4F0\uAE30 0pt. \uCABD \uBC88\uD638 \uD45C\uC2DC \uC548 \uD568", quote: "\uC778\uC6A9\uBB38 9pt, \uC67C\uCABD/\uC624\uB978\uCABD \uC5EC\uBC31 20pt, \uC7A5\uD3C9 100%, \uC904\uAC04\uACA9 140%(\uC591\uC2DD \uBCF8\uBB38 \uC608\uC2DC)", footnote: "\uADDC\uC815\uC5D0 \uC5C6\uC74C", headings: "1. \uBC14\uD0D5\uCCB4 11pt \uC9C4\uD558\uAC8C / 1) 10pt(\uC55E 1\uCE78) / (1)(\uC55E 2\uCE78) / \u2460(\uC55E 3\uCE78). \uC7A5 \uC0AC\uC774 \uB450 \uC904 \uB744\uC6C0", title: "\uC81C\uBAA9 \uBC14\uD0D5\uCCB4 16pt \uC9C4\uD558\uAC8C \uAC00\uC6B4\uB370 / \uBAA9\uCC28\xB7\uCD08\uB85D\xB7\uCC38\uACE0\uBB38\uD5CC\xB7Abstract \uC81C\uBAA9 11pt \uC9C4\uD558\uAC8C / \uC601\uBB38 \uC81C\uBAA9 16pt \uC9C4\uD558\uAC8C \uAC00\uC6B4\uB370" },
       labels: { abstractHead: "\uCD08\uB85D", abstractEnHead: "Abstract", refHead: "\uCC38\uACE0\uBB38\uD5CC", keywords: "\uD575\uC2EC\uC5B4:" },
@@ -29373,17 +29385,17 @@ Apache License
     return [...x.matchAll(/<hp:t\b[^>]*>([\s\S]*?)<\/hp:t>/g)].map((t) => decode(t[1])).join("").length;
   }
   function describeObject(xml, tag) {
-    const num = (re) => {
+    const num2 = (re) => {
       const m = re.exec(xml);
       return m ? +m[1] : 0;
     };
     const cap = /<hp:caption\b[\s\S]*?<\/hp:caption>/.exec(xml);
     const caption = cap ? [...cap[0].matchAll(/<hp:t\b[^>]*>([\s\S]*?)<\/hp:t>/g)].map((t) => t[1].replace(/<[^>]+>/g, "")).join("").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&amp;/g, "&").trim() : "";
-    const w = num(/<hp:sz width="(\d+)"/), h2 = num(/<hp:sz width="\d+"[^>]*height="(\d+)"/);
+    const w = num2(/<hp:sz width="(\d+)"/), h2 = num2(/<hp:sz width="\d+"[^>]*height="(\d+)"/);
     const p1 = tag === "tbl" ? (/<hp:p\b[\s\S]*?<\/hp:p>/.exec(xml.replace(/<hp:caption\b[\s\S]*?<\/hp:caption>/g, "")) || [""])[0] : "";
     const first = [...p1.matchAll(/<hp:t\b[^>]*>([\s\S]*?)<\/hp:t>/g)].map((t) => t[1].replace(/<[^>]+>/g, "")).join("").replace(/&lt;/g, "<").replace(/&gt;/g, ">").trim();
     const toc = /^[<〈＜《\[【(（]?\s*(목\s*차|차\s*례|contents|table of contents)\s*[>〉＞》\]】)）]?$/i.test(first);
-    return { rows: tag === "tbl" ? num(/rowCnt="(\d+)"/) : 0, cols: tag === "tbl" ? num(/colCnt="(\d+)"/) : 0, width: w, height: h2, caption, ...toc ? { toc: true } : {} };
+    return { rows: tag === "tbl" ? num2(/rowCnt="(\d+)"/) : 0, cols: tag === "tbl" ? num2(/colCnt="(\d+)"/) : 0, width: w, height: h2, caption, ...toc ? { toc: true } : {} };
   }
   var LIST = { charPr: "charProperties", paraPr: "paraProperties", borderFill: "borderFills", tabPr: "tabProperties", numbering: "numberings", bullet: "bullets" };
   var ORDER = ["fontfaces", "borderFills", "charProperties", "tabProperties", "numberings", "bullets", "paraProperties", "styles"];
@@ -29745,10 +29757,12 @@ Apache License
   function fixFootNotePr(fp, spec) {
     let line = NOTE_LINE_DEFAULT;
     if (spec && typeof spec === "object") {
-      const len = spec.length === "column" ? -1 : typeof spec.length === "number" && spec.length > 0 ? Math.round(spec.length * 7200 / 25.4) : -1;
-      const width = typeof spec.width === "number" && spec.width > 0 ? spec.width : 0.12;
+      const L = Number(spec.length);
+      const len = Number.isFinite(L) && L < 0 ? Math.max(-4, Math.round(L)) : Number.isFinite(L) && L > 0 ? Math.round(L * 7200 / 25.4) : -1;
+      const width = typeof spec.width === "number" && spec.width > 0 && spec.width <= 5 ? spec.width : 0.12;
       const type = /^[A-Z_]{3,20}$/.test(spec.type || "") ? spec.type : "SOLID";
-      line = `<hp:noteLine length="${len}" type="${type}" width="${width} mm" color="#000000"/>`;
+      const color = /^#[0-9A-Fa-f]{6}$/.test(spec.color || "") ? spec.color.toUpperCase() : "#000000";
+      line = `<hp:noteLine length="${len}" type="${type}" width="${width} mm" color="${color}"/>`;
     }
     const emptyLine = /<hp:noteLine\b[^>]*type="NONE"/.test(fp) || /<hp:noteLine\b[^>]*length="0"/.test(fp);
     let x = fp;
@@ -30068,8 +30082,8 @@ Apache License
       for (const r of pbRoles) pbGroups.add(ROLE_GROUP[r] || "body");
       if (pbRoles.length) log(`\uBC14\uD0D5\uD2C0\uC758 \uCABD \uB098\uB214\uC744 \uB530\uB984 \u2014 ${pbRoles.join(", ")} (${[...pbGroups].join(", ")} \uBB36\uC74C \uC2DC\uC791) \uC55E\uC5D0\uC11C \uC0C8 \uCABD`);
     }
-    const esc2 = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    const tx = (t) => t.split("\n").map((p) => `<hp:t>${esc2(p).replace(/\u00a0/g, "<hp:nbSpace/>").replace(/\u2007/g, "<hp:fwSpace/>")}</hp:t>`).join("<hp:lineBreak/>");
+    const esc3 = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    const tx = (t) => t.split("\n").map((p) => `<hp:t>${esc3(p).replace(/\u00a0/g, "<hp:nbSpace/>").replace(/\u2007/g, "<hp:fwSpace/>")}</hp:t>`).join("<hp:lineBreak/>");
     const charPrCache = /* @__PURE__ */ new Map();
     const charPrById = (id) => {
       if (!charPrCache.has(id)) charPrCache.set(id, (new RegExp(`<hh:charPr id="${id}"[^>]*>[\\s\\S]*?<\\/hh:charPr>`).exec(header) || [null])[0]);
@@ -30170,8 +30184,8 @@ Apache License
           else runCount += segs.filter((g) => g.v.bold || g.v.italic || g.v.underline || g.v.superscript).length;
         }
         if (!segs.length) segs = [{ s: 0, e: q.text.length, v: { red } }];
-        const num = i === (f.numAt ?? 0) && !f.noNumber ? `<hp:ctrl><hp:autoNum num="${fnNum}" numType="FOOTNOTE">${fnFmt}</hp:autoNum></hp:ctrl>` : "";
-        const runs = segs.map((g, k) => `<hp:run charPrIDRef="${variantCs(fnShape.cs, g.v)}">${k === 0 ? num : ""}${tx(q.text.slice(g.s, g.e))}</hp:run>`).join("");
+        const num2 = i === (f.numAt ?? 0) && !f.noNumber ? `<hp:ctrl><hp:autoNum num="${fnNum}" numType="FOOTNOTE">${fnFmt}</hp:autoNum></hp:ctrl>` : "";
+        const runs = segs.map((g, k) => `<hp:run charPrIDRef="${variantCs(fnShape.cs, g.v)}">${k === 0 ? num2 : ""}${tx(q.text.slice(g.s, g.e))}</hp:run>`).join("");
         return `<hp:p id="${pid++}" paraPrIDRef="${fnShape.ps}" styleIDRef="${fnShape.styleId ?? 0}" pageBreak="0" columnBreak="0" merged="0">${runs}</hp:p>`;
       }).join("");
       return `${prefix}<hp:ctrl><hp:footNote number="${f.noNumber ? fnNum + 1 : fnNum}" suffixChar="${suffixCode}" instId="${fnCount}"><hp:subList id="" textDirection="HORIZONTAL" lineWrap="BREAK" vertAlign="TOP" linkListIDRef="0" linkListNextIDRef="0" textWidth="0" textHeight="0" hasTextRef="0" hasNumRef="0">${xml}</hp:subList></hp:footNote></hp:ctrl>`;
@@ -31073,15 +31087,15 @@ Apache License
       for (const re of elements(body, "w:r")) {
         const r = re.body;
         if (onObj && /<w:drawing\b|<w:pict\b/.test(r)) onObj(r, text.length);
-        const rPr = (elements(r, "w:rPr")[0] || { body: "" }).body;
+        const rPr2 = (elements(r, "w:rPr")[0] || { body: "" }).body;
         const on = (tag) => {
-          const t2 = new RegExp(`<w:${tag}\\b([^>]*)/?>`).exec(rPr);
+          const t2 = new RegExp(`<w:${tag}\\b([^>]*)/?>`).exec(rPr2);
           if (!t2) return false;
           const v = attr(t2[1], "w:val");
           return !(v && ["0", "false", "off", "none"].includes(v.toLowerCase()));
         };
-        const sz = attr((/<w:sz\b[^>]*\/>/.exec(rPr) || [""])[0], "w:val");
-        const sup = (attr((/<w:vertAlign\b[^>]*\/>/.exec(rPr) || [""])[0], "w:val") || "").toLowerCase() === "superscript";
+        const sz = attr((/<w:sz\b[^>]*\/>/.exec(rPr2) || [""])[0], "w:val");
+        const sup = (attr((/<w:vertAlign\b[^>]*\/>/.exec(rPr2) || [""])[0], "w:val") || "").toLowerCase() === "superscript";
         let t = "";
         for (const tk of runTokens(r)) {
           if (tk.sym) symCount++;
@@ -31194,8 +31208,8 @@ Apache License
         }, (run, at) => {
           for (const g of pics(run)) inserts.push({ at, xml: g.xml });
         });
-        const pPr = (elements(pBody, "w:pPr")[0] || { body: "" }).body;
-        const jc = attr((/<w:jc\b[^>]*\/>/.exec(pPr) || [""])[0], "w:val") || "left";
+        const pPr2 = (elements(pBody, "w:pPr")[0] || { body: "" }).body;
+        const jc = attr((/<w:jc\b[^>]*\/>/.exec(pPr2) || [""])[0], "w:val") || "left";
         return { align: { both: "justify", center: "center", right: "right", start: "left", end: "right" }[jc] || "left", runs: r.runs, inserts };
       }
     };
@@ -31209,14 +31223,14 @@ Apache License
         tables--;
         return tblXmls[+k];
       });
-      const pPr = (elements(body, "w:pPr")[0] || { body: "" }).body;
-      const styleId = attr((/<w:pStyle\b[^>]*\/>/.exec(pPr) || [""])[0], "w:val");
+      const pPr2 = (elements(body, "w:pPr")[0] || { body: "" }).body;
+      const styleId = attr((/<w:pStyle\b[^>]*\/>/.exec(pPr2) || [""])[0], "w:val");
       const styleName = styleId ? styleNames[styleId] || styleId : "";
-      const jc = attr((/<w:jc\b[^>]*\/>/.exec(pPr) || [""])[0], "w:val") || "left";
-      const indXml = (/<w:ind\b[^>]*\/>/.exec(pPr) || [""])[0];
-      const twip = (v) => v ? Math.round(+v / 20 * 10) / 10 : 0;
-      const marginLeft = twip(attr(indXml, "w:left") || attr(indXml, "w:start"));
-      const indent = twip(attr(indXml, "w:firstLine")) - twip(attr(indXml, "w:hanging"));
+      const jc = attr((/<w:jc\b[^>]*\/>/.exec(pPr2) || [""])[0], "w:val") || "left";
+      const indXml = (/<w:ind\b[^>]*\/>/.exec(pPr2) || [""])[0];
+      const twip2 = (v) => v ? Math.round(+v / 20 * 10) / 10 : 0;
+      const marginLeft = twip2(attr(indXml, "w:left") || attr(indXml, "w:start"));
+      const indent = twip2(attr(indXml, "w:firstLine")) - twip2(attr(indXml, "w:hanging"));
       const tg = only;
       if (tg) {
         const tfns = [];
@@ -31617,6 +31631,421 @@ Apache License
     if (candIdx.size) warnings.push(`\uAC01\uC8FC \uC815\uC758 \uB4A4\uC5D0 \uB4E4\uC5EC \uC4F4 ${candIdx.size}\uC904\uC740 \uBCF8\uBB38 \uBB38\uB2E8\uC73C\uB85C \uB450\uC5C8\uC2B5\uB2C8\uB2E4. \uAC01\uC8FC\uC758 \uB2E4\uC74C \uBB38\uB2E8\uC774\uB77C\uBA74 \uC815\uC758\uB97C \uD30C\uC77C \uB05D\uC5D0 \uBAA8\uC73C\uACE0 \uC815\uC758 \uBC14\uB85C \uC544\uB798 \uB124 \uCE78 \uB4E4\uC5EC \uC4F0\uC138\uC694.`);
     if (contLines && (bodyIndented || gapIdx.size)) warnings.push(`\uAC01\uC8FC \uC815\uC758 \uC544\uB798 \uB4E4\uC5EC \uC4F4 ${contLines}\uC904\uC744 \uAC19\uC740 \uAC01\uC8FC\uC758 \uB2E4\uC74C \uBB38\uB2E8\uC73C\uB85C \uC77D\uC5C8\uC2B5\uB2C8\uB2E4(\uC815\uC758\uB294 \uD30C\uC77C \uB05D\uC5D0 \uBAA8\uC544 \uC4F0\uACE0, \uBCF8\uBB38 \uBB38\uB2E8\uC740 \uB4E4\uC5EC \uC4F0\uC9C0 \uB9C8\uC138\uC694).`);
     return { format: ext.toUpperCase(), paragraphs, warnings, counts: { tables: 0, pictures: 0, footnotes: fnTotal }, fonts: [] };
+  }
+
+  // src/hwpx2docx.js
+  var import_jszip3 = __toESM(require_jszip_min(), 1);
+  var ENT = { amp: "&", lt: "<", gt: ">", quot: '"', apos: "'" };
+  var unesc = (s) => s.replace(/&(#x[0-9a-fA-F]+|#\d+|\w+);/g, (m, e) => e[0] === "#" ? String.fromCodePoint(e[1] === "x" ? parseInt(e.slice(2), 16) : +e.slice(1)) : ENT[e] ?? m);
+  function parseXml(src) {
+    const root = { name: "#root", attrs: {}, children: [] };
+    const stack = [root];
+    const re = /<!--[\s\S]*?-->|<\?[\s\S]*?\?>|<!\[CDATA\[([\s\S]*?)\]\]>|<\/([\w:.-]+)\s*>|<([\w:.-]+)((?:\s+[\w:.-]+\s*=\s*(?:"[^"]*"|'[^']*'))*)\s*(\/?)>|([^<]+)/g;
+    let m;
+    while (m = re.exec(src)) {
+      const top = stack[stack.length - 1];
+      if (m[1] !== void 0) top.children.push({ name: "#text", text: m[1] });
+      else if (m[2]) {
+        if (stack.length > 1) stack.pop();
+      } else if (m[3]) {
+        const attrs = {};
+        for (const a of m[4].matchAll(/([\w:.-]+)\s*=\s*(?:"([^"]*)"|'([^']*)')/g)) attrs[a[1]] = unesc(a[2] ?? a[3] ?? "");
+        const el = { name: m[3], attrs, children: [] };
+        top.children.push(el);
+        if (!m[5]) stack.push(el);
+      } else if (m[6] !== void 0 && m[0][0] !== "<") top.children.push({ name: "#text", text: unesc(m[6]) });
+    }
+    return root;
+  }
+  var kids = (n, name) => n ? n.children.filter((c) => c.name === name) : [];
+  var kid = (n, name) => n ? n.children.find((c) => c.name === name) : null;
+  var find = (n, name) => {
+    if (!n) return null;
+    for (const c of n.children || []) {
+      if (c.name === name) return c;
+      const f = find(c, name);
+      if (f) return f;
+    }
+    return null;
+  };
+  var num = (v, d = 0) => {
+    const x = +v;
+    return Number.isFinite(x) ? x : d;
+  };
+  var esc2 = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  var twip = (hu) => Math.round(num(hu) / 5);
+  var emu = (hu) => Math.round(num(hu) * 127);
+  function readHeader(xml) {
+    const doc = parseXml(xml);
+    const fonts = {};
+    for (const ff of kids(find(doc, "hh:fontfaces"), "hh:fontface")) fonts[ff.attrs.lang] = Object.fromEntries(kids(ff, "hh:font").map((f) => [f.attrs.id, f.attrs.face]));
+    const chars = {};
+    for (const c of kids(find(doc, "hh:charProperties"), "hh:charPr")) {
+      const fr = kid(c, "hh:fontRef")?.attrs || {};
+      const ra = kid(c, "hh:ratio")?.attrs || {};
+      const sp = kid(c, "hh:spacing")?.attrs || {};
+      const ul = kid(c, "hh:underline")?.attrs || {};
+      const so = kid(c, "hh:strikeout")?.attrs || {};
+      chars[c.attrs.id] = {
+        size: num(c.attrs.height, 1e3) / 100,
+        color: c.attrs.textColor && c.attrs.textColor !== "#000000" ? c.attrs.textColor.slice(1) : null,
+        hangul: fonts.HANGUL?.[fr.hangul] || null,
+        latin: fonts.LATIN?.[fr.latin] || fonts.HANGUL?.[fr.hangul] || null,
+        ratio: num(ra.hangul, 100),
+        spacing: num(sp.hangul, 0),
+        bold: !!kid(c, "hh:bold"),
+        italic: !!kid(c, "hh:italic"),
+        underline: ul.type && ul.type !== "NONE",
+        strike: so.shape && so.shape !== "NONE",
+        sup: !!kid(c, "hh:supscript"),
+        sub: !!kid(c, "hh:subscript")
+      };
+    }
+    const paras = {};
+    for (const p of kids(find(doc, "hh:paraProperties"), "hh:paraPr")) {
+      const sw = kid(p, "hp:switch");
+      const cs = sw ? kid(sw, "hp:case") : null;
+      const branch = cs || (sw ? kid(sw, "hp:default") : p);
+      const per = cs ? 100 : 200;
+      const mg = kid(branch, "hh:margin");
+      const ls = kid(branch, "hh:lineSpacing")?.attrs || kid(p, "hh:lineSpacing")?.attrs || {};
+      const v = (k) => num(kid(mg, k)?.attrs.value, 0) / per;
+      const bs = kid(p, "hh:breakSetting")?.attrs || {};
+      paras[p.attrs.id] = {
+        align: kid(p, "hh:align")?.attrs.horizontal || "JUSTIFY",
+        indent: v("hc:intent"),
+        left: v("hc:left"),
+        right: v("hc:right"),
+        before: v("hc:prev"),
+        after: v("hc:next"),
+        lsType: ls.type || "PERCENT",
+        lsValue: num(ls.value, 160) / (ls.type && ls.type !== "PERCENT" ? per : 1),
+        pageBreakBefore: bs.pageBreakBefore === "1",
+        keepNext: bs.keepWithNext === "1",
+        keepLines: bs.keepLines === "1",
+        autoEng: kid(p, "hh:autoSpacing")?.attrs.eAsianEng === "1",
+        autoNum: kid(p, "hh:autoSpacing")?.attrs.eAsianNum === "1"
+        // 한글·영문/숫자 사이 자동 간격
+      };
+    }
+    const borders = {};
+    for (const b of kids(find(doc, "hh:borderFills"), "hh:borderFill")) {
+      const side = (k) => {
+        const a = kid(b, k)?.attrs || {};
+        return a.type && a.type !== "NONE" ? { type: a.type, width: parseFloat(a.width) || 0.12, color: (a.color || "#000000").replace("#", "") } : null;
+      };
+      const fill = find(b, "hc:winBrush")?.attrs.faceColor;
+      borders[b.attrs.id] = { left: side("hh:leftBorder"), right: side("hh:rightBorder"), top: side("hh:topBorder"), bottom: side("hh:bottomBorder"), fill: fill && fill !== "none" && !/^#?FFFFFF$/i.test(fill) ? fill.replace("#", "") : null };
+    }
+    return { fonts, chars, paras, borders };
+  }
+  var USED_FONTS = /* @__PURE__ */ new Set();
+  var isSans = (f) => /고딕|돋움|굴림|gothic|dotum|gulim|sans|arial|helvetica|맑은|malgun|나눔고딕|견출|헤드라인|HY견|HY헤드|윤고딕|-윤고딕|산돌고딕|KoPub돋움|Pretendard|Noto Sans|Spoqa|Myriad|Segoe|Verdana|Tahoma|Calibri/i.test(f);
+  var isKorean = (f) => /[가-힣]/.test(f) || /batang|dotum|gulim|gungsuh|malgun|nanum|kopub|hcr|haansoft|hy[a-z]/i.test(f);
+  function fontTableXml() {
+    const items2 = [...USED_FONTS].filter(Boolean).map((f) => {
+      const sans = isSans(f);
+      const ko = isKorean(f);
+      const alt = ko ? sans ? "\uB3CB\uC6C0" : "\uBC14\uD0D5" : sans ? "Arial" : "Times New Roman";
+      const panose = ko ? sans ? "020B0600000101010101" : "02030600000101010101" : sans ? "020B0604020202020204" : "02020603050405020304";
+      return `<w:font w:name="${esc2(f)}"><w:altName w:val="${alt}"/><w:panose1 w:val="${panose}"/><w:charset w:val="${ko ? "81" : "00"}"/><w:family w:val="${sans ? "swiss" : "roman"}"/><w:pitch w:val="variable"/></w:font>`;
+    });
+    return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:fonts xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">${items2.join("")}</w:fonts>`;
+  }
+  var JC = { JUSTIFY: "both", LEFT: "left", RIGHT: "right", CENTER: "center", DISTRIBUTE: "distribute", DISTRIBUTE_SPACE: "distribute" };
+  function rPr(c, extra = "") {
+    if (!c) return extra ? `<w:rPr>${extra}</w:rPr>` : "";
+    const f = [];
+    const ea = c.hangul || c.latin;
+    const la = c.latin || c.hangul;
+    if (ea || la) {
+      USED_FONTS.add(la);
+      USED_FONTS.add(ea);
+      f.push(`<w:rFonts w:ascii="${esc2(la)}" w:hAnsi="${esc2(la)}" w:eastAsia="${esc2(ea)}" w:cs="${esc2(la)}" w:hint="eastAsia"/>`);
+    }
+    if (c.bold) f.push("<w:b/><w:bCs/>");
+    if (c.italic) f.push("<w:i/><w:iCs/>");
+    if (c.strike) f.push("<w:strike/>");
+    if (c.color) f.push(`<w:color w:val="${c.color}"/>`);
+    if (c.spacing) f.push(`<w:spacing w:val="${Math.round(c.size * c.spacing / 100 * 20)}"/>`);
+    const half = Math.max(1, Math.round(c.size * 2));
+    const ratio = Math.round((c.ratio || 100) * (c.size * 2) / half);
+    if (ratio !== 100) f.push(`<w:w w:val="${Math.max(1, Math.min(600, ratio))}"/>`);
+    f.push(`<w:sz w:val="${half}"/><w:szCs w:val="${half}"/>`);
+    if (c.underline) f.push('<w:u w:val="single"/>');
+    if (c.sup) f.push('<w:vertAlign w:val="superscript"/>');
+    else if (c.sub) f.push('<w:vertAlign w:val="subscript"/>');
+    return `<w:rPr>${f.join("")}${extra}<w:lang w:val="en-US" w:eastAsia="ko-KR"/></w:rPr>`;
+  }
+  function pPr(p, size, { pageBreak = false, keepNext = false, style = "", extraBefore = 0, exact = true } = {}) {
+    if (!p) return style ? `<w:pPr><w:pStyle w:val="${style}"/></w:pPr>` : "";
+    const f = [];
+    if (style) f.push(`<w:pStyle w:val="${style}"/>`);
+    if (keepNext || p.keepNext) f.push("<w:keepNext/>");
+    if (p.keepLines) f.push("<w:keepLines/>");
+    if (pageBreak || p.pageBreakBefore) f.push("<w:pageBreakBefore/>");
+    f.push(`<w:autoSpaceDE w:val="${p.autoEng ? 1 : 0}"/><w:autoSpaceDN w:val="${p.autoNum ? 1 : 0}"/>`);
+    const tw = (pt) => Math.round(pt * 20);
+    let line;
+    if (p.lsType === "PERCENT") line = `w:line="${Math.max(tw(size * p.lsValue / 100), 1)}" w:lineRule="${exact ? "exact" : "atLeast"}"`;
+    else if (p.lsType === "FIXED") line = `w:line="${tw(p.lsValue)}" w:lineRule="exact"`;
+    else if (p.lsType === "AT_LEAST") line = `w:line="${tw(p.lsValue)}" w:lineRule="atLeast"`;
+    else line = `w:line="${tw(size * 1.6)}" w:lineRule="atLeast"`;
+    f.push(`<w:spacing w:before="${tw(p.before + extraBefore)}" w:after="${tw(p.after)}" ${line}/>`);
+    const left = p.indent < 0 ? p.left + -p.indent : p.left;
+    const first = p.indent > 0 ? ` w:firstLine="${tw(p.indent)}"` : p.indent < 0 ? ` w:hanging="${tw(-p.indent)}"` : "";
+    f.push(`<w:ind w:left="${tw(left)}" w:right="${tw(p.right)}"${first}/>`);
+    f.push(`<w:jc w:val="${JC[p.align] || "both"}"/>`);
+    return `<w:pPr>${f.join("")}</w:pPr>`;
+  }
+  async function hwpxToDocx(hwpxBytes, opts = {}) {
+    USED_FONTS.clear();
+    const zin = await import_jszip3.default.loadAsync(hwpxBytes);
+    const H = readHeader(await zin.file("Contents/header.xml").async("string"));
+    const hpf = zin.file("Contents/content.hpf") ? await zin.file("Contents/content.hpf").async("string") : "";
+    const binHref = {};
+    for (const m of hpf.matchAll(/<opf:item\b[^>]*>/g)) {
+      const id = /\bid="([^"]+)"/.exec(m[0]);
+      const href = /\bhref="([^"]+)"/.exec(m[0]);
+      if (id && href) binHref[id[1]] = href[1];
+    }
+    const secNames = Object.keys(zin.files).filter((k) => /^Contents\/section\d+\.xml$/.test(k)).sort((a, b) => +a.match(/\d+/)[0] - +b.match(/\d+/)[0]);
+    const warn = [];
+    const media = [];
+    const footnotes = [];
+    let fnSuffix = ")";
+    let noteSp = { above: 8.5, below: 5.67, between: 2.83 };
+    let noteLine = { length: -1, width: 0.12, color: "000000", type: "SOLID" };
+    let drawId = 1;
+    let pageNumber = null;
+    let sectPr = "";
+    const spaceEm = opts.spaceEm ?? 0.17;
+    const textRuns = (t, rp, cp) => {
+      let out = "";
+      let buf = "";
+      const spRp = cp && spaceEm ? rPr({ ...cp, spacing: (cp.spacing || 0) + spaceEm * 100 }) : rp;
+      const flush = () => {
+        if (!buf) return;
+        for (const part of spRp === rp ? [buf] : buf.split(/( +)/)) {
+          if (!part) continue;
+          out += `<w:r>${part[0] === " " ? spRp : rp}<w:t xml:space="preserve">${esc2(part)}</w:t></w:r>`;
+        }
+        buf = "";
+      };
+      for (const c of t.children) {
+        if (c.name === "#text") buf += c.text;
+        else if (c.name === "hp:tab") {
+          flush();
+          out += `<w:r>${rp}<w:tab/></w:r>`;
+        } else if (c.name === "hp:lineBreak") {
+          flush();
+          out += `<w:r>${rp}<w:br/></w:r>`;
+        } else if (c.name === "hp:nbSpace") buf += "\xA0";
+        else if (c.name === "hp:fwSpace") buf += "\u3000";
+        else if (c.name === "hp:hyphen") buf += "-";
+      }
+      flush();
+      return out;
+    };
+    const picXml2 = async (pic) => {
+      const img = find(pic, "hc:img");
+      const ref = img?.attrs.binaryItemIDRef;
+      const href = ref && binHref[ref];
+      const f = href && zin.file(href.startsWith("Contents/") || href.startsWith("BinData/") ? href : `Contents/${href}`);
+      if (!f) {
+        warn.push("\uADF8\uB9BC \uD30C\uC77C\uC744 \uCC3E\uC9C0 \uBABB\uD568");
+        return "";
+      }
+      const ext = (/\.(\w+)$/.exec(href) || [0, "png"])[1].toLowerCase();
+      const sz = kid(pic, "hp:curSz")?.attrs || kid(pic, "hp:sz")?.attrs || {};
+      const cx = emu(sz.width), cy = emu(sz.height);
+      if (!cx || !cy) return "";
+      const rid = `rIdImg${media.length + 1}`;
+      const name = `image${media.length + 1}.${ext === "jpeg" ? "jpg" : ext}`;
+      media.push({ rid, name, bytes: await f.async("uint8array"), ext: ext === "jpeg" ? "jpg" : ext });
+      const id = drawId++;
+      return `<w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0"><wp:extent cx="${cx}" cy="${cy}"/><wp:docPr id="${id}" name="\uADF8\uB9BC ${id}"/><wp:cNvGraphicFramePr><a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/></wp:cNvGraphicFramePr><a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:nvPicPr><pic:cNvPr id="${id}" name="${name}"/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill><a:blip r:embed="${rid}"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill><pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="${cx}" cy="${cy}"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r>`;
+    };
+    const paraBlocks = async (p, ctx = {}) => {
+      const pp = H.paras[p.attrs.paraPrIDRef];
+      const blocks = [];
+      let runs = "";
+      let maxSize = 0;
+      let hasDrawing = false;
+      let pageBreak = p.attrs.pageBreak === "1";
+      const flushPara = () => {
+        const extraBefore = ctx.inFootnote && ctx.first ? noteSp.between : 0;
+        ctx.first = false;
+        blocks.push(`<w:p>${pPr(pp, maxSize || 10, { pageBreak, style: ctx.style, extraBefore, exact: !hasDrawing })}${runs}</w:p>`);
+        runs = "";
+        pageBreak = false;
+        maxSize = 0;
+        hasDrawing = false;
+      };
+      for (const run of kids(p, "hp:run")) {
+        const cp = H.chars[run.attrs.charPrIDRef];
+        const rp = rPr(cp);
+        for (const c of run.children) {
+          if (c.name === "hp:t") {
+            if (cp && cp.size > maxSize && !cp.sup) maxSize = cp.size;
+            runs += textRuns(c, rp, cp);
+          } else if (c.name === "hp:ctrl") {
+            for (const cc of c.children) {
+              if (cc.name === "hp:footNote" || cc.name === "hp:endNote") runs += await footnoteRef(cc, cp);
+              else if (cc.name === "hp:autoNum" && ctx.inFootnote) {
+                ctx.numbered = true;
+                runs += `<w:r>${rPr(cp, cp && !cp.sup ? '<w:vertAlign w:val="baseline"/>' : "")}<w:footnoteRef/></w:r>` + (fnSuffix ? `<w:r>${rPr(cp)}<w:t xml:space="preserve">${esc2(fnSuffix)}</w:t></w:r>` : "");
+              } else if (cc.name === "hp:pageNum") pageNumber = cc.attrs.pos || "BOTTOM_CENTER";
+            }
+          } else if (c.name === "hp:tbl") {
+            if (runs) flushPara();
+            blocks.push(...await tableBlocks(c));
+          } else if (c.name === "hp:pic") {
+            const cap = captionBlocks(c);
+            if (cap.top.length) {
+              if (runs) flushPara();
+              blocks.push(...await cap.renderTop());
+            }
+            runs += await picXml2(c);
+            hasDrawing = true;
+            if (cap.bottom.length) {
+              flushPara();
+              blocks.push(...await cap.renderBottom());
+            }
+          } else if (c.name === "hp:secPr") sectPr = c;
+          else if (/^hp:(rect|ellipse|line|polygon|curve|arc|container|equation|ole)$/.test(c.name)) warn.push(c.name === "hp:equation" ? "\uC218\uC2DD\uC740 Word\uB85C \uC62E\uAE30\uC9C0 \uBABB\uD568(\uD55C\uAE00 \uC0B0\uCD9C\uBB3C \uD655\uC778)" : "\uB3C4\uD615\uC740 Word\uB85C \uC62E\uAE30\uC9C0 \uBABB\uD568");
+        }
+      }
+      if (runs || !blocks.length) flushPara();
+      return blocks;
+    };
+    const captionBlocks = (obj) => {
+      const cap = kid(obj, "hp:caption");
+      const side = cap?.attrs.side || "BOTTOM";
+      const ps = cap ? kids(kid(cap, "hp:subList"), "hp:p") : [];
+      const render2 = async () => {
+        const out = [];
+        for (const p of ps) out.push(...await paraBlocks(p));
+        return out;
+      };
+      return { top: side === "TOP" ? ps : [], bottom: side !== "TOP" ? ps : [], renderTop: render2, renderBottom: render2 };
+    };
+    const footnoteRef = async (fn, cp) => {
+      const id = footnotes.length + 1;
+      const ctx = { inFootnote: true, numbered: false, style: "FootnoteText", first: true };
+      const ps = kids(kid(fn, "hp:subList"), "hp:p");
+      const body2 = [];
+      footnotes.push(null);
+      for (const p of ps) body2.push(...await paraBlocks(p, ctx));
+      let mark = "";
+      if (!ctx.numbered) {
+        const txt = ps.map((p) => find(p, "hp:t")).filter(Boolean).map((t) => t.children.filter((x) => x.name === "#text").map((x) => x.text).join("")).join("");
+        mark = (/^\s*([*＊†‡]+)/.exec(txt) || [0, "*"])[1];
+      }
+      footnotes[id - 1] = `<w:footnote w:id="${id}">${body2.join("")}</w:footnote>`;
+      const refRp = rPr(cp ? { ...cp, sup: true } : null);
+      return mark ? `<w:r>${refRp}<w:footnoteReference w:customMarkFollows="1" w:id="${id}"/><w:t>${esc2(mark)}</w:t></w:r>` : `<w:r>${refRp}<w:footnoteReference w:id="${id}"/></w:r>` + (fnSuffix ? `<w:r>${refRp}<w:t xml:space="preserve">${esc2(fnSuffix)}</w:t></w:r>` : "");
+    };
+    const tableBlocks = async (tbl) => {
+      const cap = captionBlocks(tbl);
+      const out = [];
+      if (cap.top.length) out.push(...await cap.renderTop());
+      const rows = kids(tbl, "hp:tr");
+      const nCols = num(tbl.attrs.colCnt, 1);
+      const cells = [];
+      for (const tr of rows) for (const tc of kids(tr, "hp:tc")) {
+        const ad = kid(tc, "hp:cellAddr")?.attrs || {};
+        const sp = kid(tc, "hp:cellSpan")?.attrs || {};
+        const sz = kid(tc, "hp:cellSz")?.attrs || {};
+        cells.push({ tc, r: num(ad.rowAddr), c: num(ad.colAddr), cs: Math.max(1, num(sp.colSpan, 1)), rs: Math.max(1, num(sp.rowSpan, 1)), w: twip(sz.width), bf: H.borders[tc.attrs.borderFillIDRef], va: kid(tc, "hp:subList")?.attrs.vertAlign || "TOP" });
+      }
+      if (!cells.length) {
+        warn.push("\uCE78 \uC5C6\uB294 \uD45C\uB294 \uC62E\uAE30\uC9C0 \uC54A\uC74C");
+        return out;
+      }
+      const nRows = Math.max(rows.length, ...cells.map((x) => x.r + x.rs));
+      const colW = Array(nCols).fill(0);
+      for (const x of cells) if (x.cs === 1 && x.c < nCols && !colW[x.c]) colW[x.c] = x.w;
+      const tw = twip(kid(tbl, "hp:sz")?.attrs.width) || 9e3;
+      const known = colW.reduce((a, v) => a + v, 0);
+      const unknown = colW.filter((v) => !v).length;
+      for (let i = 0; i < nCols; i++) if (!colW[i]) colW[i] = Math.max(200, Math.round((tw - known) / Math.max(1, unknown)));
+      const border = (s) => s ? `w:val="${s.type === "DOUBLE" || s.type === "DOUBLE_SLIM" ? "double" : s.type === "DASH" ? "dashed" : s.type === "DOT" ? "dotted" : "single"}" w:sz="${Math.max(2, Math.round(s.width * 2.835 * 8))}" w:space="0" w:color="${s.color}"` : 'w:val="nil"';
+      const trs = [];
+      for (let r = 0; r < nRows; r++) {
+        const tcs = [];
+        let c = 0;
+        const rowCells = cells.filter((x) => x.r === r).sort((a, b) => a.c - b.c);
+        while (c < nCols) {
+          const here = rowCells.find((x) => x.c === c);
+          const above = cells.find((x) => x.c === c && x.r < r && x.r + x.rs > r);
+          if (here) {
+            const bf = here.bf || {};
+            const tcPr = `<w:tcPr><w:tcW w:w="${colW.slice(c, c + here.cs).reduce((a, v) => a + v, 0)}" w:type="dxa"/>${here.cs > 1 ? `<w:gridSpan w:val="${here.cs}"/>` : ""}${here.rs > 1 ? '<w:vMerge w:val="restart"/>' : ""}<w:tcBorders><w:top ${border(bf.top)}/><w:left ${border(bf.left)}/><w:bottom ${border(bf.bottom)}/><w:right ${border(bf.right)}/></w:tcBorders>${bf.fill ? `<w:shd w:val="clear" w:color="auto" w:fill="${bf.fill}"/>` : ""}<w:vAlign w:val="${here.va === "CENTER" ? "center" : here.va === "BOTTOM" ? "bottom" : "top"}"/></w:tcPr>`;
+            const inner = [];
+            for (const p of kids(kid(here.tc, "hp:subList"), "hp:p")) inner.push(...await paraBlocks(p));
+            if (!inner.length || !/^<w:p[ >]/.test(inner[inner.length - 1])) inner.push("<w:p/>");
+            tcs.push(`<w:tc>${tcPr}${inner.join("")}</w:tc>`);
+            c += here.cs;
+          } else if (above) {
+            const bf = above.bf || {};
+            tcs.push(`<w:tc><w:tcPr><w:tcW w:w="${colW.slice(c, c + above.cs).reduce((a, v) => a + v, 0)}" w:type="dxa"/>${above.cs > 1 ? `<w:gridSpan w:val="${above.cs}"/>` : ""}<w:vMerge/><w:tcBorders><w:top ${border(bf.top)}/><w:left ${border(bf.left)}/><w:bottom ${border(bf.bottom)}/><w:right ${border(bf.right)}/></w:tcBorders></w:tcPr><w:p/></w:tc>`);
+            c += above.cs;
+          } else {
+            tcs.push(`<w:tc><w:tcPr><w:tcW w:w="${colW[c]}" w:type="dxa"/></w:tcPr><w:p/></w:tc>`);
+            c++;
+          }
+        }
+        trs.push(`<w:tr><w:trPr><w:cantSplit/></w:trPr>${tcs.join("")}</w:tr>`);
+      }
+      const centered = true;
+      out.push(`<w:tbl><w:tblPr><w:tblW w:w="${colW.reduce((a, v) => a + v, 0)}" w:type="dxa"/>${centered ? '<w:jc w:val="center"/>' : ""}<w:tblLayout w:type="fixed"/><w:tblCellMar><w:left w:w="102" w:type="dxa"/><w:right w:w="102" w:type="dxa"/></w:tblCellMar></w:tblPr><w:tblGrid>${colW.map((w) => `<w:gridCol w:w="${w}"/>`).join("")}</w:tblGrid>${trs.join("")}</w:tbl>`);
+      if (cap.bottom.length) out.push(...await cap.renderBottom());
+      return out;
+    };
+    const body = [];
+    for (const sn of secNames) {
+      const sec = parseXml(await zin.file(sn).async("string"));
+      const root = find(sec, "hs:sec") || sec;
+      const fp = find(root, "hp:footNotePr");
+      const anf = fp ? kid(fp, "hp:autoNumFormat") : null;
+      if (anf) fnSuffix = anf.attrs.suffixChar ?? ")";
+      const nl = fp ? kid(fp, "hp:noteLine")?.attrs : null;
+      if (nl) noteLine = { length: num(nl.length, -1), width: parseFloat(nl.width) || 0.12, color: (nl.color || "#000000").replace("#", ""), type: nl.type || "SOLID" };
+      const ns = fp ? kid(fp, "hp:noteSpacing")?.attrs : null;
+      if (ns) noteSp = { above: num(ns.aboveLine, 850) / 100, below: num(ns.belowLine, 567) / 100, between: num(ns.betweenNotes, 283) / 100 };
+      for (const p of kids(root, "hp:p")) body.push(...await paraBlocks(p));
+    }
+    const pg = sectPr ? find(sectPr, "hp:pagePr") : null;
+    const mg = pg ? kid(pg, "hp:margin")?.attrs || {} : {};
+    const landscape = pg?.attrs.landscape === "NARROWLY";
+    const W = twip(landscape ? pg?.attrs.height : pg?.attrs.width) || 11906, Hh = twip(landscape ? pg?.attrs.width : pg?.attrs.height) || 16838;
+    const footerRef = pageNumber ? '<w:footerReference w:type="default" r:id="rIdFooter1"/>' : "";
+    const sect = `<w:sectPr>${footerRef}<w:footnotePr><w:numFmt w:val="decimal"/></w:footnotePr><w:pgSz w:w="${W}" w:h="${Hh}"${landscape ? ' w:orient="landscape"' : ""}/><w:pgMar w:top="${twip(num(mg.top) + num(mg.header))}" w:right="${twip(mg.right)}" w:bottom="${twip(num(mg.bottom) + num(mg.footer))}" w:left="${twip(mg.left)}" w:header="${twip(mg.top)}" w:footer="${twip(mg.bottom)}" w:gutter="${twip(mg.gutter)}"/><w:cols w:space="425"/></w:sectPr>`;
+    const base = Object.values(H.chars).find((c) => c.hangul) || { hangul: "\uBC14\uD0D5", latin: "\uBC14\uD0D5", size: 10 };
+    const W_NS = 'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"';
+    const z = new import_jszip3.default();
+    z.file("[Content_Types].xml", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/>${[...new Set(media.map((m) => m.ext))].map((e) => `<Default Extension="${e}" ContentType="image/${e === "jpg" ? "jpeg" : e === "bmp" ? "bmp" : e === "gif" ? "gif" : e === "wmf" ? "x-wmf" : e === "emf" ? "x-emf" : "png"}"/>`).join("")}<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/><Override PartName="/word/settings.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.settings+xml"/><Override PartName="/word/fontTable.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.fontTable+xml"/><Override PartName="/word/footnotes.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.footnotes+xml"/>${pageNumber ? '<Override PartName="/word/footer1.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.footer+xml"/>' : ""}<Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml"/><Override PartName="/docProps/app.xml" ContentType="application/vnd.openxmlformats-officedocument.extended-properties+xml"/></Types>`);
+    z.file("_rels/.rels", '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="docProps/core.xml"/><Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties" Target="docProps/app.xml"/></Relationships>');
+    const now = (/* @__PURE__ */ new Date()).toISOString().replace(/\.\d+Z$/, "Z");
+    z.file("docProps/core.xml", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><dc:title>${esc2(opts.title || "")}</dc:title><dc:creator></dc:creator><dcterms:created xsi:type="dcterms:W3CDTF">${now}</dcterms:created><dcterms:modified xsi:type="dcterms:W3CDTF">${now}</dcterms:modified></cp:coreProperties>`);
+    z.file("docProps/app.xml", '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties"><Application>tugotl</Application></Properties>');
+    z.file("word/_rels/document.xml.rels", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rIdStyles" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/><Relationship Id="rIdSettings" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/settings" Target="settings.xml"/><Relationship Id="rIdFontTable" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/fontTable" Target="fontTable.xml"/><Relationship Id="rIdFootnotes" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/footnotes" Target="footnotes.xml"/>${pageNumber ? '<Relationship Id="rIdFooter1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer" Target="footer1.xml"/>' : ""}${media.map((m) => `<Relationship Id="${m.rid}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/${m.name}"/>`).join("")}</Relationships>`);
+    for (const m of media) z.file(`word/media/${m.name}`, m.bytes);
+    const fnText = Object.values(H.chars).find((c) => c.size < 10) || base;
+    z.file("word/styles.xml", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:styles ${W_NS}><w:docDefaults><w:rPrDefault>${rPr({ ...base, bold: false, italic: false, underline: false, strike: false, sup: false, sub: false, color: null, spacing: 0, ratio: 100 })}</w:rPrDefault><w:pPrDefault><w:pPr><w:spacing w:after="0" w:line="240" w:lineRule="auto"/></w:pPr></w:pPrDefault></w:docDefaults><w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/><w:qFormat/></w:style><w:style w:type="paragraph" w:styleId="FootnoteText"><w:name w:val="footnote text"/><w:basedOn w:val="Normal"/><w:rPr><w:sz w:val="${Math.round(fnText.size * 2)}"/></w:rPr></w:style><w:style w:type="character" w:styleId="FootnoteReference"><w:name w:val="footnote reference"/><w:rPr><w:vertAlign w:val="superscript"/></w:rPr></w:style><w:style w:type="table" w:default="1" w:styleId="TableNormal"><w:name w:val="Normal Table"/><w:tblPr><w:tblInd w:w="0" w:type="dxa"/><w:tblCellMar><w:top w:w="0" w:type="dxa"/><w:left w:w="108" w:type="dxa"/><w:bottom w:w="0" w:type="dxa"/><w:right w:w="108" w:type="dxa"/></w:tblCellMar></w:tblPr></w:style></w:styles>`);
+    z.file("word/settings.xml", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:settings ${W_NS}><w:defaultTabStop w:val="800"/><w:characterSpacingControl w:val="doNotCompress"/><w:footnotePr><w:footnote w:id="-1"/><w:footnote w:id="0"/></w:footnotePr><w:compat><w:compatSetting w:name="compatibilityMode" w:uri="http://schemas.microsoft.com/office/word" w:val="15"/></w:compat></w:settings>`);
+    const textW = W - (twip(mg.left) || 0) - (twip(mg.right) || 0) - (twip(mg.gutter) || 0);
+    const L = noteLine.length;
+    const lenTw = L === -1 ? 2835 : L === -2 ? 1134 : L === -3 ? Math.round(textW / 3) : L === -4 ? textW : L > 0 ? twip(L) : 2835;
+    const sepLine = noteLine.type === "NONE" || L === 0 ? "" : `<w:pBdr><w:top w:val="${/DOUBLE/.test(noteLine.type) ? "double" : /DASH/.test(noteLine.type) ? "dashed" : /DOT/.test(noteLine.type) ? "dotted" : "single"}" w:sz="${Math.max(2, Math.round(noteLine.width * 2.835 * 8))}" w:space="0" w:color="${noteLine.color}"/></w:pBdr>`;
+    const sepPara = (before) => `<w:p><w:pPr>${sepLine}<w:spacing w:before="${before}" w:after="${Math.round(noteSp.below * 20)}" w:line="20" w:lineRule="exact"/><w:ind w:left="0" w:right="${Math.max(0, textW - lenTw)}"/></w:pPr></w:p>`;
+    z.file("word/footnotes.xml", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:footnotes ${W_NS}><w:footnote w:type="separator" w:id="-1">${sepPara(Math.round(noteSp.above * 20))}</w:footnote><w:footnote w:type="continuationSeparator" w:id="0">${sepPara(Math.round(noteSp.above * 20))}</w:footnote>${footnotes.join("")}</w:footnotes>`);
+    if (pageNumber) z.file("word/footer1.xml", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:ftr ${W_NS}><w:p><w:pPr><w:jc w:val="${/LEFT/.test(pageNumber) ? "left" : /RIGHT/.test(pageNumber) ? "right" : "center"}"/></w:pPr><w:r><w:fldChar w:fldCharType="begin"/></w:r><w:r><w:instrText xml:space="preserve"> PAGE </w:instrText></w:r><w:r><w:fldChar w:fldCharType="separate"/></w:r><w:r><w:t>1</w:t></w:r><w:r><w:fldChar w:fldCharType="end"/></w:r></w:p></w:ftr>`);
+    z.file("word/fontTable.xml", fontTableXml());
+    z.file("word/document.xml", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document ${W_NS}><w:body>${body.join("")}${sect}</w:body></w:document>`);
+    const bytes = await z.generateAsync({ type: "uint8array", compression: "DEFLATE", mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" });
+    return { bytes, footnotes: footnotes.length, pictures: media.length, warnings: [...new Set(warn)] };
   }
 
   // src/structure.js
@@ -32508,14 +32937,14 @@ Apache License
 
   // src/app.js
   var $ = (sel, el = document) => el.querySelector(sel);
-  var h = (tag, attrs = {}, ...kids) => {
+  var h = (tag, attrs = {}, ...kids2) => {
     const e = document.createElement(tag);
     for (const [k, v] of Object.entries(attrs)) {
       if (k === "class") e.className = v;
       else if (k.startsWith("on")) e.addEventListener(k.slice(2), v);
       else if (v !== null && v !== void 0) e.setAttribute(k, v);
     }
-    for (const k of kids.flat()) if (k !== null && k !== void 0) e.append(k.nodeType ? k : document.createTextNode(String(k)));
+    for (const k of kids2.flat()) if (k !== null && k !== void 0) e.append(k.nodeType ? k : document.createTextNode(String(k)));
     return e;
   };
   var fmtDate = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
@@ -32868,7 +33297,7 @@ Apache License
     const moreBtn = h("button", { class: "btn ghost", "aria-label": "\uB2E4\uB978 \uD615\uC2DD\uC73C\uB85C \uC800\uC7A5", disabled: state.result && !state.dirty ? null : "", onclick: () => {
       const open = saveWrap.querySelector(".menu");
       if (open) open.remove();
-      else saveWrap.append(h("div", { class: "menu" }, canShare ? h("button", { onclick: () => saveResult("hwp", { share: true }) }, "HWP \uACF5\uC720\uD558\uAE30(\uD30C\uC77C \uC571\xB7\uB4DC\uB77C\uC774\uBE0C\xB7\uBA54\uC2E0\uC800)") : null, h("button", { onclick: () => saveResult("hwpx") }, "HWPX\uB85C \uC800\uC7A5"), h("button", { onclick: () => saveResult("log") }, "\uBCC0\uD658 \uB85C\uADF8(txt) \uC800\uC7A5")));
+      else saveWrap.append(h("div", { class: "menu" }, canShare ? h("button", { onclick: () => saveResult("hwp", { share: true }) }, "HWP \uACF5\uC720\uD558\uAE30(\uD30C\uC77C \uC571\xB7\uB4DC\uB77C\uC774\uBE0C\xB7\uBA54\uC2E0\uC800)") : null, h("button", { onclick: () => saveResult("hwpx") }, "HWPX\uB85C \uC800\uC7A5"), h("button", { onclick: () => saveResult("docx") }, "Word(DOCX)\uB85C \uC800\uC7A5"), h("button", { onclick: () => saveResult("log") }, "\uBCC0\uD658 \uB85C\uADF8(txt) \uC800\uC7A5")));
     } }, "\u25BE");
     saveWrap.append(h("div", { class: "row", style: "gap:4px" }, saveBtn, moreBtn));
     const setWrap = h("div", { class: "rel" });
@@ -33351,7 +33780,20 @@ ${b.text}` }, b.text, ...objTags, b.footnotes?.length ? h("span", { class: "fn" 
     const j = journal();
     if (!r || !j) return;
     const base = (state.manuscript?.name || "\uC6D0\uACE0").replace(/\.[^.]+$/, "");
-    const spec = { hwp: { data: r.hwp, name: `${base}_${j.journal}.hwp`, mime: "application/x-hwp", desc: "\uD55C\uAE00 \uBB38\uC11C (HWP)" }, hwpx: { data: r.hwpx, name: `${base}_${j.journal}.hwpx`, mime: "application/hwp+zip", desc: "\uD55C\uAE00 \uBB38\uC11C (HWPX)" }, log: { data: new TextEncoder().encode(r.logText), name: `${base}_${j.journal}_\uBCC0\uD658\uB85C\uADF8.txt`, mime: "text/plain", desc: "\uD14D\uC2A4\uD2B8" } }[kind];
+    if (kind === "docx" && !r.docx) {
+      try {
+        setStatus("Word \uBB38\uC11C \uB9CC\uB4DC\uB294 \uC911\u2026", "");
+        const d = await hwpxToDocx(r.hwpx, { title: base });
+        r.docx = d.bytes;
+        r.docxWarnings = d.warnings;
+        setStatus(d.warnings.length ? `Word \uBB38\uC11C \uC900\uBE44\uB428 \u2014 ${d.warnings.join(" \xB7 ")}` : "Word \uBB38\uC11C \uC900\uBE44\uB428", "ready");
+      } catch (e) {
+        console.error(e);
+        setStatus("Word \uBB38\uC11C\uB97C \uB9CC\uB4E4\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4: " + String(e && e.message || e).slice(0, 80), "err");
+        return;
+      }
+    }
+    const spec = { hwp: { data: r.hwp, name: `${base}_${j.journal}.hwp`, mime: "application/x-hwp", desc: "\uD55C\uAE00 \uBB38\uC11C (HWP)" }, hwpx: { data: r.hwpx, name: `${base}_${j.journal}.hwpx`, mime: "application/hwp+zip", desc: "\uD55C\uAE00 \uBB38\uC11C (HWPX)" }, docx: { data: r.docx, name: `${base}_${j.journal}.docx`, mime: "application/vnd.openxmlformats-officedocument.wordprocessingml.document", desc: "Word \uBB38\uC11C (DOCX)" }, log: { data: new TextEncoder().encode(r.logText), name: `${base}_${j.journal}_\uBCC0\uD658\uB85C\uADF8.txt`, mime: "text/plain", desc: "\uD14D\uC2A4\uD2B8" } }[kind];
     const blob = new Blob([spec.data], { type: spec.mime });
     if (how.share) {
       try {
@@ -33864,7 +34306,7 @@ ${b.text}` }, b.text, ...objTags, b.footnotes?.length ? h("span", { class: "fn" 
   }
   function renderHelp(main) {
     main.append(h("div", { class: "topbar" }, h("h1", {}, "\uC0AC\uC6A9\uBC95\xB7\uB3C4\uC6C0\uB9D0"), h("span", { class: "sub" }, "\uD22C\uACE0\uD2C0\uC740 AI\uB97C \uC4F0\uC9C0 \uC54A\uB294 \uADDC\uCE59 \uAE30\uBC18 \uBCC0\uD658\uAE30\uC785\uB2C8\uB2E4")));
-    const sec = (title, ...kids) => h("section", { class: "card", style: "margin-bottom:14px" }, h("h2", { style: "font-size:16px;margin-bottom:10px" }, title), ...kids);
+    const sec = (title, ...kids2) => h("section", { class: "card", style: "margin-bottom:14px" }, h("h2", { style: "font-size:16px;margin-bottom:10px" }, title), ...kids2);
     const ol = (...items2) => h("ol", { style: "margin:0;padding-left:20px;line-height:1.7" }, ...items2.map((x) => h("li", {}, x)));
     const ul = (...items2) => h("ul", { style: "margin:0;padding-left:20px;line-height:1.7" }, ...items2.map((x) => h("li", {}, x)));
     main.append(sec(
@@ -33885,7 +34327,8 @@ ${b.text}` }, b.text, ...objTags, b.footnotes?.length ? h("span", { class: "fn" 
         [h("b", {}, "\uC6D0\uACE0 \uB193\uAE30"), " \u2014 HWP\xB7HWPX\xB7DOCX\xB7TXT\xB7MD \uC6D0\uACE0\uB97C \uD654\uBA74\uC5D0 \uB04C\uC5B4\uB2E4 \uB193\uAC70\uB098 \u2018\uD30C\uC77C \uC120\uD0DD\u2019\uC744 \uB204\uB985\uB2C8\uB2E4. \uB193\uB294 \uC989\uC2DC \uC5F4\uB9AC\uACE0, \uC67C\uCABD\uC5D0 \uBB38\uB2E8\uBCC4 \uC5ED\uD560(\uC81C\uBAA9\xB7\uCD08\uB85D\xB7\uC7A5 \uC81C\uBAA9\xB7\uBCF8\uBB38\xB7\uC778\uC6A9\xB7\uCC38\uACE0\uBB38\uD5CC\xB7\uC601\uBB38\uCD08\uB85D)\uC774 \uC778\uC2DD\uB418\uC5B4 \uB098\uC635\uB2C8\uB2E4. TXT\xB7MD \uC6D0\uACE0\uB294 \uAC01\uC8FC\uB97C [^1] \u2026 [^1]: \uB0B4\uC6A9 \uAF34\uB85C, \uAC15\uC870\uB97C *\uAE30\uC6B8\uC784*\xB7**\uAD75\uAC8C**(\uB0B1\uB9D0 \uACBD\uACC4\uC5D0\uC11C\uB9CC, \uC800\uC790 \uC774\uB984 \uB4A4 * \uD45C\uC2DC\uB294 \uAE00\uC790\uB85C \uB0A8\uC74C)\uB85C, \uC7A5 \uC81C\uBAA9\uC744 # \uB85C, \uC778\uC6A9\uC744 > \uB85C \uC77D\uC2B5\uB2C8\uB2E4. \uAC01\uC8FC \uC815\uC758 \uC544\uB798 \uB124 \uCE78 \uB4E4\uC5EC \uC4F4 \uC904\uC740 \uAC19\uC740 \uAC01\uC8FC\uC758 \uB2E4\uC74C \uBB38\uB2E8\uC785\uB2C8\uB2E4."],
         [h("b", {}, "\uC5ED\uD560 \uD655\uC778"), " \u2014 \uC798\uBABB \uC7A1\uD78C \uC5ED\uD560\uC740 \uBAA9\uB85D\uC5D0\uC11C \uC9C1\uC811 \uBC14\uAFC9\uB2C8\uB2E4. \uC5ED\uD560\uC740 \uC11C\uC2DD\uC744 \uC815\uD558\uB294 \uAE30\uC900\uC774\uBBC0\uB85C \uC81C\uBAA9\xB7\uCC38\uACE0\uBB38\uD5CC\xB7\uC601\uBB38\uCD08\uB85D\uC774 \uB9DE\uAC8C \uC7A1\uD614\uB294\uC9C0 \uBA3C\uC800 \uBCF4\uC138\uC694."],
         [h("b", {}, "\uC801\uC6A9"), " \u2014 \uD559\uD68C \uC591\uC2DD\uC774 \uC785\uD600\uC9C4 \uCABD\uC744 \uC624\uB978\uCABD \u2018\uBBF8\uB9AC\uBCF4\uAE30\u2019\uC5D0\uC11C \uBCF4\uACE0, \u2018\uBCC0\uACBD \uC0AC\uD56D\u2019\uC5D0\uC11C \uBB34\uC5C7\uC774 \uBC14\uB00C\uC5C8\uB294\uC9C0(\uCCB4\uC7AC \uC7AC\uBC30\uC5F4, \uCABD\uC218\xB7\uC11C\uC9C0 \uD45C\uAE30, \uBE48 \uC904) \uD655\uC778\uD569\uB2C8\uB2E4. \uC800\uC7A5 \uC804\uC5D0 \uC124\uC815\uC774\uB098 \uC5ED\uD560\uC744 \uACE0\uCCE4\uB2E4\uBA74 \u2018\uB2E4\uC2DC \uC801\uC6A9\u2019\uC744 \uB204\uB985\uB2C8\uB2E4. \uAC01\uC8FC\uAC00 \uB9CE\uC740 \uCABD\uC740 \uBBF8\uB9AC\uBCF4\uAE30\uC5D0\uC11C \uBCF8\uBB38\uACFC \uAC01\uC8FC\uAC00 \uACB9\uCCD0 \uBCF4\uC77C \uC218 \uC788\uC2B5\uB2C8\uB2E4(\uCABD \uC544\uB798\uC5D0 \uB178\uB780 \uD45C\uC2DC). \uBBF8\uB9AC\uBCF4\uAE30 \uC5D4\uC9C4\uC758 \uD55C\uACC4\uC77C \uBFD0\uC774\uBA70, \uC800\uC7A5\uD55C HWP\uB294 \uD55C\uAE00\uC774 \uC5F4 \uB54C \uB2E4\uC2DC \uBC30\uCE58\uD558\uBBC0\uB85C \uACB9\uCE58\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4."],
-        [h("b", {}, "\uC800\uC7A5"), " \u2014 \u2018\uC800\uC7A5\u2019\uC744 \uB204\uB974\uBA74 \uC800\uC7A5\uD560 \uD3F4\uB354\uC640 \uD30C\uC77C \uC774\uB984\uC744 \uADF8\uB54C\uADF8\uB54C \uACE0\uB97C \uC218 \uC788\uC2B5\uB2C8\uB2E4(\uD06C\uB86C\xB7\uC5E3\uC9C0). \uADF8 \uBC16\uC758 \uBE0C\uB77C\uC6B0\uC800\uC5D0\uC11C\uB294 \uB0B4\uB824\uBC1B\uAE30 \uD3F4\uB354\uC5D0 \uC800\uC7A5\uB429\uB2C8\uB2E4. \u25BE \uBA54\uB274\uC5D0\uC11C HWPX\xB7\uBCC0\uD658 \uB85C\uADF8\uB3C4 \uC800\uC7A5\uD569\uB2C8\uB2E4."],
+        [h("b", {}, "\uC800\uC7A5"), " \u2014 \u2018\uC800\uC7A5\u2019\uC744 \uB204\uB974\uBA74 \uC800\uC7A5\uD560 \uD3F4\uB354\uC640 \uD30C\uC77C \uC774\uB984\uC744 \uADF8\uB54C\uADF8\uB54C \uACE0\uB97C \uC218 \uC788\uC2B5\uB2C8\uB2E4(\uD06C\uB86C\xB7\uC5E3\uC9C0). \uADF8 \uBC16\uC758 \uBE0C\uB77C\uC6B0\uC800\uC5D0\uC11C\uB294 \uB0B4\uB824\uBC1B\uAE30 \uD3F4\uB354\uC5D0 \uC800\uC7A5\uB429\uB2C8\uB2E4. \u25BE \uBA54\uB274\uC5D0\uC11C HWPX\xB7Word(DOCX)\xB7\uBCC0\uD658 \uB85C\uADF8\uB3C4 \uC800\uC7A5\uD569\uB2C8\uB2E4."],
+        [h("b", {}, "Word(DOCX)\uB85C \uC800\uC7A5"), " \u2014 Word\uB85C \uBC1B\uB294 \uD559\uD68C\uB098 \uD574\uC678 \uACF5\uB3D9 \uC800\uC790\uB97C \uC704\uD574, \uD55C\uAE00 \uC0B0\uCD9C\uBB3C\uACFC \uAC19\uC740 \uC6A9\uC9C0\xB7\uC5EC\uBC31\xB7\uAE00\uAF34\xB7\uD06C\uAE30\xB7\uC7A5\uD3C9\xB7\uC790\uAC04\xB7\uC904 \uAC04\uACA9\xB7\uB4E4\uC5EC\uC4F0\uAE30\xB7\uAC01\uC8FC(\uBC88\uD638 \uAF34\xB7\uAD6C\uBD84\uC120)\xB7\uD45C\xB7\uADF8\uB9BC\uC744 Word \uBB38\uC11C\uB85C \uC62E\uAE41\uB2C8\uB2E4. Word\uB294 \uC904 \uB098\uB214 \uADDC\uCE59\uC774 \uB2EC\uB77C \uCABD \uC218\uAC00 \uD55C\uB450 \uCABD \uB2E4\uB97C \uC218 \uC788\uACE0, \uC218\uC2DD\xB7\uB3C4\uD615\uC740 \uC62E\uAE30\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4. \uD559\uD68C \uC591\uC2DD \uAE00\uAF34\uC774 PC\uC5D0 \uC5C6\uC73C\uBA74 Word\uAC00 \uB2E4\uB978 \uAE00\uAF34\uB85C \uBC14\uAFD4 \uBCF4\uC5EC \uC90D\uB2C8\uB2E4(\uD55C\uAE00\uB3C4 \uAC19\uC74C). \uD22C\uACE0 \uC804\uC5D0 Word\uC5D0\uC11C \uD55C \uBC88 \uC5F4\uC5B4 \uD655\uC778\uD558\uC138\uC694."],
         [h("b", {}, "\uD55C\uAE00\uC5D0\uC11C \uB9C8\uBB34\uB9AC"), " \u2014 \uD45C\xB7\uADF8\uB9BC\uC774 \uD310\uBA74 \uC548\uC5D0 \uC81C\uB300\uB85C \uB193\uC600\uB294\uC9C0(\uB113\uC740 \uD45C\uB294 \uD3ED\uC744 \uC904\uC784), \uCABD \uB118\uAE40\uACFC \uBA38\uB9AC\uB9D0\uC744 \uD655\uC778\uD55C \uB4A4 \uD22C\uACE0\uD569\uB2C8\uB2E4. \uAE00\uC0C1\uC790\xB7\uCC28\uD2B8\uCC98\uB7FC \uC62E\uAE30\uC9C0 \uBABB\uD55C \uAC1C\uCCB4\uAC00 \uC788\uC73C\uBA74 \uACBD\uACE0\uC5D0 \uC218\uAC00 \uB098\uC635\uB2C8\uB2E4."]
       )
     ));
@@ -33953,12 +34396,13 @@ ${b.text}` }, b.text, ...objTags, b.footnotes?.length ? h("span", { class: "fn" 
       ul(
         [h("b", {}, "\uD22C\uACE0\uD2C0 \uC18C\uC2A4 \uCF54\uB4DC"), " \u2014 MIT \uB77C\uC774\uC120\uC2A4, \u24D2 2026 \uC774\uC735\uD76C. \uC790\uC720\uB86D\uAC8C \uC4F0\uACE0 \uACE0\uCE58\uACE0 \uB098\uB20C \uC218 \uC788\uC73C\uBA70 \uBCF4\uC99D\uC740 \uC5C6\uC2B5\uB2C8\uB2E4. \uD22C\uACE0 \uC804 \uD559\uD68C \uACF5\uC9C0\uC640 \uC0B0\uCD9C \uD30C\uC77C\uC740 \uBC18\uB4DC\uC2DC \uC9C1\uC811 \uD655\uC778\uD558\uC138\uC694."],
         [h("b", {}, "HWP \uC5D4\uC9C4 rhwp"), " (Edward Kim, MIT) \u2014 \uC774 \uD30C\uC77C \uC548\uC5D0\uC11C HWP\uB97C \uC77D\uACE0 \uC4F0\uB294 \uD575\uC2EC\uC785\uB2C8\uB2E4. ", h("a", { href: "https://github.com/edwardkim/rhwp", target: "_blank", rel: "noopener noreferrer" }, "github.com/edwardkim/rhwp")],
-        [h("b", {}, "JSZip"), " (Stuart Knightley \uC678, MIT/GPL \uC774\uC911 \uB77C\uC774\uC120\uC2A4 \uC911 MIT) \u2014 DOCX \uC77D\uAE30\uC640 HWPX \uD328\uD0A4\uC9C0 \uCC98\uB9AC."],
+        [h("b", {}, "JSZip"), " (Stuart Knightley \uC678, MIT/GPL \uC774\uC911 \uB77C\uC774\uC120\uC2A4 \uC911 MIT) \u2014 DOCX \uC77D\uACE0 \uC4F0\uAE30\uC640 HWPX \uD328\uD0A4\uC9C0 \uCC98\uB9AC."],
+        [h("b", {}, "pako"), " (Vitaly Puzrin\xB7Andrei Tuputcyn, MIT)\uC640 ", h("b", {}, "cfb"), " (SheetJS, Apache-2.0) \u2014 \uC800\uC7A5\uD55C HWP\uC758 \uAC01\uC8FC \uBAA8\uC591(\uAD6C\uBD84\uC120 \uAE38\uC774\xB7\uC120 \uC704 \uC5EC\uBC31)\uC744 \uD55C\uAE00\uC774 \uC77D\uB294 \uBC30\uCE58\uB85C \uACE0\uCE60 \uB54C \uC555\uCD95\uC744 \uD480\uACE0 \uB2E4\uC2DC \uBB36\uC2B5\uB2C8\uB2E4."],
         [h("b", {}, "\uD559\uD68C \uBC14\uD0D5\uD2C0\xB7\uD22C\uACE0 \uC11C\uC2DD\xB7\uADDC\uC815"), " \u2014 \uAC01 \uD559\uD68C\xB7\uC5F0\uAD6C\uC18C\uAC00 \uD22C\uACE0\uC790\uC5D0\uAC8C \uACF5\uAC1C \uBC30\uD3EC\uD55C \uC790\uB8CC\uB97C \uD22C\uACE0 \uD3B8\uC758\uB97C \uC704\uD574 \uB123\uC5C8\uC2B5\uB2C8\uB2E4. \uB17C\uBB38 \uC591\uC2DD \uD30C\uC77C\uC740 \uACAC\uBCF8 \uB17C\uBB38 \uAE00\uC790\uB97C \uC9C0\uC6B0\uACE0 \uC11C\uC2DD\uB9CC \uB0A8\uACBC\uC2B5\uB2C8\uB2E4. \uC800\uC791\uAD8C\uC740 \uAC01 \uD559\uD68C\uC5D0 \uC788\uACE0, \uD574\uB2F9 \uD559\uD68C \uD22C\uACE0 \uC6A9\uB3C4\uB85C\uB9CC \uC4F0\uC138\uC694. \uAD8C\uB9AC\uC790\uAC00 \uC694\uCCAD\uD558\uBA74 \uC989\uC2DC \uC81C\uAC70\uD569\uB2C8\uB2E4."],
         "\uAE00\uAF34\uC740 \uC774 \uD30C\uC77C\uC5D0 \uB4E4\uC5B4 \uC788\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4. \uD654\uBA74\uC740 PC\uC758 \uC2DC\uC2A4\uD15C \uAE00\uAF34\uC744, \uC0B0\uCD9C\uBB3C\uC740 \uD559\uD68C \uC591\uC2DD\uC758 \uAE00\uAF34 \uC774\uB984\uC744 \uADF8\uB300\uB85C \uC501\uB2C8\uB2E4.",
         ["\uC804\uBB38\uACFC \uBAA9\uB85D: \uC800\uC7A5\uC18C\uC758 ", h("a", { href: "https://github.com/fansenryu-cmd/tugotl/blob/main/LICENSE", target: "_blank", rel: "noopener noreferrer" }, "LICENSE"), ", ", h("a", { href: "https://github.com/fansenryu-cmd/tugotl/blob/main/THIRD_PARTY_NOTICES.md", target: "_blank", rel: "noopener noreferrer" }, "THIRD_PARTY_NOTICES.md"), ". \uC0C8 \uBC84\uC804\uACFC \uC18C\uC2A4: ", h("a", { href: "https://github.com/fansenryu-cmd/tugotl", target: "_blank", rel: "noopener noreferrer" }, "github.com/fansenryu-cmd/tugotl")]
       ),
-      h("details", { style: "margin-top:10px" }, h("summary", { style: "cursor:pointer" }, "\uC81C3\uC790 \uC18C\uD504\uD2B8\uC6E8\uC5B4 \uB77C\uC774\uC120\uC2A4 \uC804\uBB38 (MIT)"), ...THIRD_PARTY_LICENSES.map((l) => h("div", { style: "margin-top:8px" }, h("b", {}, l.name), h("pre", { style: "white-space:pre-wrap;font-size:11px;line-height:1.5;margin:4px 0 0" }, l.text)))),
+      h("details", { style: "margin-top:10px" }, h("summary", { style: "cursor:pointer" }, "\uC81C3\uC790 \uC18C\uD504\uD2B8\uC6E8\uC5B4 \uB77C\uC774\uC120\uC2A4 \uC804\uBB38 (MIT\xB7Apache-2.0)"), ...THIRD_PARTY_LICENSES.map((l) => h("div", { style: "margin-top:8px" }, h("b", {}, l.name), h("pre", { style: "white-space:pre-wrap;font-size:11px;line-height:1.5;margin:4px 0 0" }, l.text)))),
       h("p", { style: "margin:10px 0 0" }, "\uADDC\uC815\uC744 \uACF5\uAC1C\uD574 \uC8FC\uC2E0 \uAC01 \uD559\uD68C \uD3B8\uC9D1\uC704\uC6D0\uD68C\uC640 rhwp\uB97C \uB9CC\uB4E0 Edward Kim\uAED8 \uAC10\uC0AC\uB4DC\uB9BD\uB2C8\uB2E4. \uC774 \uD504\uB85C\uADF8\uB7A8\uC758 \uCF54\uB4DC\uC640 \uBB38\uC11C\uB294 AI \uCF54\uB529 \uB3C4\uAD6C(Claude, Anthropic)\uC758 \uB3C4\uC6C0\uC744 \uBC1B\uC544 \uC791\uC131\uD588\uACE0, \uC124\uACC4\xB7\uAC80\uC99D\xB7\uCD5C\uC885 \uD655\uC778\uC740 \uC800\uC790\uAC00 \uD588\uC2B5\uB2C8\uB2E4.")
     ));
     main.append(h(
@@ -33970,7 +34414,7 @@ ${b.text}` }, b.text, ...objTags, b.footnotes?.length ? h("span", { class: "fn" 
         h("span", {}, h("b", {}, "\uD22C\uACE0\uCC98 \uC120\uD0DD"), " (Journal) \u2014 choose the journal in the sidebar or, on a phone, from the \u2630 menu. The field box above it narrows the list by area (Korean literature, modern, classical, folklore, education, comparative, culture studies, popular culture, cultural content)."),
         h("span", {}, h("b", {}, "\uD30C\uC77C \uC120\uD0DD"), " (Choose file) \u2014 drop or pick the manuscript: HWP, HWPX, DOCX, TXT or MD. Check the role recognised for each paragraph (\uC81C\uBAA9 title, \uAD6D\uBB38\uCD08\uB85D abstract, \uBCF8\uBB38 body, \uCC38\uACE0\uBB38\uD5CC references \u2026) and correct it if needed."),
         h("span", {}, h("b", {}, "\uC801\uC6A9"), " (Apply) \u2014 builds the journal-styled document; review \uBBF8\uB9AC\uBCF4\uAE30 (preview), \uC815\uC624\uD45C (errata), \uBCC0\uACBD \uC0AC\uD56D (changes) and \uD22C\uACE0 \uC804 \uD655\uC778 (checklist)."),
-        h("span", {}, h("b", {}, "\uC800\uC7A5"), " (Save) \u2014 saves the HWP (\u25BE for HWPX). Open it in Hangul (or Hancom Docs) once before submitting.")
+        h("span", {}, h("b", {}, "\uC800\uC7A5"), " (Save) \u2014 saves the HWP (\u25BE for HWPX or Word/DOCX). The Word file keeps the same page set-up, fonts, spacing, footnotes, tables and pictures; page breaks may differ by a page or two. Open the file once before submitting.")
       ),
       h("p", { class: "small muted", style: "margin:8px 0 0" }, "\uD22C\uACE0 \uC591\uC2DD \uBC0F \uADDC\uC815 \uD655\uC778 (Journal rules) lists each journal\u2019s submission system (usually JAMS), deadlines, fees, length limits, required forms and citation rules. Questions in English are welcome: jojanggun@naver.com.")
     ));
