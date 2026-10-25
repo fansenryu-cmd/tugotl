@@ -97,6 +97,25 @@ async function templateFootnoteIds(doc) {
   return { ps: +ps[1], cs: +cs[1], styleId: st ? +st[1] : undefined, src: '바탕틀 각주 예시' };
 }
 
+// 각주 모양(구역의 footNotePr): 구분선·간격이 비었거나(빈 문서) 학회가 따로 정하면 고친다.
+// spec(학회 noteLine): { length: 'column'|'5cm'|mm 숫자, width: mm, type: 'SOLID'… } — 없으면 한글 기본값
+const NOTE_LINE_DEFAULT = '<hp:noteLine length="-1" type="SOLID" width="0.12 mm" color="#000000"/>';
+export function fixFootNotePr(fp, spec) {
+  let line = NOTE_LINE_DEFAULT;
+  if (spec && typeof spec === 'object') {
+    const len = spec.length === 'column' ? -1 : typeof spec.length === 'number' && spec.length > 0 ? Math.round(spec.length * 7200 / 25.4) : -1;   // mm → HWPUNIT
+    const width = typeof spec.width === 'number' && spec.width > 0 ? spec.width : 0.12;
+    const type = /^[A-Z_]{3,20}$/.test(spec.type || '') ? spec.type : 'SOLID';
+    line = `<hp:noteLine length="${len}" type="${type}" width="${width} mm" color="#000000"/>`;
+  }
+  const emptyLine = /<hp:noteLine\b[^>]*type="NONE"/.test(fp) || /<hp:noteLine\b[^>]*length="0"/.test(fp);
+  let x = fp;
+  if (spec || emptyLine) x = /<hp:noteLine\b[^>]*\/>/.test(x) ? x.replace(/<hp:noteLine\b[^>]*\/>/, line) : x.replace(/(<hp:autoNumFormat\b[^>]*\/>)/, `$1${line}`);
+  if (/<hp:noteSpacing betweenNotes="0" belowLine="0" aboveLine="0"\/>/.test(x)) x = x.replace(/<hp:noteSpacing\b[^>]*\/>/, '<hp:noteSpacing betweenNotes="283" belowLine="567" aboveLine="850"/>');
+  x = x.replace(/(<hp:numbering\b[^>]*newNum=")0(")/, '$11$2');   // 시작 번호 0 → 1
+  return x;
+}
+
 // 서식 명세(pt 단위) → rhwp props
 function charPropsOf(doc, fmt, fontName) {
   const name = fmt.font || fontName || '바탕';
@@ -499,6 +518,9 @@ export async function buildDocument({ journal, templateBytes, blocks, onLog }) {
   const newFirst = `<hp:p id="0" ${firstAttrs || 'paraPrIDRef="0" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0"'}>${ctrlRuns.join('')}${firstRuns || ''}</hp:p>`;
   // 첫 문단 뒤에 남아 있을 수 있는 문단(비운 바탕틀의 잔여)은 버린다
   sec = sec.slice(0, pm.index) + newFirst + bodyParas.join('') + sec.slice(sec.lastIndexOf('</hs:sec>'));
+  // 각주 구분선: 바탕틀이 없으면 빈 문서 기본값(구분선 없음·간격 0·시작 번호 0)이 남아 한글에서 본문과 각주 사이 선이 사라진다 → 한글 새 문서 기본값으로
+  // (한글 2024 새 문서: 실선, 길이 −1, 0.12 mm, 구분선 위 850·아래 567·각주 사이 283). 학회가 noteLine을 정하면 그 값을 쓴다
+  if (!templateBytes || journal.noteLine) sec = sec.replace(/<hp:footNotePr>[\s\S]*?<\/hp:footNotePr>/, (fp) => fixFootNotePr(fp, journal.noteLine));
   // 표·그림이 쓰는 문단 모양·테두리·탭·번호 목록과 그림 파일
   const objStats = { objects: 0, tables: 0, pictures: 0, shapes: 0, scaled: 0, moved: 0, footnotes: 0, bins: 0 };
   for (const imp of importers.values()) {
