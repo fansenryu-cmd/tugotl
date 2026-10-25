@@ -1,4 +1,4 @@
-# 투고틀 (tugotl) v1.4
+# 투고틀 (tugotl) v2.0
 
 **KCI 학술지 투고용 논문 양식 변환기 · Manuscript formatter for Korean (KCI) academic journals**
 
@@ -9,9 +9,9 @@
 
 **AI의 개입 없이, 오로지 프로그램 규칙만으로, 내 PC 안에서 작동하며, 논문 정보를 어디에도 저장·전송하지 않는 논문 서지·양식 변환기.**
 
-문학 학회지에 투고할 원고(HWP·HWPX·DOCX·TXT·MD)를 올리고 학회지를 고르면, 그 학회의 양식과 규정에 맞춘 HWP를 만듭니다. 글꼴·크기·줄간격·여백·용지·각주 서식은 학회 양식 그대로이고, 원고의 문장은 바꾸지 않습니다(쪽수 단위·쪽수 범위 기호(~·-)·낫표·서지 표기만 각주와 참고문헌에서 학회 규정에 맞게 치환하며, 본문은 건드리지 않고, 설정에서 끌 수 있습니다). 내장 학회 190곳(KCI 등재지 179곳, 등재후보지 11곳).
+문학 학회지에 투고할 원고(HWP·HWPX·DOCX·TXT·MD)를 올리고 학회지를 고르면, 그 학회의 양식과 규정에 맞춘 HWP를 만듭니다(HWPX·Word(DOCX)로도 저장). 글꼴·크기·줄간격·여백·용지·각주 서식은 학회 양식 그대로이고, 원고의 문장은 바꾸지 않습니다(쪽수 단위·쪽수 범위 기호(~·-)·낫표·서지 표기만 각주와 참고문헌에서 학회 규정에 맞게 치환하며, 본문은 건드리지 않고, 설정에서 끌 수 있습니다). 내장 학회 190곳(KCI 등재지 179곳, 등재후보지 11곳).
 
-*In English:* a rule-based, offline formatter for papers submitted to Korean (KCI-listed) journals in literature, classics, culture studies and cultural content. Upload a manuscript, pick the journal, and get an HWP laid out to that journal’s template and rules — with no AI, no server, and nothing leaving your computer. See **[English — what this is and how to use it](#english--what-this-is-and-how-to-use-it)** below.
+*In English:* a rule-based, offline formatter for papers submitted to Korean (KCI-listed) journals in literature, classics, culture studies and cultural content. Upload a manuscript, pick the journal, and get an HWP (or HWPX / Word DOCX) laid out to that journal’s template and rules — with no AI, no server, and nothing leaving your computer. See **[English — what this is and how to use it](#english--what-this-is-and-how-to-use-it)** below.
 
 ## 그냥 쓰실 분 — HTML 파일 하나만 받으세요 · Just use it: one HTML file
 
@@ -254,6 +254,8 @@
 - **글꼴**: 투고틀은 글꼴 파일을 포함하지 않습니다(저작권). 산출 HWP에는 학회가 지정한 글꼴 이름이 그대로 기록되어 내 PC에 글꼴이 없어도 투고에는 지장이 없습니다. 학회별 필요 글꼴과 구하는 곳은 [docs/글꼴안내.md](docs/글꼴안내.md).
 - **미리보기의 한계**: 미리보기 엔진(rhwp)은 각주가 많은 쪽에서 본문 줄을 다음 쪽으로 넘기지 못해 본문과 각주가 겹쳐 보일 수 있습니다. 해당 쪽에는 노란 표시가 붙습니다. 저장한 HWP는 한글이 열 때 다시 배치하므로 겹치지 않습니다.
 - **하단 문서정보 바**: 글자 수(공백 제외 포함)·각주 수·200자 원고지 환산 매수·학회 규정 매수와 초과/여유 매수·적용 후 쪽수를 한 줄로 표시. 초과분은 알려 줄 뿐 내용을 줄이지 않습니다.
+- **Word(DOCX)로 저장**(v2.0): ▾ 메뉴에서 한글 산출물과 같은 용지·여백·글꼴·크기·장평·자간·줄 간격·들여쓰기·각주(번호 꼴·구분선)·표·그림을 Word 문서로 저장합니다. Word로 받는 학회나 해외 공동 저자용입니다. Word는 한국어를 어절 단위로 줄을 나눠 쪽 수가 한두 쪽 늘 수 있습니다.
+- **각주 구분선**(v2.0): 본문과 각주 사이 선을 학회 양식대로(5 cm·2 cm·단의 1/3·단 전체, 굵기·색) 넣습니다. 설명은 [docs/v2.0_설계.md](docs/v2.0_설계.md).
 - **사용법·도움말** 페이지에 전체 설명과 문의처.
 - **화면 그림**: 빈 화면(원고를 넣기 전), 처음 사용 안내(투고처를 고르기 전, 닫을 수 있음), 투고 일정 머리 띠, 변환 완료 카드(쪽수·각주·표 수와 저장 단추), 휴대폰 첫 화면(엔진을 불러오는 동안), 소개 페이지 첫 화면 띠. 그림은 Codex CLI 그림 생성으로 만들었고 지시문은 `assets/prompts.json`, 다시 뽑기는 `node tools/gen_assets.mjs <이름>`(원본 PNG는 `assets/raw/`, git 제외). 앱에는 줄인 JPG(`assets/img/`, 합쳐 약 200KB)를 빌드가 data: 주소로 넣습니다.
 - **휴대폰**: 좁은 화면에서는 위쪽 앱 막대와 서랍(메뉴·투고처), 아래쪽 고정 버튼 막대(설정·적용·저장), ‘원고 구조 ↔ 결과 미리보기’ 전환으로 바뀝니다. 원고는 파일 앱·드라이브에서 고르고(형식 제한 없이 고른 뒤 확인), 결과는 저장하거나 ▾ 메뉴의 ‘공유하기’로 파일 앱·메신저에 보냅니다. 웹 배포본은 **홈 화면에 추가**하면 앱처럼 설치되고 한 번 연 뒤에는 인터넷 없이 열립니다(서비스 워커 캐시). 투고 일정은 카드로, 학회 정보의 탭은 옆으로 넘겨 봅니다.
@@ -279,6 +281,8 @@
 3. 바탕틀 본문을 비우고 HWPX로 내보낸 뒤, 원고 블록을 역할 순서대로 **HWPX XML로 직접** 써 넣습니다(문단·런·각주·강조·붉은 표시). 다시 읽어 HWP로 저장합니다.
 4. 바탕틀이 없는 학회는 규정 수치(`format`) 또는 일반 양식(`GENERIC_FORMAT`)으로 빈 문서에 서식을 만듭니다.
 5. 구조 인식(`src/structure.js`), 서지 변환(`src/cite.js`), 정오표(`src/errata.js`)는 전부 정규식과 규칙입니다.
+6. 저장 직후 HWP의 각주 모양 레코드를 한글이 읽는 배치로 고칩니다(`src/hwpfix.js`, rhwp 0.8.7의 구분선 길이 저장 결함 보완).
+7. Word(DOCX)는 완성된 HWPX를 읽어 같은 서식의 Word 문서로 옮깁니다(`src/hwpx2docx.js`).
 
 **English.** The journal’s template HWP is opened with [rhwp](https://github.com/edwardkim/rhwp) (an HWP engine compiled to WebAssembly) to read page setup, styles and footnote settings. Each role points to an example paragraph or a named style in the template. The template body is emptied, the manuscript is written into it as HWPX XML role by role, and the result is reloaded and saved as HWP. Journals without a template file use their published numbers or a generic layout. Role recognition, citation conversion and the errata check are regular expressions and rules.
 
@@ -297,6 +301,7 @@ python tools/pdf_profile.py <학술지.pdf> --json a.json      # 학술지 PDF�
 node tools/output_profile.mjs <산출.hwp> --json b.json      # 산출물의 같은 수치
 python tools/sample_compare.py <프로파일 폴더>               # 학회별로 나란히 비교
 node tools/verify_matrix.mjs --md docs/검증매트릭스.md      # 원고 × 학회 전수 재검증(체재·역할별 서식)
+node tools/footnote_shape_check.mjs <원고>                # 각주 구분선 회귀 검사(HWP 각주 모양 레코드·Word 각주 수)
 node tools/font_inventory.mjs --md docs/글꼴안내.md          # 학회별 필요 글꼴 표
 python -m http.server 8787      # dev.html은 서버에서 열어야 함
 ```
@@ -340,6 +345,14 @@ docs/             학회 조사·규정 요지·첨부 원본·감사 보고서
 **English.** Manuscripts and results stay in browser memory and disappear when the page is closed. The only things stored (in the browser’s localStorage) are journals you added yourself, settings and deadlines you typed in. Usage is counted in exactly two places: release downloads on GitHub and visits to the landing page (a cookie-free hits.sh image). Both are shown in the badges at the top; per-release numbers come from `node tools/usage.mjs`. The converter page itself is never counted, because it makes no outside connection at all (its Content Security Policy blocks it).
 
 ## 변경 내역 · Changelog
+
+**v2.0 (2026-10-25)** — 각주 구분선 바로잡기, Word(DOCX) 저장, 학회별 구분선 규정.
+- **각주 구분선**: 바탕틀 없이 만드는 156곳에서 본문과 각주 사이 선이 빠지던 문제와, 모든 산출물에서 구분선이 단 너비로 늘어나고 선 위 여백이 사라지던 문제(rhwp의 HWP 각주 모양 레코드 저장 배치)를 고침. 190곳 전수 확인, 한글 2024로 그려 확인.
+- **학회별 구분선**: 학회 양식 HWP에서 읽은 길이·굵기·색(단 너비 전체 4곳, 로컬리티 인문학 회색 1/3, 한국학 4.5 cm).
+- **Word(DOCX)로 저장**: 한글 산출물과 같은 서식의 Word 문서. Word 16으로 190곳 전수 열기·각주 수 확인, 이음 오피스 렌더러로 교차 확인.
+- **검토한 외부 도구**: 이음 오피스(IeumOffice, Apache-2.0)는 Word 산출물 교차 확인에 썼고, kordoc(MIT)은 수정 대조표·심사용 익명 파일 같은 다음 기능의 참고로 검토. 자세한 내용은 [docs/v2.0_설계.md](docs/v2.0_설계.md).
+
+*v2.0 in English:* the footnote separator is fixed (it was missing in 156 template-less journals, and every output had a separator-length bug from the HWP writer that made Hangul draw a full-width line with no gap above), separator rules are read from journal templates, and a new Word (DOCX) export mirrors the Hangul output (page set-up, fonts, spacing, footnotes, tables, pictures). Checked on all 190 journals with Hangul 2024 and Word 16, and cross-checked with IeumOffice.
 
 **v1.4 (2026-10-21)** — 학회 108곳 추가(82곳 → 190곳), 분야 거르기, 표·그림, 휴대폰, 화면 그림, 한영 안내, 감사 반영.
 - **학회 확장**: KCI 문학·고전문학·한문학·구비민속·문화연구·대중문화·영상·문화콘텐츠·한국학 분야 등재지·등재후보지 108곳 추가(등재 179 · 등재후보 11). 학회 공식 규정만으로 수집하고, Sonnet 5.5·Haiku 5.5 에이전트가 108곳 전부를 원문과 따로 대조한 뒤 엇갈린 항목은 원문을 다시 확인해 반영. 기록은 [docs/audit/journal_expansion_2026-10-20.md](docs/audit/journal_expansion_2026-10-20.md).
@@ -408,9 +421,10 @@ docs/             학회 조사·규정 요지·첨부 원본·감사 보고서
 - **각 학회·연구소 편집위원회** — 투고 규정과 논문 양식을 공개해 주신 덕분에 규칙으로 옮길 수 있었습니다. 수록된 자료의 권리는 각 학회에 있으며, 수정·제거 요청은 언제든 반영합니다.
 - **착상** — 이 프로그램은 **ece.drjunoh.chatgpt.site**의 drjunoh 님 아이디어에서 영감을 얻어, 문학 학회지 투고에 맞게 "AI 없이·로컬에서·저장하지 않고"라는 방향으로 새로 만든 것입니다.
 - JSZip(Stuart Knightley 외), pako(Vitaly Puzrin·Andrei Tuputcyn), cfb(SheetJS), esbuild(Evan Wallace), Pretendard 글꼴 프로젝트.
+- **검증·참고에 쓴 도구**(배포본에 포함하지 않음): [이음 오피스(IeumOffice)](https://github.com/pblsketch/openoffice)(pblsketch, Apache-2.0, Mainfunc의 GenOffice 기반) — Word 산출물을 다른 엔진으로 그려 확인. [kordoc](https://github.com/chrisryugj/kordoc)(chrisryugj, MIT) — 한국 문서 파서·생성기, 각주 기본값 대조와 다음 기능 검토에 참고. 한글 2024·Microsoft Word 16 — 산출물 확인.
 - 이 프로그램의 코드와 문서는 AI 코딩 도구(Claude, Anthropic)의 도움을 받아 작성했고, 설계·검증·최종 확인은 저자가 했습니다.
 
-**English.** Thanks to Edward Kim for rhwp, which makes reading and writing HWP inside a browser possible; to the editorial boards of the societies for publishing their rules and templates; to drjunoh (ece.drjunoh.chatgpt.site) for the original idea; and to the JSZip, pako, cfb (SheetJS), esbuild and Pretendard projects. The code and documents were written with the help of an AI coding tool (Claude, Anthropic); design, verification and final review are the author’s. The converter itself uses no AI.
+**English.** Thanks to Edward Kim for rhwp, which makes reading and writing HWP inside a browser possible; to the editorial boards of the societies for publishing their rules and templates; to drjunoh (ece.drjunoh.chatgpt.site) for the original idea; and to the JSZip, pako, cfb (SheetJS), esbuild and Pretendard projects. IeumOffice (pblsketch, Apache-2.0) was used to cross-check the Word export and kordoc (chrisryugj, MIT) was consulted; neither is bundled. The code and documents were written with the help of an AI coding tool (Claude, Anthropic); design, verification and final review are the author’s. The converter itself uses no AI.
 
 ## 문의 · Contact
 

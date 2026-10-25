@@ -6,6 +6,7 @@ import { buildErrata } from './errata.js';
 import { THIRD_PARTY_LICENSES } from './licenses.js';
 import { initEngine, analyzeTemplate, renderTemplatePage, buildDocument } from './engine.js';
 import { parseManuscript } from './parse.js';
+import { hwpxToDocx } from './hwpx2docx.js';
 import { recognize, reorderSections, buildToc, applyBlanks, applySubstitutions, estimateLength, checklist, roleLabel } from './structure.js';
 
 const $ = (sel, el = document) => el.querySelector(sel);
@@ -222,7 +223,7 @@ function renderConvert(main) {
   const saveWrap = h('div', { class: 'rel' });
   const saveBtn = h('button', { class: 'btn', disabled: state.result && !state.dirty ? null : '', onclick: () => saveResult('hwp') }, '저장');
   const canShare = typeof navigator !== 'undefined' && typeof navigator.canShare === 'function' && touch();   // 휴대폰 공유 시트(파일 앱·드라이브·메신저로 보내기)
-  const moreBtn = h('button', { class: 'btn ghost', 'aria-label': '다른 형식으로 저장', disabled: state.result && !state.dirty ? null : '', onclick: () => { const open = saveWrap.querySelector('.menu'); if (open) open.remove(); else saveWrap.append(h('div', { class: 'menu' }, canShare ? h('button', { onclick: () => saveResult('hwp', { share: true }) }, 'HWP 공유하기(파일 앱·드라이브·메신저)') : null, h('button', { onclick: () => saveResult('hwpx') }, 'HWPX로 저장'), h('button', { onclick: () => saveResult('log') }, '변환 로그(txt) 저장'))); } }, '▾');
+  const moreBtn = h('button', { class: 'btn ghost', 'aria-label': '다른 형식으로 저장', disabled: state.result && !state.dirty ? null : '', onclick: () => { const open = saveWrap.querySelector('.menu'); if (open) open.remove(); else saveWrap.append(h('div', { class: 'menu' }, canShare ? h('button', { onclick: () => saveResult('hwp', { share: true }) }, 'HWP 공유하기(파일 앱·드라이브·메신저)') : null, h('button', { onclick: () => saveResult('hwpx') }, 'HWPX로 저장'), h('button', { onclick: () => saveResult('docx') }, 'Word(DOCX)로 저장'), h('button', { onclick: () => saveResult('log') }, '변환 로그(txt) 저장'))); } }, '▾');
   saveWrap.append(h('div', { class: 'row', style: 'gap:4px' }, saveBtn, moreBtn));
   const setWrap = h('div', { class: 'rel' });
   const setBtn = h('button', { class: 'btn ghost', 'aria-expanded': 'false', onclick: () => { const open = setWrap.querySelector('.pop'); if (open) { open.remove(); setBtn.setAttribute('aria-expanded', 'false'); } else { setWrap.append(settingsPop()); setBtn.setAttribute('aria-expanded', 'true'); } } }, '설정');
@@ -498,7 +499,12 @@ async function runConvert() {
 async function saveResult(kind, how = {}) {
   const r = state.result; const j = journal(); if (!r || !j) return;
   const base = (state.manuscript?.name || '원고').replace(/\.[^.]+$/, '');
-  const spec = { hwp: { data: r.hwp, name: `${base}_${j.journal}.hwp`, mime: 'application/x-hwp', desc: '한글 문서 (HWP)' }, hwpx: { data: r.hwpx, name: `${base}_${j.journal}.hwpx`, mime: 'application/hwp+zip', desc: '한글 문서 (HWPX)' }, log: { data: new TextEncoder().encode(r.logText), name: `${base}_${j.journal}_변환로그.txt`, mime: 'text/plain', desc: '텍스트' } }[kind];
+  // Word(DOCX): 한글 산출물(HWPX)을 같은 서식의 Word 문서로 옮긴다(처음 저장할 때 한 번 만든다)
+  if (kind === 'docx' && !r.docx) {
+    try { setStatus('Word 문서 만드는 중…', ''); const d = await hwpxToDocx(r.hwpx, { title: base }); r.docx = d.bytes; r.docxWarnings = d.warnings; setStatus(d.warnings.length ? `Word 문서 준비됨 — ${d.warnings.join(' · ')}` : 'Word 문서 준비됨', 'ready'); }
+    catch (e) { console.error(e); setStatus('Word 문서를 만들지 못했습니다: ' + String(e && e.message || e).slice(0, 80), 'err'); return; }
+  }
+  const spec = { hwp: { data: r.hwp, name: `${base}_${j.journal}.hwp`, mime: 'application/x-hwp', desc: '한글 문서 (HWP)' }, hwpx: { data: r.hwpx, name: `${base}_${j.journal}.hwpx`, mime: 'application/hwp+zip', desc: '한글 문서 (HWPX)' }, docx: { data: r.docx, name: `${base}_${j.journal}.docx`, mime: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', desc: 'Word 문서 (DOCX)' }, log: { data: new TextEncoder().encode(r.logText), name: `${base}_${j.journal}_변환로그.txt`, mime: 'text/plain', desc: '텍스트' } }[kind];
   const blob = new Blob([spec.data], { type: spec.mime });
   if (how.share) {   // 휴대폰 공유 시트: 파일 앱 저장·드라이브·메신저로 바로 보낸다
     try { const file = new File([blob], spec.name, { type: spec.mime }); if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: spec.name }); setStatus(`공유함 · ${spec.name}`, 'ready'); return; } }
@@ -694,7 +700,8 @@ function renderHelp(main) {
       [h('b', {}, '원고 놓기'), ' — HWP·HWPX·DOCX·TXT·MD 원고를 화면에 끌어다 놓거나 ‘파일 선택’을 누릅니다. 놓는 즉시 열리고, 왼쪽에 문단별 역할(제목·초록·장 제목·본문·인용·참고문헌·영문초록)이 인식되어 나옵니다. TXT·MD 원고는 각주를 [^1] … [^1]: 내용 꼴로, 강조를 *기울임*·**굵게**(낱말 경계에서만, 저자 이름 뒤 * 표시는 글자로 남음)로, 장 제목을 # 로, 인용을 > 로 읽습니다. 각주 정의 아래 네 칸 들여 쓴 줄은 같은 각주의 다음 문단입니다.'],
       [h('b', {}, '역할 확인'), ' — 잘못 잡힌 역할은 목록에서 직접 바꿉니다. 역할은 서식을 정하는 기준이므로 제목·참고문헌·영문초록이 맞게 잡혔는지 먼저 보세요.'],
       [h('b', {}, '적용'), ' — 학회 양식이 입혀진 쪽을 오른쪽 ‘미리보기’에서 보고, ‘변경 사항’에서 무엇이 바뀌었는지(체재 재배열, 쪽수·서지 표기, 빈 줄) 확인합니다. 저장 전에 설정이나 역할을 고쳤다면 ‘다시 적용’을 누릅니다. 각주가 많은 쪽은 미리보기에서 본문과 각주가 겹쳐 보일 수 있습니다(쪽 아래에 노란 표시). 미리보기 엔진의 한계일 뿐이며, 저장한 HWP는 한글이 열 때 다시 배치하므로 겹치지 않습니다.'],
-      [h('b', {}, '저장'), ' — ‘저장’을 누르면 저장할 폴더와 파일 이름을 그때그때 고를 수 있습니다(크롬·엣지). 그 밖의 브라우저에서는 내려받기 폴더에 저장됩니다. ▾ 메뉴에서 HWPX·변환 로그도 저장합니다.'],
+      [h('b', {}, '저장'), ' — ‘저장’을 누르면 저장할 폴더와 파일 이름을 그때그때 고를 수 있습니다(크롬·엣지). 그 밖의 브라우저에서는 내려받기 폴더에 저장됩니다. ▾ 메뉴에서 HWPX·Word(DOCX)·변환 로그도 저장합니다.'],
+      [h('b', {}, 'Word(DOCX)로 저장'), ' — Word로 받는 학회나 해외 공동 저자를 위해, 한글 산출물과 같은 용지·여백·글꼴·크기·장평·자간·줄 간격·들여쓰기·각주(번호 꼴·구분선)·표·그림을 Word 문서로 옮깁니다. Word는 줄 나눔 규칙이 달라 쪽 수가 한두 쪽 다를 수 있고, 수식·도형은 옮기지 않습니다. 학회 양식 글꼴이 PC에 없으면 Word가 다른 글꼴로 바꿔 보여 줍니다(한글도 같음). 투고 전에 Word에서 한 번 열어 확인하세요.'],
       [h('b', {}, '한글에서 마무리'), ' — 표·그림이 판면 안에 제대로 놓였는지(넓은 표는 폭을 줄임), 쪽 넘김과 머리말을 확인한 뒤 투고합니다. 글상자·차트처럼 옮기지 못한 개체가 있으면 경고에 수가 나옵니다.'])));
   main.append(sec('설정 (상단 ‘설정’ 버튼)',
     ul([h('b', {}, '화면 스킨'), ' — 왼쪽 아래 ‘스킨’의 색 점을 누르면 다크 스튜디오(기본), 종이·서지, 모노크롬, 네이비·크림, 타이포 편집, 보라(슬랙식), 바이올렛 가운데 고를 수 있습니다. 색·글꼴·모서리만 바뀌고 변환 결과에는 영향이 없으며, 이 브라우저에만 기억됩니다.'],
@@ -732,11 +739,12 @@ function renderHelp(main) {
   main.append(sec('라이선스와 감사의 말',
     ul([h('b', {}, '투고틀 소스 코드'), ' — MIT 라이선스, ⓒ 2026 이융희. 자유롭게 쓰고 고치고 나눌 수 있으며 보증은 없습니다. 투고 전 학회 공지와 산출 파일은 반드시 직접 확인하세요.'],
       [h('b', {}, 'HWP 엔진 rhwp'), ' (Edward Kim, MIT) — 이 파일 안에서 HWP를 읽고 쓰는 핵심입니다. ', h('a', { href: 'https://github.com/edwardkim/rhwp', target: '_blank', rel: 'noopener noreferrer' }, 'github.com/edwardkim/rhwp')],
-      [h('b', {}, 'JSZip'), ' (Stuart Knightley 외, MIT/GPL 이중 라이선스 중 MIT) — DOCX 읽기와 HWPX 패키지 처리.'],
+      [h('b', {}, 'JSZip'), ' (Stuart Knightley 외, MIT/GPL 이중 라이선스 중 MIT) — DOCX 읽고 쓰기와 HWPX 패키지 처리.'],
+      [h('b', {}, 'pako'), ' (Vitaly Puzrin·Andrei Tuputcyn, MIT)와 ', h('b', {}, 'cfb'), ' (SheetJS, Apache-2.0) — 저장한 HWP의 각주 모양(구분선 길이·선 위 여백)을 한글이 읽는 배치로 고칠 때 압축을 풀고 다시 묶습니다.'],
       [h('b', {}, '학회 바탕틀·투고 서식·규정'), ' — 각 학회·연구소가 투고자에게 공개 배포한 자료를 투고 편의를 위해 넣었습니다. 논문 양식 파일은 견본 논문 글자를 지우고 서식만 남겼습니다. 저작권은 각 학회에 있고, 해당 학회 투고 용도로만 쓰세요. 권리자가 요청하면 즉시 제거합니다.'],
       '글꼴은 이 파일에 들어 있지 않습니다. 화면은 PC의 시스템 글꼴을, 산출물은 학회 양식의 글꼴 이름을 그대로 씁니다.',
       ['전문과 목록: 저장소의 ', h('a', { href: 'https://github.com/fansenryu-cmd/tugotl/blob/main/LICENSE', target: '_blank', rel: 'noopener noreferrer' }, 'LICENSE'), ', ', h('a', { href: 'https://github.com/fansenryu-cmd/tugotl/blob/main/THIRD_PARTY_NOTICES.md', target: '_blank', rel: 'noopener noreferrer' }, 'THIRD_PARTY_NOTICES.md'), '. 새 버전과 소스: ', h('a', { href: 'https://github.com/fansenryu-cmd/tugotl', target: '_blank', rel: 'noopener noreferrer' }, 'github.com/fansenryu-cmd/tugotl')]),
-    h('details', { style: 'margin-top:10px' }, h('summary', { style: 'cursor:pointer' }, '제3자 소프트웨어 라이선스 전문 (MIT)'), ...THIRD_PARTY_LICENSES.map((l) => h('div', { style: 'margin-top:8px' }, h('b', {}, l.name), h('pre', { style: 'white-space:pre-wrap;font-size:11px;line-height:1.5;margin:4px 0 0' }, l.text)))),
+    h('details', { style: 'margin-top:10px' }, h('summary', { style: 'cursor:pointer' }, '제3자 소프트웨어 라이선스 전문 (MIT·Apache-2.0)'), ...THIRD_PARTY_LICENSES.map((l) => h('div', { style: 'margin-top:8px' }, h('b', {}, l.name), h('pre', { style: 'white-space:pre-wrap;font-size:11px;line-height:1.5;margin:4px 0 0' }, l.text)))),
     h('p', { style: 'margin:10px 0 0' }, '규정을 공개해 주신 각 학회 편집위원회와 rhwp를 만든 Edward Kim께 감사드립니다. 이 프로그램의 코드와 문서는 AI 코딩 도구(Claude, Anthropic)의 도움을 받아 작성했고, 설계·검증·최종 확인은 저자가 했습니다.')));
   // 해외 연구자용 영어 안내(화면은 한글이지만 단추 네 개로 끝난다)
   main.append(h('section', { class: 'card', lang: 'en', style: 'margin-bottom:14px' }, h('h2', { style: 'font-size:16px;margin-bottom:10px' }, 'In English — for researchers submitting to Korean journals'),
@@ -744,7 +752,7 @@ function renderHelp(main) {
     ol(h('span', {}, h('b', {}, '투고처 선택'), ' (Journal) — choose the journal in the sidebar or, on a phone, from the ☰ menu. The field box above it narrows the list by area (Korean literature, modern, classical, folklore, education, comparative, culture studies, popular culture, cultural content).'),
       h('span', {}, h('b', {}, '파일 선택'), ' (Choose file) — drop or pick the manuscript: HWP, HWPX, DOCX, TXT or MD. Check the role recognised for each paragraph (제목 title, 국문초록 abstract, 본문 body, 참고문헌 references …) and correct it if needed.'),
       h('span', {}, h('b', {}, '적용'), ' (Apply) — builds the journal-styled document; review 미리보기 (preview), 정오표 (errata), 변경 사항 (changes) and 투고 전 확인 (checklist).'),
-      h('span', {}, h('b', {}, '저장'), ' (Save) — saves the HWP (▾ for HWPX). Open it in Hangul (or Hancom Docs) once before submitting.')),
+      h('span', {}, h('b', {}, '저장'), ' (Save) — saves the HWP (▾ for HWPX or Word/DOCX). The Word file keeps the same page set-up, fonts, spacing, footnotes, tables and pictures; page breaks may differ by a page or two. Open the file once before submitting.')),
     h('p', { class: 'small muted', style: 'margin:8px 0 0' }, '투고 양식 및 규정 확인 (Journal rules) lists each journal’s submission system (usually JAMS), deadlines, fees, length limits, required forms and citation rules. Questions in English are welcome: jojanggun@naver.com.')));
   main.append(sec('문의 및 개선 제안',
     h('p', { style: 'margin:0' }, '잘못 인식되는 원고, 학회 규정 변경, 추가하고 싶은 학회가 있으면 아래로 보내 주세요. 원고 파일을 함께 보내 주시면 인식 규칙을 고치는 데 큰 도움이 됩니다.'),

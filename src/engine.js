@@ -99,15 +99,18 @@ async function templateFootnoteIds(doc) {
 }
 
 // 각주 모양(구역의 footNotePr): 구분선·간격이 비었거나(빈 문서) 학회가 따로 정하면 고친다.
-// spec(학회 noteLine): { length: 'column'|'5cm'|mm 숫자, width: mm, type: 'SOLID'… } — 없으면 한글 기본값
+// spec(학회 noteLine): { length: 길이 코드 −1(5cm)·−2(2cm)·−3(단의 1/3)·−4(단 전체) 또는 mm(양수), width: mm, color: '#RRGGBB', type: 'SOLID'… }
+// 길이 코드의 뜻은 한글 2024로 그려 잰 값(review: docs/v2.0_설계.md). 없으면 한글 새 문서 기본값
 const NOTE_LINE_DEFAULT = '<hp:noteLine length="-1" type="SOLID" width="0.12 mm" color="#000000"/>';
 export function fixFootNotePr(fp, spec) {
   let line = NOTE_LINE_DEFAULT;
   if (spec && typeof spec === 'object') {
-    const len = spec.length === 'column' ? -1 : typeof spec.length === 'number' && spec.length > 0 ? Math.round(spec.length * 7200 / 25.4) : -1;   // mm → HWPUNIT
-    const width = typeof spec.width === 'number' && spec.width > 0 ? spec.width : 0.12;
+    const L = Number(spec.length);
+    const len = Number.isFinite(L) && L < 0 ? Math.max(-4, Math.round(L)) : Number.isFinite(L) && L > 0 ? Math.round(L * 7200 / 25.4) : -1;   // mm → HWPUNIT
+    const width = typeof spec.width === 'number' && spec.width > 0 && spec.width <= 5 ? spec.width : 0.12;
     const type = /^[A-Z_]{3,20}$/.test(spec.type || '') ? spec.type : 'SOLID';
-    line = `<hp:noteLine length="${len}" type="${type}" width="${width} mm" color="#000000"/>`;
+    const color = /^#[0-9A-Fa-f]{6}$/.test(spec.color || '') ? spec.color.toUpperCase() : '#000000';
+    line = `<hp:noteLine length="${len}" type="${type}" width="${width} mm" color="${color}"/>`;
   }
   const emptyLine = /<hp:noteLine\b[^>]*type="NONE"/.test(fp) || /<hp:noteLine\b[^>]*length="0"/.test(fp);
   let x = fp;
