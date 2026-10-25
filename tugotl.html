@@ -364,7 +364,7 @@ main.over .dropline { display: block; }
       <div class="mast-status" id="status" role="status" aria-live="polite"><span class="dot" aria-hidden="true"></span><span id="status-text">엔진 준비 중…</span></div>
       <div class="skins" id="skins" role="radiogroup" aria-label="화면 스킨"><span class="sk-label">스킨</span><button type="button" class="sw sw-default" data-skin="" role="radio" aria-label="다크 스튜디오(기본)" title="다크 스튜디오(기본)"></button><button type="button" class="sw sw-paper" data-skin="paper" role="radio" aria-label="종이·서지" title="종이·서지"></button><button type="button" class="sw sw-mono" data-skin="mono" role="radio" aria-label="모노크롬 미니멀" title="모노크롬 미니멀"></button><button type="button" class="sw sw-navy" data-skin="navy" role="radio" aria-label="네이비·크림" title="네이비·크림"></button><button type="button" class="sw sw-type" data-skin="type" role="radio" aria-label="타이포 편집" title="타이포 편집"></button><button type="button" class="sw sw-slack" data-skin="slack" role="radio" aria-label="보라(슬랙식, 이전 기본)" title="보라(슬랙식, 이전 기본)"></button><button type="button" class="sw sw-violet" data-skin="violet" role="radio" aria-label="바이올렛" title="바이올렛"></button></div>
       <div class="mast-note" id="status-note" hidden>본 투고 양식 편집은 프로그램 규칙에 따른 것으로 완벽한 편집이 아닙니다. 저장한 원고는 투고 전에 반드시 저자가 직접 확인해 주세요.</div>
-      <div class="side-fine">원고는 이 브라우저 안에서만 처리되며 전송되지 않습니다 · <a href="https://github.com/edwardkim/rhwp" target="_blank" rel="noopener">rhwp</a> · v1.4 · 빌드 2026-10-20 14:33</div>
+      <div class="side-fine">원고는 이 브라우저 안에서만 처리되며 전송되지 않습니다 · <a href="https://github.com/edwardkim/rhwp" target="_blank" rel="noopener">rhwp</a> · v1.4 · 빌드 2026-10-25 09:32</div>
     </div>
   </aside>
   <main id="main" tabindex="-1"></main>
@@ -23360,6 +23360,22 @@ main.over .dropline { display: block; }
     if (!ps || !cs) return null;
     return { ps: +ps[1], cs: +cs[1], styleId: st ? +st[1] : void 0, src: "\uBC14\uD0D5\uD2C0 \uAC01\uC8FC \uC608\uC2DC" };
   }
+  var NOTE_LINE_DEFAULT = '<hp:noteLine length="-1" type="SOLID" width="0.12 mm" color="#000000"/>';
+  function fixFootNotePr(fp, spec) {
+    let line = NOTE_LINE_DEFAULT;
+    if (spec && typeof spec === "object") {
+      const len = spec.length === "column" ? -1 : typeof spec.length === "number" && spec.length > 0 ? Math.round(spec.length * 7200 / 25.4) : -1;
+      const width = typeof spec.width === "number" && spec.width > 0 ? spec.width : 0.12;
+      const type = /^[A-Z_]{3,20}$/.test(spec.type || "") ? spec.type : "SOLID";
+      line = `<hp:noteLine length="${len}" type="${type}" width="${width} mm" color="#000000"/>`;
+    }
+    const emptyLine = /<hp:noteLine\b[^>]*type="NONE"/.test(fp) || /<hp:noteLine\b[^>]*length="0"/.test(fp);
+    let x = fp;
+    if (spec || emptyLine) x = /<hp:noteLine\b[^>]*\/>/.test(x) ? x.replace(/<hp:noteLine\b[^>]*\/>/, line) : x.replace(/(<hp:autoNumFormat\b[^>]*\/>)/, `$1${line}`);
+    if (/<hp:noteSpacing betweenNotes="0" belowLine="0" aboveLine="0"\/>/.test(x)) x = x.replace(/<hp:noteSpacing\b[^>]*\/>/, '<hp:noteSpacing betweenNotes="283" belowLine="567" aboveLine="850"/>');
+    x = x.replace(/(<hp:numbering\b[^>]*newNum=")0(")/, "$11$2");
+    return x;
+  }
   function charPropsOf(doc, fmt, fontName) {
     const name = fmt.font || fontName || "\uBC14\uD0D5";
     const fid = doc.findOrCreateFontId(name);
@@ -23918,6 +23934,7 @@ main.over .dropline { display: block; }
     const ctrlRuns = topLevel(firstP.slice(firstP.indexOf(">") + 1), "run").filter((r) => /<hp:secPr|<hp:ctrl>/.test(r)).map((r) => r.replace(/<hp:t>[\s\S]*?<\/hp:t>/g, ""));
     const newFirst = `<hp:p id="0" ${firstAttrs || 'paraPrIDRef="0" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0"'}>${ctrlRuns.join("")}${firstRuns || ""}</hp:p>`;
     sec = sec.slice(0, pm.index) + newFirst + bodyParas.join("") + sec.slice(sec.lastIndexOf("</hs:sec>"));
+    if (!templateBytes2 || journal2.noteLine) sec = sec.replace(/<hp:footNotePr>[\s\S]*?<\/hp:footNotePr>/, (fp) => fixFootNotePr(fp, journal2.noteLine));
     const objStats = { objects: 0, tables: 0, pictures: 0, shapes: 0, scaled: 0, moved: 0, footnotes: 0, bins: 0 };
     for (const imp of importers.values()) {
       header = imp.applyHeader(header);
