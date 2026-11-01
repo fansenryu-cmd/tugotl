@@ -11,7 +11,7 @@
 
 **AI의 개입 없이, 오로지 프로그램 규칙만으로, 내 PC 안에서 작동하며, 논문 정보를 어디에도 저장·전송하지 않는 논문 서지·양식 변환기입니다.**
 
-원고(HWP·HWPX·DOCX·TXT·MD)를 올리고 학회지를 고르면 그 학회의 양식과 규정에 맞춘 한글 파일을 만듭니다. HWPX나 Word(DOCX)로도 저장할 수 있습니다. 글꼴·크기·줄 간격·여백·용지·각주 서식은 학회 양식을 그대로 따르고, 원고의 문장은 바꾸지 않습니다. 내장 학회는 190곳입니다(KCI 등재지 179곳, 등재후보지 11곳).
+원고(HWP·HWPX·DOCX·TXT·MD)를 올리고 학회지를 고르면 그 학회의 양식과 규정에 맞춘 한글 파일을 만듭니다. HWPX나 Word(DOCX)로도 저장할 수 있습니다. 글꼴·크기·줄 간격·여백·용지·각주 서식은 학회 양식을 그대로 따르고, 원고의 문장은 바꾸지 않습니다. 내장 학회는 208곳입니다(KCI 등재지 196곳, 등재후보지 12곳).
 
 ### 바로 쓰기
 
@@ -40,7 +40,8 @@
 
 - **각주 구분선 바로잡기:** 본문과 각주 사이 선이 빠지거나 단 너비로 늘어나던 문제를 고쳤습니다. 학회 양식의 선 길이·굵기·색을 따릅니다.
 - **Word(DOCX)로 저장:** 한글 산출물과 같은 서식의 Word 문서를 만듭니다.
-- **190곳 전수 확인:** 한글 2024와 Word 16으로 열어 확인했습니다.
+- **전수 확인:** 한글 2024와 Word 16으로 열어 확인했습니다.
+- **학회 18곳 추가(2026-11-01):** 국어교육·한문교육·방송(드라마)·불교문예 학술지를 넣어 208곳이 됐습니다.
 
 전체 내역은 [CHANGELOG.md](CHANGELOG.md), v2.0의 조사·검증 기록은 [docs/v2.0_설계.md](docs/v2.0_설계.md)에 있습니다.
 
@@ -49,7 +50,7 @@
 | 문서 | 내용 |
 |---|---|
 | [docs/사용안내.md](docs/사용안내.md) | 화면 흐름, 설정, 정오표, 휴대폰, 표·그림, 개인정보 |
-| [docs/학회목록.md](docs/학회목록.md) | 내장 학회 190곳 전체 목록 |
+| [docs/학회목록.md](docs/학회목록.md) | 내장 학회 208곳 전체 목록 |
 | [docs/개발.md](docs/개발.md) | 변환 원리, 빌드·검증 도구, 코드 구조, 학회 추가 방법 |
 | [docs/글꼴안내.md](docs/글꼴안내.md) | 학회별 필요 글꼴 |
 | [CHANGELOG.md](CHANGELOG.md) | 판별 변경 내역 |
@@ -83,7 +84,7 @@
 - **Input:** HWP, HWPX, DOCX, TXT or MD. **Output:** HWP, HWPX or Word (DOCX), laid out in the journal’s own template or published specifications.
 - **Rules only, no AI.** The text of your paper is never rewritten. Only citation details in footnotes and references (page units, page-range marks, title brackets) are normalised to the journal’s rules, and each can be switched off.
 - **Private by design.** Everything runs in your browser from a single offline HTML file. Nothing is uploaded.
-- **190 built-in journals** (179 KCI-accredited, 11 candidate) with submission links, deadlines, fees, length limits and required forms.
+- **208 built-in journals** (196 KCI-accredited, 12 candidate) with submission links, deadlines, fees, length limits and required forms.
 
 **Quick start:** download **[tugotl.html](https://github.com/fansenryu-cmd/tugotl/releases/latest/download/tugotl.html)** (about 30 MB) and open it in Chrome or Edge, or use it online at **https://fansenryu-cmd.github.io/tugotl/**. Pick the journal, drop your manuscript, press **적용 (Apply)**, check the preview, and press **저장 (Save)**. The interface is in Korean; the in-app help has an English section.
 
