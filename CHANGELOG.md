@@ -2,7 +2,7 @@
 
 판마다 무엇이 바뀌었는지 적습니다. 배포본은 [Releases](https://github.com/fansenryu-cmd/tugotl/releases)에 있습니다. *English summaries follow the Korean.*
 
-**2026-11-01 (웹 배포본 반영)** — 학회 18곳 추가(190곳 → 208곳).
+**v2.1 (2026-11-01)** — 학회 18곳 추가(190곳 → 208곳).
 - **국어교육 11곳**: 국어교육, 국어교육연구(국어교육학회·서울대), 국어교육학연구, 새국어교육, 한국초등국어교육, 독서연구, 작문연구, 문법 교육, 우리말교육현장연구, 리터러시 연구. **한문교육 2곳**: 漢文敎育論集, 한자한문응용연구.
 - **드라마(방송) 4곳**: 한국방송학보, 방송과 커뮤니케이션, 방송문화연구, 미디어, 젠더 & 문화 — TV 드라마 연구가 실리는 학술지. **불교문예연구** 1곳.
 - 분야 거르기 이름을 ‘국어·문학교육·아동문학’, ‘대중문화·영상·드라마’로 넓힘. 문예창작·대중서사·애니메이션·만화·웹툰·드라마 전문지는 이미 모두 들어 있음을 KCI 분류 목록과 맞대어 확인.
@@ -59,7 +59,7 @@
 
 ## English
 
-*2026-11-01:* 18 more journals (208 in total): 11 in Korean-language education, 2 in classical Chinese (hanmun) education, 4 broadcasting journals that publish TV-drama research, and one on Buddhist literature, each collected from the society’s official rules and cross-checked twice.
+*v2.1 (2026-11-01):* 18 more journals (208 in total): 11 in Korean-language education, 2 in classical Chinese (hanmun) education, 4 broadcasting journals that publish TV-drama research, and one on Buddhist literature, each collected from the society’s official rules and cross-checked twice.
 
 *v2.0 in English:* the footnote separator is fixed (it was missing in 156 template-less journals, and every output had a separator-length bug from the HWP writer that made Hangul draw a full-width line with no gap above), separator rules are read from journal templates, and a new Word (DOCX) export mirrors the Hangul output (page set-up, fonts, spacing, footnotes, tables, pictures). Checked on all 190 journals with Hangul 2024 and Word 16, and cross-checked with IeumOffice. The README is now a short Korean guide followed by an English one, with details in separate documents.
 

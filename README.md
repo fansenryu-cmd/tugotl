@@ -1,4 +1,4 @@
-# 투고틀 (tugotl) v2.0
+# 투고틀 (tugotl) v2.1
 
 **KCI 학술지 투고용 논문 양식 변환기** · [English below](#english)
 
@@ -36,12 +36,11 @@
 
 원고는 브라우저 메모리에서만 처리되고, 서버·외부 전송·AI 호출이 없습니다. 사용량은 배포본 내려받기 수와 소개 페이지 방문 수만 셉니다.
 
-### 최근 변경 — v2.0 (2026-10-25)
+### 최근 변경 — v2.1 (2026-11-01)
 
-- **각주 구분선 바로잡기:** 본문과 각주 사이 선이 빠지거나 단 너비로 늘어나던 문제를 고쳤습니다. 학회 양식의 선 길이·굵기·색을 따릅니다.
-- **Word(DOCX)로 저장:** 한글 산출물과 같은 서식의 Word 문서를 만듭니다.
-- **전수 확인:** 한글 2024와 Word 16으로 열어 확인했습니다.
-- **학회 18곳 추가(2026-11-01):** 국어교육·한문교육·방송(드라마)·불교문예 학술지를 넣어 208곳이 됐습니다.
+- **학회 18곳 추가:** 국어교육·한문교육·방송(드라마)·불교문예 학술지를 넣어 208곳이 됐습니다. 분야 거르기 이름도 ‘국어·문학교육·아동문학’, ‘대중문화·영상·드라마’로 넓혔습니다.
+
+v2.0 (2026-10-25)에서는 각주 구분선을 바로잡고(학회 양식의 선 길이·굵기·색), 한글 산출물과 같은 서식의 Word(DOCX) 저장을 넣었습니다.
 
 전체 내역은 [CHANGELOG.md](CHANGELOG.md), v2.0의 조사·검증 기록은 [docs/v2.0_설계.md](docs/v2.0_설계.md)에 있습니다.
 
@@ -88,7 +87,7 @@
 
 **Quick start:** download **[tugotl.html](https://github.com/fansenryu-cmd/tugotl/releases/latest/download/tugotl.html)** (about 30 MB) and open it in Chrome or Edge, or use it online at **https://fansenryu-cmd.github.io/tugotl/**. Pick the journal, drop your manuscript, press **적용 (Apply)**, check the preview, and press **저장 (Save)**. The interface is in Korean; the in-app help has an English section.
 
-**What’s new in v2.0 (2026-10-25):** the footnote separator is fixed and follows each journal’s template, and you can save a Word (DOCX) file with the same layout as the Hangul file. All 190 journals were checked in Hangul 2024 and Word 16. See [CHANGELOG.md](CHANGELOG.md) and [docs/v2.0_설계.md](docs/v2.0_설계.md).
+**What’s new in v2.1 (2026-11-01):** 18 more journals (208 in total) in Korean-language education, classical Chinese education, broadcasting (TV drama) and Buddhist literature. v2.0 (2026-10-25) fixed the footnote separator and added Word (DOCX) export. See [CHANGELOG.md](CHANGELOG.md) and [docs/v2.0_설계.md](docs/v2.0_설계.md).
 
 **More:** [usage guide](docs/사용안내.md#english--using-tugotl) · [journal list](docs/학회목록.md) · [development](docs/개발.md#english--development) · [changelog](CHANGELOG.md).
 
