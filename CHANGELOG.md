@@ -2,7 +2,7 @@
 
 판마다 무엇이 바뀌었는지 적습니다. 배포본은 [Releases](https://github.com/fansenryu-cmd/tugotl/releases)에 있습니다. *English summaries follow the Korean.*
 
-**2026-11-04 (웹 배포본 반영)** — 유아교육·보육 학회 19곳 추가(208곳 → 227곳), 재현 점검으로 찾은 고침.
+**v2.2 (2026-11-04)** — 유아교육·보육 학회 19곳 추가(208곳 → 227곳), 재현 점검으로 찾은 고침.
 - **새 학회**: 유아교육연구, International Journal of Early Childhood Education, 유아교육학논집, 열린유아교육연구, 미래유아교육학회지, 생태유아교육연구, 구성주의유아교육연구, 영유아교육과정연구, 영유아교육·보육연구, 영유아교육: 이론과 실천, 한국유아교육연구, 유아특수교육연구, 육아지원연구, 아동교육, 어린이미디어연구, 유아교육·보육복지연구, 육아정책연구, 한국영유아보육학, 한국보육지원학회지. 분야 거르기 ‘유아교육·보육’ 신설(어린이문학교육연구 포함 20곳).
 - **장·절 단계**: ‘Ⅰ.’ 장 아래 ‘1.’ 절을 쓰는 원고에서 ‘1.’을 장으로 잡던 것을 고침(Ⅰ.→장, 1.→절, 1)→항, (1)→목). ‘그림 2를 통해 …’ 같은 본문 문장을 그림 제목으로 잡지 않음.
 - **표·그림 제목 쪽 나눔**: 표 위 제목(‘N=625’ 같은 짧은 줄 포함)과 그림 아래 제목을 ‘다음 문단과 함께’로 묶어 제목만 쪽 끝에 남지 않게 함.
@@ -66,7 +66,7 @@
 
 ## English
 
-*2026-11-04 (web version):* 19 early childhood education and care journals (227 in total) with a new field filter. Fixes found while testing five OCR'd KCI papers: section levels under Roman-numeral chapters (Ⅰ. → 1. → 1)), table and figure captions kept on the same page as the object, and length limits compared in each journal's own unit (sheets, pages, characters or words).
+*v2.2 (2026-11-04):* 19 early childhood education and care journals (227 in total) with a new field filter. Fixes found while testing five OCR'd KCI papers: section levels under Roman-numeral chapters (Ⅰ. → 1. → 1)), table and figure captions kept on the same page as the object, and length limits compared in each journal's own unit (sheets, pages, characters or words).
 
 *v2.1 (2026-11-01):* 18 more journals (208 in total): 11 in Korean-language education, 2 in classical Chinese (hanmun) education, 4 broadcasting journals that publish TV-drama research, and one on Buddhist literature, each collected from the society’s official rules and cross-checked twice.
 
