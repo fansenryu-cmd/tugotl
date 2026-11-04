@@ -1,6 +1,7 @@
 // 투고틀 UI — 왼쪽: 투고처 선택·메뉴, 오른쪽: 원고 변환(드롭 → 적용 → 미리보기 → 저장) / 투고 양식·규정 / 투고 일정 / 학회 추가
 import { JOURNALS, ROLE_DEFS, SECTION_LABELS, GENERIC_FORMAT, AREAS, AREA_OF } from './journals.js';
 import { FORMS } from './forms.js';
+import { MAIL_SCHEDULE } from './schedule_mail.js';
 import { CITE_STYLES, restyleCitations } from './cite.js';
 import { buildErrata } from './errata.js';
 import { THIRD_PARTY_LICENSES } from './licenses.js';
@@ -147,6 +148,9 @@ const userSchedule = (id) => { const all = lsGet(LS.schedule, {}); const list = 
 function nextDeadlines(j, today = new Date()) {
   const out = []; const t0 = new Date(fmtDate(today));
   for (const u of userSchedule(j.id)) out.push({ ...u, date: new Date(u.deadline), explicit: true, user: true });
+  // 학회 메일에서 확인한 마감(schedule_mail.js, 매주 갱신) — 연장 공지가 내장 공지보다 새것이라 먼저 넣는다
+  const mail = Object.prototype.hasOwnProperty.call(MAIL_SCHEDULE, j.id) && Array.isArray(MAIL_SCHEDULE[j.id]) ? MAIL_SCHEDULE[j.id].filter((u) => u && typeof u === 'object' && isoDate(u.deadline)) : [];
+  for (const u of mail) { if (out.some((o) => Math.abs(o.date - new Date(u.deadline)) < 40 * 86400000)) continue; out.push({ ...u, date: new Date(u.deadline), explicit: true, mail: true }); }
   const upcoming = Array.isArray(j.schedule?.upcoming) ? j.schedule.upcoming.filter((u) => u && typeof u === 'object' && isoDate(u.deadline)) : [];
   for (const u of upcoming) { if (out.some((o) => Math.abs(o.date - new Date(u.deadline)) < 40 * 86400000)) continue; out.push({ ...u, date: new Date(u.deadline), explicit: true }); }
   for (const md of (Array.isArray(j.schedule?.deadlines) ? j.schedule.deadlines.filter(monthDay) : [])) {
