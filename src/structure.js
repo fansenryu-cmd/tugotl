@@ -102,7 +102,7 @@ export function recognize(paragraphs, journal) {
     const dottedToc = state !== 'references' && p.styleName !== 'quote' && !indented(p) && dotted(t) && (state === 'front' || state === 'toc' || lastRole === 'toc' || dottedNear(i) || /(?:[·‧⋅․…⋯.\-─_]\s*){10,}\s*\d{0,4}\s*$/.test(t) || /^(?:[IVXⅠ-Ⅻ\d]{1,3}(?:[.．]\d{1,2})*[.．)]\s|제\s*\d+\s*[장절부]|[가-하][.．)]\s)/.test(t));
     const tocCont = state !== 'references' && t.length <= 140 && next && !dotted(t) && dotted(nt) && (lastRole === 'toc' || lastRole === 'tocHead') && !indented(p) && p.styleName !== 'quote';   // 목차 항목이 두 줄로 나뉜 앞줄(쪽 번호는 뒷줄에)
     if (tocCont) { push('toc', '목차 항목 이어짐(줄바꿈)'); continue; }
-    if (RE.caption.test(t) && short && !dottedToc) { push('caption', '표·그림 제목'); continue; }
+    if (RE.caption.test(t) && short && !dottedToc && !/^\s*(표|그림|사진|도표)\s*\d+\s*(을|를|은|는|이|가|에|과|와|의|에서|으로|로)\s/.test(t)) { push('caption', '표·그림 제목'); continue; }   // ‘그림 2를 통해 …’ 같은 본문 문장은 제목이 아니다
     // 표·그림 바로 밑(사이에 빈 줄·제목·주석 몇 줄)의 ‘자료:’·‘주:’·‘※’ 줄은 표·그림 주석이다
     if (RE.objNote.test(t) && t.length <= 300 && blocks.length - lastObj <= 4 && blocks.slice(lastObj + 1).every((b) => /^(blank|caption|objNote)$/.test(b.role))) { push('objNote', '표·그림 주석'); continue; }
 
@@ -116,7 +116,7 @@ export function recognize(paragraphs, journal) {
       if (!sawTitle) { sawTitle = true; push('title', '첫 문단'); continue; }
       const prev = blocks.filter((b) => b.role !== 'blank').at(-1);
       if (RE.subtitlePrefix.test(t) && short) { push(prev && /En$/.test(prev.role) ? 'subtitleEn' : 'subtitle', '부제 기호로 시작'); continue; }
-      if (RE.latin.test(t) && short && !authorEnLike(t) && prev && /^(title|subtitle)$/.test(prev.role)) { push('titleEn', '영문 제목(제목 바로 뒤 라틴 문자)'); continue; }
+      if (RE.latin.test(t) && (short || (t.length <= 220 && !/[.!?]\s*$/.test(t))) && !authorEnLike(t) && prev && /^(title|subtitle)$/.test(prev.role)) { push('titleEn', '영문 제목(제목 바로 뒤 라틴 문자)'); continue; }   // 영문 제목은 60자를 흔히 넘는다
       if (RE.author.test(t)) { push('author', '이름 형태'); continue; }
       if (/^[가-힣]\s[가-힣]\s[가-힣]\s*[*＊†‡]*(?:\s*[(（][^)）]{1,40}[)）])?\s*$/.test(t)) { push('author', '이름 형태(글자 사이 공백)'); continue; }
       if (authorEnLike(t) && prev && /En$/.test(prev.role)) { push('authorEn', '영문 이름 형태'); continue; }
@@ -218,6 +218,17 @@ export function recognize(paragraphs, journal) {
     run.forEach((b, n) => { const t = trimmed({ text: b.text });
       const role = n === 0 ? 'titleEn2' : RE.subtitlePrefix.test(t) ? 'subtitleEn2' : (authorEnLike(t) || /^[A-Z][A-Za-z\-]+\s+[A-Z][A-Za-z\-]+.{0,4}[(（]/.test(t) || /\b(University|Professor|Institute|College|Researcher|Lecturer)\b/i.test(t)) ? 'authorEn' : 'subtitleEn2';
       b.role = role; b.reason = '영문 제목부(참고문헌 뒤·영문초록 앞)'; });
+  }
+  // 로마 숫자 장(Ⅰ. Ⅱ.) 아래에 ‘1.’ 절을 두는 원고(교육학·사회과학 논문에 흔함): Ⅰ.→장, 1.→절, 1)→항, (1)→목으로 한 단계씩 내린다
+  const isRoman = (b) => RE.h1Roman.test(trimmed({ text: b.text }));
+  const romanH1 = blocks.filter((b) => b.role === 'h1' && isRoman(b)).length;
+  const numH1 = blocks.filter((b) => b.role === 'h1' && !isRoman(b)).length;
+  if (romanH1 >= 2 && numH1 >= 1) {
+    const down = { h2: 'h3', h3: 'h4' };
+    for (const b of blocks) {
+      if (b.role === 'h1' && !isRoman(b)) { b.role = 'h2'; b.reason = '절 번호(로마 숫자 장 아래)'; }
+      else if (down[b.role] && /번호/.test(b.reason || '')) { b.role = down[b.role]; b.reason = (b.role === 'h3' ? '항 번호' : '목 번호') + '(로마 숫자 장 아래 한 단계)'; }
+    }
   }
   return blocks;
 }
@@ -478,15 +489,23 @@ export function applySubstitutions(blocks, journal, opts) {
 
 // 200자 원고지 매수 추정 (20자 × 10행; 공백 포함, 각주 포함)
 export function estimateLength(blocks) {
-  let chars = 0, charsNoSpace = 0, lines = 0, fnChars = 0;
+  let chars = 0, charsNoSpace = 0, lines = 0, fnChars = 0, words = 0;
   for (const b of blocks) {
     if (b.role === 'skip') continue;
     const t = (b.text || '');
-    chars += t.length; charsNoSpace += t.replace(/\s/g, '').length; lines += Math.max(1, Math.ceil(t.length / 20));
+    chars += t.length; charsNoSpace += t.replace(/\s/g, '').length; words += (t.match(/\S+/g) || []).length; lines += Math.max(1, Math.ceil(t.length / 20));
     for (const f of b.footnotes || []) { fnChars += f.text.length; lines += Math.ceil(f.text.length / 20); chars += f.text.length; }
     for (const o of b.objects || []) lines += Math.max(2, Math.round(((o.info && o.info.height) || 0) / 1700));   // 표·그림은 높이만큼 줄을 차지한다(10pt·160% 한 줄 ≈ 1,700 HWPUNIT)
   }
-  return { chars, charsNoSpace, fnChars, sheets: Math.round((lines / 10) * 10) / 10 };
+  return { chars, charsNoSpace, fnChars, words, sheets: Math.round((lines / 10) * 10) / 10 };
+}
+
+// 분량 한도 비교 — 학회 단위대로: 매(200자 원고지 추정)·자(공백 포함 글자)·단어·쪽(적용 후 쪽 수, 적용 전에는 비교하지 않음)
+export function lengthCheck(journal, est, pages) {
+  const L = journal?.length; if (!L?.max) return null;
+  const unit = L.unit === '장' ? '쪽' : (L.unit || '매');
+  const cur = unit === '매' ? est.sheets : unit === '자' ? est.chars : unit === '단어' ? est.words : unit === '쪽' ? (pages ?? null) : null;
+  return { unit, max: L.max, cur, over: cur == null ? null : Math.round((cur - L.max) * 10) / 10 };
 }
 
 // 체크리스트 — 학회 요구와 블록을 대조
@@ -494,16 +513,22 @@ export function checklist(blocks, journal) {
   const has = (r) => blocks.some((b) => b.role === r);
   const items = [];
   items.push({ ok: has('title'), text: '국문 제목' });
-  items.push({ ok: has('abstract') || has('abstractHead'), text: `국문초록 (${journal.abstract?.ko || '필수'})` });
-  items.push({ ok: has('keywords'), text: `주제어 (${journal.abstract?.keywords || '5개 이상'})` });
+  const st = journal.structure || [];   // 체재에 없는 묶음(국문초록 없는 학술지 등)은 묻지 않는다
+  if (!st.length || st.includes('abstractKo')) {
+    items.push({ ok: has('abstract') || has('abstractHead'), text: `국문초록 (${journal.abstract?.ko || '필수'})` });
+    items.push({ ok: has('keywords'), text: `주제어 (${journal.abstract?.keywords || '5개 이상'})` });
+  }
   items.push({ ok: has('h1'), text: '장 제목' });
   items.push({ ok: has('refHead') || has('ref'), text: `참고문헌 (${journal.references?.order || ''})` });
-  items.push({ ok: has('abstractEn') || has('abstractEnHead'), text: `영문초록 (${journal.abstract?.en || ''})` });
-  items.push({ ok: has('keywordsEn'), text: 'Keywords' });
+  if (!st.length || st.includes('abstractEn')) {
+    items.push({ ok: has('abstractEn') || has('abstractEnHead'), text: `영문초록 (${journal.abstract?.en || ''})` });
+    items.push({ ok: has('keywordsEn'), text: 'Keywords' });
+  }
   const author = blocks.find((b) => b.role === 'author' || b.role === 'affiliation');
   if (journal.anonymize && author) items.push({ ok: false, warn: true, text: `익명화 확인: 저자 ‘${(author.text || '').trim().slice(0, 20)}’가 남아 있음 — ${journal.anonymize}` });
   const est = estimateLength(blocks);
-  if (journal.length?.max) items.push({ ok: est.sheets <= journal.length.max, text: `분량 약 ${est.sheets}매 / 한도 ${journal.length.text}` });
+  const lc = lengthCheck(journal, est, null);
+  if (lc && lc.cur != null) items.push({ ok: lc.over <= 0, text: `분량 약 ${lc.cur.toLocaleString()}${lc.unit} / 한도 ${journal.length.text}` });
   return items;
 }
 

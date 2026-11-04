@@ -495,6 +495,19 @@ export async function buildDocument({ journal, templateBytes, blocks, onLog }) {
   if (relabel.count) log(`표지 문구를 바탕틀대로 — ${relabel.notes.slice(0, 4).join(', ')}${relabel.count > 4 ? ` 외 ${relabel.count - 4}곳` : ''}`);
   const bodyParas = [];
   let firstAttrs = null; let firstRuns = null; let prevGroup = null;
+  // 표 위 제목 → 표, 그림 → 그림 아래 제목: ‘다음 문단과 함께’로 묶어 제목만 쪽 끝에 남지 않게 한다(문단 모양 사본은 표·그림 자원을 머리에 넣은 뒤 번호를 매김)
+  const live = blocks.filter((b) => b.role !== 'skip' && b.role !== 'blank');
+  const keepSet = new Set();
+  live.forEach((b, i) => {
+    const n = live[i + 1]; if (!n) return;
+    if (b.role === 'object' && n.role === 'caption') { keepSet.add(b); return; }
+    if (b.role !== 'caption') return;
+    // 제목과 표 사이에 짧은 줄(‘N=625’, ‘(단위: 명)’)이 한두 줄 끼어 있어도 함께 묶는다
+    for (let k = i + 1; k <= i + 3 && k < live.length; k++) {
+      if (live[k].role === 'object') { for (let m = i; m < k; m++) keepSet.add(live[m]); break; }
+      if (live[k].role === 'caption' || (live[k].text || '').trim().length > 30) break;
+    }
+  });
   for (const b of blocks) {
     if (b.role === 'skip') continue;
     const group = b.role === 'blank' || (FLOAT_ROLES.has(b.role) && prevGroup) ? prevGroup : (ROLE_GROUP[b.role] || 'body');   // 표·그림·캡션은 놓인 자리의 묶음(새 쪽을 열지 않음)
@@ -504,7 +517,7 @@ export async function buildDocument({ journal, templateBytes, blocks, onLog }) {
     charCount += text.length;
     const sh = shapes[b.role] || shapes.body || { ps: 0, cs: 0 };
     if (b.flag === 'red' && text) redParas++;
-    const attrs = `paraPrIDRef="${sh.ps}" styleIDRef="${sh.styleId ?? 0}" pageBreak="${b.pageBreakBefore || groupStart || (sh.pageBreakBefore && group === 'body') ? 1 : 0}" columnBreak="0" merged="0"`;
+    const attrs = `paraPrIDRef="${keepSet.has(b) ? `@KEEP${sh.ps}@` : sh.ps}" styleIDRef="${sh.styleId ?? 0}" pageBreak="${b.pageBreakBefore || groupStart || (sh.pageBreakBefore && group === 'body') ? 1 : 0}" columnBreak="0" merged="0"`;
     const runs = runsXml(b, text, sh.cs);
     roleCount[b.role] = (roleCount[b.role] || 0) + 1;
     if (firstAttrs === null) { firstAttrs = attrs; firstRuns = runs; continue; }
@@ -532,6 +545,19 @@ export async function buildDocument({ journal, templateBytes, blocks, onLog }) {
     for (const [k, v] of Object.entries(imp.stats)) objStats[k] += v;
     for (const bf of imp.bins) { zip.file(bf.path, bf.bytes); objStats.bins++; }
     if (imp.bins.length) await patchText('Contents/content.hpf', (x) => imp.applyManifest(x));
+  }
+  if (/@KEEP\d+@/.test(sec) || /@KEEP\d+@/.test(firstAttrs || '')) {
+    const ids = [...header.matchAll(/<hh:paraPr id="(\d+)"/g)].map((m) => +m[1]); let next = Math.max(-1, ...ids) + 1; const map = new Map(); const clones = [];
+    sec = sec.replace(/@KEEP(\d+)@/g, (m, ps) => {
+      if (!map.has(ps)) {
+        const src = new RegExp(`<hh:paraPr id="${ps}"[\\s\\S]*?</hh:paraPr>`).exec(header);
+        if (!src) { map.set(ps, ps); return ps; }
+        const id = String(next++); map.set(ps, id);
+        clones.push(src[0].replace(/^<hh:paraPr id="\d+"/, `<hh:paraPr id="${id}"`).replace(/keepWithNext="0"/, 'keepWithNext="1"'));
+      }
+      return map.get(ps);
+    });
+    if (clones.length) header = header.replace(/<hh:paraProperties itemCnt="(\d+)"/, (m, c) => `<hh:paraProperties itemCnt="${+c + clones.length}"`).replace(/<\/hh:paraProperties>/, () => `${clones.join('')}</hh:paraProperties>`);
   }
   if (added.length) header = header.replace(/<hh:charProperties itemCnt="\d+"/, () => `<hh:charProperties itemCnt="${nextCs}"`).replace(/<\/hh:charProperties>/, () => `${added.join('')}</hh:charProperties>`);
   zip.file('Contents/section0.xml', enc.encode(sec));

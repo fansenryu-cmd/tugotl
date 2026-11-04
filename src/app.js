@@ -7,7 +7,7 @@ import { THIRD_PARTY_LICENSES } from './licenses.js';
 import { initEngine, analyzeTemplate, renderTemplatePage, buildDocument } from './engine.js';
 import { parseManuscript } from './parse.js';
 import { hwpxToDocx } from './hwpx2docx.js';
-import { recognize, reorderSections, buildToc, applyBlanks, applySubstitutions, estimateLength, checklist, roleLabel } from './structure.js';
+import { recognize, reorderSections, buildToc, applyBlanks, applySubstitutions, estimateLength, lengthCheck, checklist, roleLabel } from './structure.js';
 
 const $ = (sel, el = document) => el.querySelector(sel);
 const h = (tag, attrs = {}, ...kids) => { const e = document.createElement(tag); for (const [k, v] of Object.entries(attrs)) { if (k === 'class') e.className = v; else if (k.startsWith('on')) e.addEventListener(k.slice(2), v); else if (v !== null && v !== undefined) e.setAttribute(k, v); } for (const k of kids.flat()) if (k !== null && k !== undefined) e.append(k.nodeType ? k : document.createTextNode(String(k))); return e; };
@@ -302,7 +302,7 @@ function renderStructure(el) {
   const blocks = state.blocks; const j = journal();
   const counts = {}; for (const b of blocks) counts[b.role] = (counts[b.role] || 0) + 1;
   const est = estimateLength(blocks);
-  el.append(h('div', { class: 'counts' }, h('span', {}, '200자 원고지 약 ', h('b', {}, est.sheets), '매', j?.length?.max ? ` / 한도 ${j.length.max}매` : ''), ...Object.entries(counts).filter(([k]) => k !== 'blank' && k !== 'body').map(([k, v]) => h('span', {}, `${roleLabel(k)} `, h('b', {}, v)))));
+  el.append(h('div', { class: 'counts' }, h('span', {}, '200자 원고지 약 ', h('b', {}, est.sheets), '매', j?.length?.max ? ` / 한도 ${j.length.max.toLocaleString()}${j.length.unit === '장' ? '쪽' : (j.length.unit || '매')}` : ''), ...Object.entries(counts).filter(([k]) => k !== 'blank' && k !== 'body').map(([k, v]) => h('span', {}, `${roleLabel(k)} `, h('b', {}, v)))));
   const tbl = h('table', {}, h('thead', {}, h('tr', {}, h('th', { style: 'width:150px' }, '역할'), h('th', {}, '내용'))));
   const tb = h('tbody', {});
   blocks.forEach((b, i) => {
@@ -418,9 +418,11 @@ function docbar() {
   items.push(h('span', {}, '글자 ', h('b', {}, est.chars.toLocaleString()), h('span', { class: 'dim' }, ` (공백 제외 ${est.charsNoSpace.toLocaleString()})`)));
   items.push(h('span', {}, '각주 ', h('b', {}, m.parsed.counts.footnotes || 0), est.fnChars ? h('span', { class: 'dim' }, ` · ${est.fnChars.toLocaleString()}자`) : null));
   items.push(h('span', {}, '200자 원고지 약 ', h('b', {}, est.sheets), '매'));
-  if (j?.length?.max) {
-    const over = Math.round((est.sheets - j.length.max) * 10) / 10;
-    items.push(h('span', { class: over > 0 ? 'over' : 'okay' }, `규정 ${j.length.max}매`, over > 0 ? [' · ', h('b', {}, `${over}매 초과`), h('span', { class: 'dim' }, ` (약 ${Math.round(over * 200).toLocaleString()}자)`)] : [' · ', h('b', {}, `${Math.abs(over)}매 여유`)]));
+  const lc = lengthCheck(j, est, r ? r.pages : null);
+  if (lc && lc.cur == null) items.push(h('span', { class: 'dim', title: j.length.text }, `규정 ${lc.max.toLocaleString()}${lc.unit} (적용 후 쪽 수와 비교)`));
+  else if (lc) {
+    const n = (v) => v.toLocaleString();
+    items.push(h('span', { class: lc.over > 0 ? 'over' : 'okay' }, `규정 ${n(lc.max)}${lc.unit}`, lc.over > 0 ? [' · ', h('b', {}, `${n(lc.over)}${lc.unit} 초과`), lc.unit === '매' ? h('span', { class: 'dim' }, ` (약 ${Math.round(lc.over * 200).toLocaleString()}자)`) : null] : [' · ', h('b', {}, `${n(Math.abs(lc.over))}${lc.unit} 여유`)]));
   } else if (j?.length?.text) items.push(h('span', { class: 'dim', title: j.length.text }, `규정 분량: ${j.length.text.slice(0, 28)}${j.length.text.length > 28 ? '…' : ''}`));
   if (r) items.push(h('span', {}, '적용 후 ', h('b', {}, r.pages), '쪽'));
   if (m.parsed.counts.tables || m.parsed.counts.pictures) items.push(h('span', { class: 'dim' }, [m.parsed.counts.tables ? `표 ${m.parsed.counts.tables}` : null, m.parsed.counts.pictures ? `그림 ${m.parsed.counts.pictures}` : null].filter(Boolean).join(' · ') + (m.parsed.counts.objectsLost ? ` (옮기지 못함 ${m.parsed.counts.objectsLost})` : ' (옮김)')));
@@ -696,7 +698,7 @@ function renderHelp(main) {
       '학회 규정 그대로: 글꼴·크기·여백·줄간격·체재 순서·쪽수 단위는 각 학회의 양식 파일과 규정 수치를 그대로 씁니다. 프로그램이 임의로 고르지 않습니다.',
       '구성: 왼쪽에서 투고처를 고르고, 오른쪽에 원고를 놓고, 적용해 미리보고, 저장합니다. 투고처별 규정·서류·일정은 같은 화면에서 봅니다.')));
   main.append(sec('기본 흐름',
-    ol([h('b', {}, '투고처 선택'), ' — 왼쪽 위에서 학회지를 고릅니다. 목록은 등재지·등재후보지 순, 학술지 이름 가나다순입니다. 바로 위 분야 칸(국어국문학 종합·현대문학·고전문학·구비민속·국어·문학교육·비교문학·문화연구·대중문화·드라마·문화콘텐츠)으로 목록을 좁힐 수 있습니다. 고른 학회의 양식과 규정에 맞춰 서식을 입힙니다.'],
+    ol([h('b', {}, '투고처 선택'), ' — 왼쪽 위에서 학회지를 고릅니다. 목록은 등재지·등재후보지 순, 학술지 이름 가나다순입니다. 바로 위 분야 칸(국어국문학 종합·현대문학·고전문학·구비민속·국어·문학교육·비교문학·문화연구·대중문화·드라마·문화콘텐츠·유아교육·보육)으로 목록을 좁힐 수 있습니다. 고른 학회의 양식과 규정에 맞춰 서식을 입힙니다.'],
       [h('b', {}, '원고 놓기'), ' — HWP·HWPX·DOCX·TXT·MD 원고를 화면에 끌어다 놓거나 ‘파일 선택’을 누릅니다. 놓는 즉시 열리고, 왼쪽에 문단별 역할(제목·초록·장 제목·본문·인용·참고문헌·영문초록)이 인식되어 나옵니다. TXT·MD 원고는 각주를 [^1] … [^1]: 내용 꼴로, 강조를 *기울임*·**굵게**(낱말 경계에서만, 저자 이름 뒤 * 표시는 글자로 남음)로, 장 제목을 # 로, 인용을 > 로 읽습니다. 각주 정의 아래 네 칸 들여 쓴 줄은 같은 각주의 다음 문단입니다.'],
       [h('b', {}, '역할 확인'), ' — 잘못 잡힌 역할은 목록에서 직접 바꿉니다. 역할은 서식을 정하는 기준이므로 제목·참고문헌·영문초록이 맞게 잡혔는지 먼저 보세요.'],
       [h('b', {}, '적용'), ' — 학회 양식이 입혀진 쪽을 오른쪽 ‘미리보기’에서 보고, ‘변경 사항’에서 무엇이 바뀌었는지(체재 재배열, 쪽수·서지 표기, 빈 줄) 확인합니다. 저장 전에 설정이나 역할을 고쳤다면 ‘다시 적용’을 누릅니다. 각주가 많은 쪽은 미리보기에서 본문과 각주가 겹쳐 보일 수 있습니다(쪽 아래에 노란 표시). 미리보기 엔진의 한계일 뿐이며, 저장한 HWP는 한글이 열 때 다시 배치하므로 겹치지 않습니다.'],
@@ -749,7 +751,7 @@ function renderHelp(main) {
   // 해외 연구자용 영어 안내(화면은 한글이지만 단추 네 개로 끝난다)
   main.append(h('section', { class: 'card', lang: 'en', style: 'margin-bottom:14px' }, h('h2', { style: 'font-size:16px;margin-bottom:10px' }, 'In English — for researchers submitting to Korean journals'),
     h('p', { style: 'margin:0 0 8px' }, 'tugotl reformats your manuscript to the house style of a Korean (KCI-listed) journal and saves it as HWP, the format most Korean journals require. It uses rules only (no AI) and runs entirely in this browser; nothing is uploaded.'),
-    ol(h('span', {}, h('b', {}, '투고처 선택'), ' (Journal) — choose the journal in the sidebar or, on a phone, from the ☰ menu. The field box above it narrows the list by area (Korean literature, modern, classical, folklore, Korean-language and literature education, comparative, culture studies, popular culture and TV drama, cultural content).'),
+    ol(h('span', {}, h('b', {}, '투고처 선택'), ' (Journal) — choose the journal in the sidebar or, on a phone, from the ☰ menu. The field box above it narrows the list by area (Korean literature, modern, classical, folklore, Korean-language and literature education, comparative, culture studies, popular culture and TV drama, cultural content, early childhood education and care).'),
       h('span', {}, h('b', {}, '파일 선택'), ' (Choose file) — drop or pick the manuscript: HWP, HWPX, DOCX, TXT or MD. Check the role recognised for each paragraph (제목 title, 국문초록 abstract, 본문 body, 참고문헌 references …) and correct it if needed.'),
       h('span', {}, h('b', {}, '적용'), ' (Apply) — builds the journal-styled document; review 미리보기 (preview), 정오표 (errata), 변경 사항 (changes) and 투고 전 확인 (checklist).'),
       h('span', {}, h('b', {}, '저장'), ' (Save) — saves the HWP (▾ for HWPX or Word/DOCX). The Word file keeps the same page set-up, fonts, spacing, footnotes, tables and pictures; page breaks may differ by a page or two. Open the file once before submitting.')),

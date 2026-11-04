@@ -11,7 +11,7 @@
 
 **AI의 개입 없이, 오로지 프로그램 규칙만으로, 내 PC 안에서 작동하며, 논문 정보를 어디에도 저장·전송하지 않는 논문 서지·양식 변환기입니다.**
 
-원고(HWP·HWPX·DOCX·TXT·MD)를 올리고 학회지를 고르면 그 학회의 양식과 규정에 맞춘 한글 파일을 만듭니다. HWPX나 Word(DOCX)로도 저장할 수 있습니다. 글꼴·크기·줄 간격·여백·용지·각주 서식은 학회 양식을 그대로 따르고, 원고의 문장은 바꾸지 않습니다. 내장 학회는 208곳입니다(KCI 등재지 196곳, 등재후보지 12곳).
+원고(HWP·HWPX·DOCX·TXT·MD)를 올리고 학회지를 고르면 그 학회의 양식과 규정에 맞춘 한글 파일을 만듭니다. HWPX나 Word(DOCX)로도 저장할 수 있습니다. 글꼴·크기·줄 간격·여백·용지·각주 서식은 학회 양식을 그대로 따르고, 원고의 문장은 바꾸지 않습니다. 내장 학회는 227곳입니다(KCI 등재지 215곳, 등재후보지 12곳).
 
 ### 바로 쓰기
 
@@ -38,6 +38,7 @@
 
 ### 최근 변경 — v2.1 (2026-11-01)
 
+- **유아교육·보육 학회 19곳 추가(2026-11-04, 웹 배포본):** KCI 등재 유아교육·보육 학술지를 넣어 227곳이 됐고, 분야 거르기에 ‘유아교육·보육’을 새로 만들었습니다. 실제 KCI 논문 5편을 OCR로 옮긴 원고로 본문·표·그림·각주가 그대로 옮겨지는지 확인했습니다([기록](docs/audit/journal_expansion_2026-11-04.md)).
 - **학회 18곳 추가:** 국어교육·한문교육·방송(드라마)·불교문예 학술지를 넣어 208곳이 됐습니다. 분야 거르기 이름도 ‘국어·문학교육·아동문학’, ‘대중문화·영상·드라마’로 넓혔습니다.
 
 v2.0 (2026-10-25)에서는 각주 구분선을 바로잡고(학회 양식의 선 길이·굵기·색), 한글 산출물과 같은 서식의 Word(DOCX) 저장을 넣었습니다.
@@ -49,7 +50,7 @@ v2.0 (2026-10-25)에서는 각주 구분선을 바로잡고(학회 양식의 선
 | 문서 | 내용 |
 |---|---|
 | [docs/사용안내.md](docs/사용안내.md) | 화면 흐름, 설정, 정오표, 휴대폰, 표·그림, 개인정보 |
-| [docs/학회목록.md](docs/학회목록.md) | 내장 학회 208곳 전체 목록 |
+| [docs/학회목록.md](docs/학회목록.md) | 내장 학회 227곳 전체 목록 |
 | [docs/개발.md](docs/개발.md) | 변환 원리, 빌드·검증 도구, 코드 구조, 학회 추가 방법 |
 | [docs/글꼴안내.md](docs/글꼴안내.md) | 학회별 필요 글꼴 |
 | [CHANGELOG.md](CHANGELOG.md) | 판별 변경 내역 |
@@ -83,9 +84,11 @@ v2.0 (2026-10-25)에서는 각주 구분선을 바로잡고(학회 양식의 선
 - **Input:** HWP, HWPX, DOCX, TXT or MD. **Output:** HWP, HWPX or Word (DOCX), laid out in the journal’s own template or published specifications.
 - **Rules only, no AI.** The text of your paper is never rewritten. Only citation details in footnotes and references (page units, page-range marks, title brackets) are normalised to the journal’s rules, and each can be switched off.
 - **Private by design.** Everything runs in your browser from a single offline HTML file. Nothing is uploaded.
-- **208 built-in journals** (196 KCI-accredited, 12 candidate) with submission links, deadlines, fees, length limits and required forms.
+- **227 built-in journals** (215 KCI-accredited, 12 candidate) with submission links, deadlines, fees, length limits and required forms.
 
 **Quick start:** download **[tugotl.html](https://github.com/fansenryu-cmd/tugotl/releases/latest/download/tugotl.html)** (about 30 MB) and open it in Chrome or Edge, or use it online at **https://fansenryu-cmd.github.io/tugotl/**. Pick the journal, drop your manuscript, press **적용 (Apply)**, check the preview, and press **저장 (Save)**. The interface is in Korean; the in-app help has an English section.
+
+**New on the web version (2026-11-04):** 19 early childhood education and care journals (227 in total) and a new field filter for them. Five real KCI papers were OCR'd into test manuscripts to check that text, tables, figures and footnotes carry over unchanged.
 
 **What’s new in v2.1 (2026-11-01):** 18 more journals (208 in total) in Korean-language education, classical Chinese education, broadcasting (TV drama) and Buddhist literature. v2.0 (2026-10-25) fixed the footnote separator and added Word (DOCX) export. See [CHANGELOG.md](CHANGELOG.md) and [docs/v2.0_설계.md](docs/v2.0_설계.md).
 
