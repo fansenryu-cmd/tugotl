@@ -1,0 +1,49 @@
+name: 학회지를 추가해 주세요 · Add a journal
+description: 목록에 없는 학회지, 또는 규정·양식이 바뀐 학회지 · A journal that is missing or whose rules changed
+title: "[학회 추가] 학회지 이름: "
+labels: ["학회 추가"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        공개 게시판입니다. 학회가 공개한 규정·양식만 알려 주세요(원고는 올리지 마세요). 양식 파일은 학회 홈페이지나 JAMS 주소를 적어 주시면 됩니다.
+        This board is public. Share only rules and templates the journal itself has published.
+  - type: input
+    id: journal
+    attributes:
+      label: 학회지 이름 · Journal
+      placeholder: 예) ○○문학연구 (○○학회)
+    validations:
+      required: true
+  - type: dropdown
+    id: kind
+    attributes:
+      label: 요청 종류 · Request
+      options:
+        - 새로 추가 · New journal
+        - 규정·양식이 바뀜 · Rules or template changed
+    validations:
+      required: true
+  - type: dropdown
+    id: kci
+    attributes:
+      label: KCI 등재 여부 · KCI status
+      options:
+        - 등재지 · Accredited
+        - 등재후보지 · Candidate
+        - 모름 · Not sure
+  - type: textarea
+    id: links
+    attributes:
+      label: 규정·양식이 있는 곳 · Links to rules and template
+      placeholder: |
+        학회 홈페이지 투고 안내 주소
+        JAMS 투고 규정 주소
+        양식(HWP) 내려받는 곳
+    validations:
+      required: true
+  - type: textarea
+    id: note
+    attributes:
+      label: 더 알려 주실 것 · Anything else
+      placeholder: 예) 2027년 1월부터 각주 표기가 바뀝니다.

@@ -71,9 +71,15 @@ v2.1 (2026-11-01)에서는 국어교육·한문교육·방송(드라마)·불교
 
 **감사의 말.** 브라우저 안에서 HWP를 다루게 해 준 Edward Kim의 rhwp, 규정과 양식을 공개한 각 학회 편집위원회, 착상을 준 drjunoh 님(ece.drjunoh.chatgpt.site)께 감사드립니다. 검증과 참고에는 [이음 오피스](https://github.com/pblsketch/openoffice)(pblsketch, Apache-2.0, Mainfunc의 GenOffice 기반)와 [kordoc](https://github.com/chrisryugj/kordoc)(chrisryugj, MIT)을 썼고, 둘 다 배포본에는 들어 있지 않습니다. 코드와 문서는 AI 코딩 도구(Claude, Anthropic)의 도움을 받아 썼으며, 설계·검증·최종 확인은 저자가 했습니다. 변환기 자체는 AI를 쓰지 않습니다.
 
-### 문의
+### 의견·문의
 
-이융희 · jojanggun@naver.com — 잘못 인식되는 원고, 규정 변경, 추가할 학회를 알려 주세요. 원고 파일을 함께 보내 주시면 인식 규칙을 고치는 데 큰 도움이 됩니다.
+써 보신 의견이 다음 판을 만듭니다. 아래 양식 중 맞는 것을 골라 남겨 주세요.
+
+- **[양식이 틀렸어요](https://github.com/fansenryu-cmd/tugotl/issues/new?template=1-format-error.yml)** — 변환 결과가 학회 규정과 다를 때
+- **[학회지를 추가해 주세요](https://github.com/fansenryu-cmd/tugotl/issues/new?template=2-add-journal.yml)** — 목록에 없거나 규정·양식이 바뀐 학회지
+- **[사용 후기·제안](https://github.com/fansenryu-cmd/tugotl/issues/new?template=3-feedback.yml)** — 좋았던 점, 불편한 점, 바라는 기능
+
+**의견 게시판(Issues)은 누구나 볼 수 있습니다. 원고 파일이나 원고 문장은 올리지 마세요.** 원고가 있어야 설명되는 문제는 이융희 · jojanggun@naver.com 으로 따로 보내 주세요. 메일로 받은 원고는 인식 규칙을 고치는 데만 쓰고 공개하지 않습니다.
 
 ---
 
@@ -94,4 +100,4 @@ v2.1 (2026-11-01)에서는 국어교육·한문교육·방송(드라마)·불교
 
 **License and credits.** The source code is MIT-licensed (© 2026 Yunghee Lee / 이융희). Bundled: rhwp, JSZip and pako (MIT) and cfb by SheetJS (Apache-2.0); see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Journal templates, forms and regulations belong to the societies and will be removed on request. Thanks to Edward Kim for rhwp, to the societies for publishing their rules, and to drjunoh for the original idea. IeumOffice (pblsketch, Apache-2.0) and kordoc (chrisryugj, MIT) were used for checking and reference and are not bundled. The code was written with the help of an AI coding tool (Claude, Anthropic); the converter itself uses no AI. **No warranty:** always check the journal’s current notice and the saved file before submitting.
 
-**Contact:** Yunghee Lee (이융희) · jojanggun@naver.com. Issues and pull requests are welcome in Korean or English.
+**Feedback:** report [wrong formatting](https://github.com/fansenryu-cmd/tugotl/issues/new?template=1-format-error.yml), [request a journal](https://github.com/fansenryu-cmd/tugotl/issues/new?template=2-add-journal.yml), or [share your experience](https://github.com/fansenryu-cmd/tugotl/issues/new?template=3-feedback.yml), in Korean or English. **Issues are public: never attach your manuscript or paste its text.** If a problem can only be shown with the manuscript, e-mail Yunghee Lee (이융희) at jojanggun@naver.com; it will be used only to fix the rules and will not be published. Pull requests are welcome.

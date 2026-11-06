@@ -1,0 +1,33 @@
+name: 사용 후기·제안 · Feedback
+description: 써 보신 소감, 불편한 점, 있었으면 하는 기능 · Your experience and ideas
+title: "[후기] "
+labels: ["후기"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        써 주셔서 고맙습니다. 후기는 다음 판을 만드는 데 가장 큰 도움이 됩니다. 공개 게시판이니 원고 내용은 적지 말아 주세요.
+        Thank you for trying tugotl. This board is public, so please leave out anything from your manuscript.
+  - type: dropdown
+    id: who
+    attributes:
+      label: 쓰신 분 · You are
+      options:
+        - 투고자(연구자·대학원생) · Author
+        - 학회 편집간사·편집위원 · Journal editor or staff
+        - 기타 · Other
+  - type: input
+    id: journal
+    attributes:
+      label: 써 본 학회지 · Journal(s) used
+      placeholder: 예) 대중서사연구, 한국문예창작
+  - type: textarea
+    id: good
+    attributes:
+      label: 좋았던 점 · What worked
+  - type: textarea
+    id: bad
+    attributes:
+      label: 불편했던 점·바라는 기능 · What to improve
+    validations:
+      required: true

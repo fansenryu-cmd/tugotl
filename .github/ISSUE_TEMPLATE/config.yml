@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: 원고로 확인이 필요할 때 (비공개 메일) · Private e-mail
+    url: mailto:jojanggun@naver.com?subject=%5B%ED%88%AC%EA%B3%A0%ED%8B%80%5D%20%EB%AC%B8%EC%9D%98
+    about: 원고 파일이 있어야 설명되는 문제는 공개 게시판 대신 메일로 보내 주세요. 공개되지 않습니다. · Send manuscripts by e-mail, never to the public board.
+  - name: 웹에서 바로 쓰기 · Use it online
+    url: https://fansenryu-cmd.github.io/tugotl/
+    about: 설치 없이 브라우저에서 엽니다. · Opens in your browser, no install.

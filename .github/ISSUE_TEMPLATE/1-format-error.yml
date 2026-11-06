@@ -1,0 +1,47 @@
+name: 양식이 틀렸어요 · Wrong formatting
+description: 변환된 파일의 글꼴·여백·각주·참고문헌 등이 학회 규정과 다를 때 · The output does not match the journal's rules
+title: "[양식 오류] 학회 이름: "
+labels: ["양식 오류"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **⚠ 이 게시판은 누구나 볼 수 있는 공개 게시판입니다. 원고 파일이나 원고 본문을 올리지 마세요.**
+        필요하면 문제가 되는 부분을 가짜 문장으로 바꿔 한두 줄만 적어 주세요. 원고로 직접 확인이 필요하면 jojanggun@naver.com 으로 따로 보내 주세요(공개되지 않습니다).
+        **⚠ This board is public. Do not attach your manuscript or paste its text.** Use a made-up sentence if you need an example, or e-mail jojanggun@naver.com privately.
+  - type: input
+    id: journal
+    attributes:
+      label: 학회지 이름 · Journal
+      placeholder: 예) 한국현대문학연구
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: 무엇이 틀렸나요 · What is wrong
+      description: 어디가(본문·각주·참고문헌·초록·표 등) 어떻게 달라야 하는지 적어 주세요.
+      placeholder: |
+        예) 각주의 쪽수 범위가 "12-15쪽"으로 나오는데 학회 규정은 "12~15쪽"입니다.
+        규정 근거: 2026년 투고 규정 제7조 / 학회 홈페이지 공지(주소)
+    validations:
+      required: true
+  - type: input
+    id: source
+    attributes:
+      label: 규정이 적힌 곳 · Where the rule is written
+      placeholder: 학회 공지 주소, 투고 규정 문서 이름과 조항 등
+  - type: dropdown
+    id: format
+    attributes:
+      label: 저장 형식 · Saved as
+      options:
+        - HWP
+        - HWPX
+        - Word (DOCX)
+  - type: input
+    id: version
+    attributes:
+      label: 투고틀 판 · Version
+      description: 화면 아래에 적힌 판 번호(예 v2.2)와 웹·내려받은 파일 중 어느 쪽인지
+      placeholder: 예) v2.2, 웹
