@@ -25,4 +25,5 @@ export const FORMS = {
   ],
   kcomplit: [{ label: '연구윤리 서약서', file: '한국비교문학회_연구윤리서약서.hwp' }],
   iacks: [{ label: '논문 투고 신청서(연구윤리서약·저작권 이양 동의 포함)', file: '국제비교한국학회_논문투고신청서(규정포함).hwp' }],
+  cs4k: [{ label: '저작권 이양 동의서', file: '한국중국학회_저작권이양동의서.hwp' }],
 };

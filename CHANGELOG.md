@@ -2,6 +2,10 @@
 
 판마다 무엇이 바뀌었는지 적습니다. 배포본은 [Releases](https://github.com/fansenryu-cmd/tugotl/releases)에 있습니다. *English summaries follow the Korean.*
 
+**v2.3 (2026-11-08)** — 중국학보 추가(이슈 #1 요청, 227곳 → 228곳).
+- **새 학회**: 『中國學報』(중국학보, 한국중국학회, KCI 등재) — 사용자 요청([이슈 #1](https://github.com/fansenryu-cmd/tugotl/issues/1))으로 넣은 국어국문 밖(중국 어문사철) 첫 학회. JAMS 제118집 공지 첨부 ‘투고 및 작성 규정(106집부터)’·‘투고논문 작성 샘플’을 따름. 샘플 HWP를 견본화해 바탕틀로 쓰고(목차 ‘目 次’, 참고문헌 ‘參考文獻’, 국문초록·Abstract는 논문 끝), 각주 쪽수는 p./pp. 붙여 쓰기와 ～(pp.11～22). 저작권 이양 동의서 내장. 분야 거르기는 ‘비교·세계문학’.
+- 작성규정 표와 샘플 양식이 다른 곳(글꼴, 인용문 크기·여백, 본문 들여쓰기, 범위 기호)은 샘플 양식을 따르고 학회 정보의 참고(notes)에 둘 다 적음.
+
 **v2.2 (2026-11-04)** — 유아교육·보육 학회 19곳 추가(208곳 → 227곳), 재현 점검으로 찾은 고침.
 - **새 학회**: 유아교육연구, International Journal of Early Childhood Education, 유아교육학논집, 열린유아교육연구, 미래유아교육학회지, 생태유아교육연구, 구성주의유아교육연구, 영유아교육과정연구, 영유아교육·보육연구, 영유아교육: 이론과 실천, 한국유아교육연구, 유아특수교육연구, 육아지원연구, 아동교육, 어린이미디어연구, 유아교육·보육복지연구, 육아정책연구, 한국영유아보육학, 한국보육지원학회지. 분야 거르기 ‘유아교육·보육’ 신설(어린이문학교육연구 포함 20곳).
 - **장·절 단계**: ‘Ⅰ.’ 장 아래 ‘1.’ 절을 쓰는 원고에서 ‘1.’을 장으로 잡던 것을 고침(Ⅰ.→장, 1.→절, 1)→항, (1)→목). ‘그림 2를 통해 …’ 같은 본문 문장을 그림 제목으로 잡지 않음.
@@ -65,6 +69,8 @@
 ---
 
 ## English
+
+*v2.3 (2026-11-08):* *The Journal of Chinese Studies* (中國學報, Korean Society of Chinese Studies), requested in issue #1 — the first journal outside Korean language and literature (228 in total). Its sample manuscript is the template; footnotes use p./pp. with the ～ range mark, and the copyright transfer form is bundled. Where the society’s rule table and its sample file disagree (fonts, block-quote size and margins, body indent, range mark), the sample file is followed and both are recorded in the journal notes.
 
 *v2.2 (2026-11-04):* 19 early childhood education and care journals (227 in total) with a new field filter. Fixes found while testing five OCR'd KCI papers: section levels under Roman-numeral chapters (Ⅰ. → 1. → 1)), table and figure captions kept on the same page as the object, and length limits compared in each journal's own unit (sheets, pages, characters or words).
 

@@ -1,4 +1,4 @@
-# 투고틀 (tugotl) v2.2
+# 투고틀 (tugotl) v2.3
 
 **KCI 학술지 투고용 논문 양식 변환기** · [English below](#english)
 
@@ -11,7 +11,7 @@
 
 **AI의 개입 없이, 오로지 프로그램 규칙만으로, 내 PC 안에서 작동하며, 논문 정보를 어디에도 저장·전송하지 않는 논문 서지·양식 변환기입니다.**
 
-원고(HWP·HWPX·DOCX·TXT·MD)를 올리고 학회지를 고르면 그 학회의 양식과 규정에 맞춘 한글 파일을 만듭니다. HWPX나 Word(DOCX)로도 저장할 수 있습니다. 글꼴·크기·줄 간격·여백·용지·각주 서식은 학회 양식을 그대로 따르고, 원고의 문장은 바꾸지 않습니다. 내장 학회는 227곳입니다(KCI 등재지 215곳, 등재후보지 12곳).
+원고(HWP·HWPX·DOCX·TXT·MD)를 올리고 학회지를 고르면 그 학회의 양식과 규정에 맞춘 한글 파일을 만듭니다. HWPX나 Word(DOCX)로도 저장할 수 있습니다. 글꼴·크기·줄 간격·여백·용지·각주 서식은 학회 양식을 그대로 따르고, 원고의 문장은 바꾸지 않습니다. 내장 학회는 228곳입니다(KCI 등재지 216곳, 등재후보지 12곳).
 
 ### 바로 쓰기
 
@@ -36,12 +36,11 @@
 
 원고는 브라우저 메모리에서만 처리되고, 서버·외부 전송·AI 호출이 없습니다. 사용량은 배포본 내려받기 수와 소개 페이지 방문 수만 셉니다.
 
-### 최근 변경 — v2.2 (2026-11-04)
+### 최근 변경 — v2.3 (2026-11-08)
 
-- **유아교육·보육 학회 19곳 추가:** KCI 등재 유아교육·보육 학술지를 넣어 227곳이 됐고, 분야 거르기에 ‘유아교육·보육’을 새로 만들었습니다. 실제 KCI 논문 5편을 OCR로 옮긴 원고로 본문·표·그림·각주가 그대로 옮겨지는지 확인했습니다([기록](docs/audit/journal_expansion_2026-11-04.md)).
-- **인식·서식 고침:** ‘Ⅰ. 장 → 1. 절’ 원고의 제목 단계, 표·그림 제목만 쪽 끝에 남던 문제, ‘쪽’ 단위 분량 한도를 원고지 매수로 세던 오류를 고쳤습니다.
+- **『中國學報』(중국학보, 한국중국학회) 추가:** 사용자 요청([이슈 #1](https://github.com/fansenryu-cmd/tugotl/issues/1))으로 국어국문 밖 첫 학회인 중국학(어문사철) 학술지를 넣어 228곳이 됐습니다. 학회가 공지한 투고논문 작성 샘플을 바탕틀로 쓰고, 각주 쪽수는 규정대로 p./pp.와 ～(pp.11～22)로 맞추며, 저작권 이양 동의서를 내장했습니다. 분야 거르기에서는 ‘비교·세계문학’에 있습니다.
 
-v2.1 (2026-11-01)에서는 국어교육·한문교육·방송(드라마)·불교문예 학회 18곳을 넣었고, v2.0 (2026-10-25)에서는 각주 구분선을 바로잡고(학회 양식의 선 길이·굵기·색) 한글 산출물과 같은 서식의 Word(DOCX) 저장을 넣었습니다.
+v2.2 (2026-11-04)에서는 유아교육·보육 학회 19곳을 넣고(분야 거르기 ‘유아교육·보육’ 신설) 장·절 제목 단계와 표·그림 제목 쪽 나눔을 고쳤으며, v2.1 (2026-11-01)에서는 국어교육·한문교육·방송(드라마)·불교문예 학회 18곳을 넣었고, v2.0 (2026-10-25)에서는 각주 구분선을 바로잡고(학회 양식의 선 길이·굵기·색) 한글 산출물과 같은 서식의 Word(DOCX) 저장을 넣었습니다.
 
 전체 내역은 [CHANGELOG.md](CHANGELOG.md), v2.0의 조사·검증 기록은 [docs/v2.0_설계.md](docs/v2.0_설계.md)에 있습니다.
 
@@ -50,7 +49,7 @@ v2.1 (2026-11-01)에서는 국어교육·한문교육·방송(드라마)·불교
 | 문서 | 내용 |
 |---|---|
 | [docs/사용안내.md](docs/사용안내.md) | 화면 흐름, 설정, 정오표, 휴대폰, 표·그림, 개인정보 |
-| [docs/학회목록.md](docs/학회목록.md) | 내장 학회 227곳 전체 목록 |
+| [docs/학회목록.md](docs/학회목록.md) | 내장 학회 228곳 전체 목록 |
 | [docs/개발.md](docs/개발.md) | 변환 원리, 빌드·검증 도구, 코드 구조, 학회 추가 방법 |
 | [docs/글꼴안내.md](docs/글꼴안내.md) | 학회별 필요 글꼴 |
 | [CHANGELOG.md](CHANGELOG.md) | 판별 변경 내역 |
@@ -90,11 +89,11 @@ v2.1 (2026-11-01)에서는 국어교육·한문교육·방송(드라마)·불교
 - **Input:** HWP, HWPX, DOCX, TXT or MD. **Output:** HWP, HWPX or Word (DOCX), laid out in the journal’s own template or published specifications.
 - **Rules only, no AI.** The text of your paper is never rewritten. Only citation details in footnotes and references (page units, page-range marks, title brackets) are normalised to the journal’s rules, and each can be switched off.
 - **Private by design.** Everything runs in your browser from a single offline HTML file. Nothing is uploaded.
-- **227 built-in journals** (215 KCI-accredited, 12 candidate) with submission links, deadlines, fees, length limits and required forms.
+- **228 built-in journals** (216 KCI-accredited, 12 candidate) with submission links, deadlines, fees, length limits and required forms.
 
 **Quick start:** download **[tugotl.html](https://github.com/fansenryu-cmd/tugotl/releases/latest/download/tugotl.html)** (about 30 MB) and open it in Chrome or Edge, or use it online at **https://fansenryu-cmd.github.io/tugotl/**. Pick the journal, drop your manuscript, press **적용 (Apply)**, check the preview, and press **저장 (Save)**. The interface is in Korean; the in-app help has an English section.
 
-**What’s new in v2.2 (2026-11-04):** 19 early childhood education and care journals (227 in total) and a new field filter for them. Five real KCI papers were OCR'd into test manuscripts to check that text, tables, figures and footnotes carry over unchanged. Also fixed: section levels under Roman-numeral chapters, captions left alone at the bottom of a page, and page-based length limits counted as manuscript sheets. v2.1 (2026-11-01) added 18 journals in Korean-language education, classical Chinese education, broadcasting (TV drama) and Buddhist literature; v2.0 (2026-10-25) fixed the footnote separator and added Word (DOCX) export. See [CHANGELOG.md](CHANGELOG.md) and [docs/v2.0_설계.md](docs/v2.0_설계.md).
+**What’s new in v2.3 (2026-11-08):** *The Journal of Chinese Studies* (中國學報, Korean Society of Chinese Studies), the first journal outside Korean language and literature, added at a user’s request ([issue #1](https://github.com/fansenryu-cmd/tugotl/issues/1)) — 228 journals in total. It uses the society’s sample manuscript as its template, p./pp. page references with the ～ range mark (pp.11～22), and the bundled copyright transfer form; it appears under the comparative and world literature filter. v2.2 (2026-11-04) added 19 early childhood education and care journals and fixed section levels under Roman-numeral chapters, captions left alone at the bottom of a page, and page-based length limits. v2.1 (2026-11-01) added 18 journals in Korean-language education, classical Chinese education, broadcasting (TV drama) and Buddhist literature; v2.0 (2026-10-25) fixed the footnote separator and added Word (DOCX) export. See [CHANGELOG.md](CHANGELOG.md) and [docs/v2.0_설계.md](docs/v2.0_설계.md).
 
 **More:** [usage guide](docs/사용안내.md#english--using-tugotl) · [journal list](docs/학회목록.md) · [development](docs/개발.md#english--development) · [changelog](CHANGELOG.md).
 
