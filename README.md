@@ -1,4 +1,4 @@
-# 투고틀 (tugotl) v2.4
+# 투고틀 (tugotl) v2.4.1
 
 **KCI 학술지 투고용 논문 양식 변환기** · [English below](#english)
 
@@ -36,8 +36,9 @@
 
 원고는 브라우저 메모리에서만 처리되고, 서버·외부 전송·AI 호출이 없습니다. 사용량은 배포본 내려받기 수와 소개 페이지 방문 수만 셉니다.
 
-### 최근 변경 — v2.4 (2026-11-09)
+### 최근 변경 — v2.4.1 (2026-11-09)
 
+- **v2.4.1 — 『영어학』(한국영어학회) 집중 점검:** 규정대로 한글·한자는 한컴바탕, 영문은 Times New Roman으로 넣고(한글 글꼴을 따로 정하는 규정 서식), 게재 논문 11편으로 표·그림·각주를 대조했습니다
 - **영어학·영어영문학 30곳 추가:** 영어학 전문지(영어학·영어학연구·현대문법연구·생성문법연구 등), 영어학과 영문학을 함께 싣는 영어영문학 종합지, 영어 논문이 중심인 언어학지 등 KCI 등재 30곳을 넣어 258곳이 됐습니다. 분야 거르기에 ‘영어학·영어영문학’을 새로 만들었습니다
 - **언어학 원고 인식:** 예문 번호(‘(1) a. …’, ‘(3) A: …’)를 항 제목으로 잡지 않고, ‘Abstract’ 제목 없이 Keywords 줄 앞에 온 영문 초록을 영문초록으로 잡습니다
 - **재현 점검:** KCI 원문 논문 5편(영어학연구·응용언어학·생성문법연구·영어영문학·언어과학)을 새 30곳 양식으로 변환해 본문·각주·표·그림을 대조했습니다
@@ -95,7 +96,7 @@ v2.3 (2026-11-08)에서는 사용자 요청([이슈 #1](https://github.com/fanse
 
 **Quick start:** download **[tugotl.html](https://github.com/fansenryu-cmd/tugotl/releases/latest/download/tugotl.html)** (about 30 MB) and open it in Chrome or Edge, or use it online at **https://fansenryu-cmd.github.io/tugotl/**. Pick the journal, drop your manuscript, press **적용 (Apply)**, check the preview, and press **저장 (Save)**. The interface is in Korean; the in-app help has an English section.
 
-**What’s new in v2.4 (2026-11-09):** 30 KCI-accredited journals in English linguistics and English language and literature, with a new filter — 258 journals in total. Linguistics manuscripts are read better: numbered examples such as “(1) a. …” are no longer taken for section headings, and an English abstract without an ‘Abstract’ heading before the Keywords line is recognised as the abstract. v2.3 (2026-11-08) added *The Journal of Chinese Studies* (中國學報) at a user’s request ([issue #1](https://github.com/fansenryu-cmd/tugotl/issues/1)). v2.2 (2026-11-04) added 19 early childhood education and care journals and fixed section levels under Roman-numeral chapters, captions left alone at the bottom of a page, and page-based length limits. v2.1 (2026-11-01) added 18 journals in Korean-language education, classical Chinese education, broadcasting (TV drama) and Buddhist literature; v2.0 (2026-10-25) fixed the footnote separator and added Word (DOCX) export. See [CHANGELOG.md](CHANGELOG.md) and [docs/v2.0_설계.md](docs/v2.0_설계.md).
+**v2.4.1 (2026-11-09):** for the *Korean Journal of English Language and Linguistics* the Hangul and Hanja text now uses 한컴바탕 and Latin text Times New Roman as its rules require, checked against 11 published papers. **What’s new in v2.4 (2026-11-09):** 30 KCI-accredited journals in English linguistics and English language and literature, with a new filter — 258 journals in total. Linguistics manuscripts are read better: numbered examples such as “(1) a. …” are no longer taken for section headings, and an English abstract without an ‘Abstract’ heading before the Keywords line is recognised as the abstract. v2.3 (2026-11-08) added *The Journal of Chinese Studies* (中國學報) at a user’s request ([issue #1](https://github.com/fansenryu-cmd/tugotl/issues/1)). v2.2 (2026-11-04) added 19 early childhood education and care journals and fixed section levels under Roman-numeral chapters, captions left alone at the bottom of a page, and page-based length limits. v2.1 (2026-11-01) added 18 journals in Korean-language education, classical Chinese education, broadcasting (TV drama) and Buddhist literature; v2.0 (2026-10-25) fixed the footnote separator and added Word (DOCX) export. See [CHANGELOG.md](CHANGELOG.md) and [docs/v2.0_설계.md](docs/v2.0_설계.md).
 
 **More:** [usage guide](docs/사용안내.md#english--using-tugotl) · [journal list](docs/학회목록.md) · [development](docs/개발.md#english--development) · [changelog](CHANGELOG.md).
 

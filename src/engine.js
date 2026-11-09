@@ -120,6 +120,30 @@ export function fixFootNotePr(fp, spec) {
   return x;
 }
 
+// header.xml: 글꼴 base 를 쓰는 글자 모양의 한글·한자 칸을 hangulFace 로(글꼴 목록에 없으면 더함). 실패하면 그대로 둔다
+function splitHangulFont(header, base, hangulFace) {
+  const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const ids = {};
+  for (const lang of ['HANGUL', 'HANJA']) {
+    const m = new RegExp(`<hh:fontface lang="${lang}" fontCnt="(\\d+)">([\\s\\S]*?)</hh:fontface>`).exec(header);
+    if (!m) return header;
+    const baseM = new RegExp(`<hh:font id="(\\d+)" face="${esc(base)}"`).exec(m[2]);
+    if (!baseM) return header;
+    const have = new RegExp(`<hh:font id="(\\d+)" face="${esc(hangulFace)}"`).exec(m[2]);
+    let next = have && have[1];
+    if (!next) {
+      const used = [...m[2].matchAll(/<hh:font id="(\d+)"/g)].map((x) => +x[1]);
+      next = String(Math.max(-1, ...used) + 1);
+      const face = hangulFace.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+      header = header.replace(m[0], () => `<hh:fontface lang="${lang}" fontCnt="${used.length + 1}">${m[2]}<hh:font id="${next}" face="${face}" type="TTF" isEmbedded="0"/></hh:fontface>`);
+    }
+    ids[lang] = { base: baseM[1], next };
+  }
+  return header.replace(/<hh:fontRef\b[^>]*\/>/g, (r) => r
+    .replace(/\bhangul="(\d+)"/, (a, v) => (v === ids.HANGUL.base ? `hangul="${ids.HANGUL.next}"` : a))
+    .replace(/\bhanja="(\d+)"/, (a, v) => (v === ids.HANJA.base ? `hanja="${ids.HANJA.next}"` : a)));
+}
+
 // 서식 명세(pt 단위) → rhwp props
 function charPropsOf(doc, fmt, fontName) {
   const name = fmt.font || fontName || '바탕';
@@ -560,6 +584,9 @@ export async function buildDocument({ journal, templateBytes, blocks, onLog }) {
     if (clones.length) header = header.replace(/<hh:paraProperties itemCnt="(\d+)"/, (m, c) => `<hh:paraProperties itemCnt="${+c + clones.length}"`).replace(/<\/hh:paraProperties>/, () => `${clones.join('')}</hh:paraProperties>`);
   }
   if (added.length) header = header.replace(/<hh:charProperties itemCnt="\d+"/, () => `<hh:charProperties itemCnt="${nextCs}"`).replace(/<\/hh:charProperties>/, () => `${added.join('')}</hh:charProperties>`);
+  // 한글·한자 글꼴을 따로 정한 규정(format.fontHangul — 2026-11-09 한국영어학회: 한국어 본문 한컴바탕, 영문 Times New Roman):
+  // 규정 글꼴(format.font)을 쓰는 글자 모양의 한글·한자 칸만 fontHangul 로 바꾼다(라틴 문자는 format.font 그대로)
+  if (!templateBytes && fmt && fmt.font && fmt.fontHangul && fmt.fontHangul !== fmt.font) header = splitHangulFont(header, fmt.font, fmt.fontHangul);
   zip.file('Contents/section0.xml', enc.encode(sec));
   zip.file('Contents/header.xml', enc.encode(header));
   const roleSummary = Object.entries(roleCount).map(([k, v]) => `${k} ${v}`).join(', ');

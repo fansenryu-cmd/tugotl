@@ -45,7 +45,7 @@ function expectedShapes(j, bytes) {
     d.free();
   } else {
     const fmt = j.format || GENERIC_FORMAT;
-    for (const [role, f] of Object.entries(fmt.roles || {})) exp[role] = { font: f.font || fmt.font, size: f.size, bold: !!f.bold, align: f.align, ls: f.lineSpacing, indent: f.indent || 0, ml: (f.indent || 0) < 0 && Math.abs((f.marginLeft || 0) + f.indent) < 0.05 ? 0 : (f.marginLeft || 0), src: '규정값' };   // 엔진은 Word식 내어쓰기(−X, +X)를 한글식(−X, 0)으로 쓴다
+    for (const [role, f] of Object.entries(fmt.roles || {})) exp[role] = { font: f.font || fmt.fontHangul || fmt.font, latin: !f.font && fmt.fontHangul ? fmt.font : undefined, size: f.size, bold: !!f.bold, align: f.align, ls: f.lineSpacing, indent: f.indent || 0, ml: (f.indent || 0) < 0 && Math.abs((f.marginLeft || 0) + f.indent) < 0.05 ? 0 : (f.marginLeft || 0), src: '규정값' };   // 엔진은 Word식 내어쓰기(−X, +X)를 한글식(−X, 0)으로 쓴다
   }
   return exp;
 }
@@ -108,6 +108,7 @@ for (const id of ids) {
       const got = { font: mode(list.map((x) => x.font)), size: mode(list.map((x) => x.size)), bold: mode(list.map((x) => x.bold)), align: mode(list.map((x) => x.align)), ls: mode(list.map((x) => x.ls)), indent: mode(list.map((x) => x.indent)), ml: mode(list.map((x) => x.ml)) };
       const diffs = [];
       if (e.font && got.font && e.font !== got.font) diffs.push(`글꼴 ${got.font}≠${e.font}`);
+      if (e.latin) { const gl = mode(list.map((x) => x.latin)); if (gl && gl !== e.latin) diffs.push(`영문 글꼴 ${gl}≠${e.latin}`); }
       if (e.size && Math.abs(got.size - e.size) > 0.3) diffs.push(`크기 ${got.size}≠${e.size}`);
       if (e.align && got.align && e.align !== got.align) diffs.push(`정렬 ${got.align}≠${e.align}`);
       if (e.ls && got.ls && Math.abs(got.ls - e.ls) > 3) diffs.push(`줄간격 ${got.ls}≠${e.ls}`);
