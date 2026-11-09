@@ -96,6 +96,15 @@ export function recognize(paragraphs, journal) {
         let k = blocks.length - 1; const run = [];
         for (; k >= 0 && (blocks[k].role === 'blank' || enProse(blocks[k])); k--) if (blocks[k].role !== 'blank') run.push(blocks[k]);
         if (run.length >= 4 && run.reduce((a, b) => a + (b.text || '').length, 0) >= 300) for (const b of run) { b.role = 'abstractEn'; b.reason = 'Keywords 앞 영문 줄(Abstract 제목 없음)'; }
+      } else if (!blocks.some((b) => b.role === 'abstractEn' || b.role === 'abstractEnHead' || /^h[1-4]$/.test(b.role))) {
+        // 영어학 학술지에 흔한 꼴(2026-11-09): 제목·저자 다음에 ‘Abstract’ 제목 없이 영문 초록 한두 문단, 이어서 Keywords 줄.
+        // 국문 ‘주제어 줄 앞 본문 → 초록’과 같은 규칙을 영문에도 — 장 제목 전, Keywords 바로 앞 본문 덩어리(라틴 문자 중심, 너무 길지 않음)를 영문초록으로
+        let k = blocks.length - 1; while (k >= 0 && (blocks[k].role === 'blank' || blocks[k].role === 'affiliation')) k--;
+        const run = []; for (; k >= 0 && (blocks[k].role === 'body' || blocks[k].role === 'blank'); k--) if (blocks[k].role === 'body') run.push(blocks[k]);
+        while (run.length && (run.at(-1).text || '').trim().length < 35) run.pop();
+        const txt = run.map((b) => b.text || '').join(' ');
+        const latinShare = (txt.match(/[A-Za-z]/g) || []).length / Math.max(1, (txt.match(/[A-Za-z가-힣]/g) || []).length);
+        if (run.length && txt.length <= 4000 && run.length <= 30 && latinShare >= 0.8) for (const b of run) { b.role = 'abstractEn'; b.reason = 'Keywords 줄 앞 영문 본문(Abstract 제목 없음)'; }
       }
       push('keywordsEn', 'Keywords'); continue; }
     if (RE.dates.test(t) && (short || (t.length <= 160 && /(?:19|20)\d{2}\s*[.년\-]/.test(t)))) { push('dates', '투고·심사일'); continue; }
@@ -230,6 +239,22 @@ export function recognize(paragraphs, journal) {
       else if (down[b.role] && /번호/.test(b.reason || '')) { b.role = down[b.role]; b.reason = (b.role === 'h3' ? '항 번호' : '목 번호') + '(로마 숫자 장 아래 한 단계)'; }
     }
   }
+  // 언어학 예문 번호(2026-11-09 영어학 학회): ‘(1) a. …’, ‘(3) A: …’ 같은 예문 줄이 ‘(n)’ 항 제목으로 잡히지 않게 본문으로 돌린다.
+  // ① 줄 자체가 예문 꼴(번호 뒤 a./b. 하위 예문, A:/B: 화자, [ 괄호 구조, * ? # 문법성 표시)이거나
+  // ② ‘(n)’ 제목들의 번호가 장·절이 바뀌어도 1부터 다시 시작하지 않고 커지기만 하면서, 중간을 건너뛰거나 장·절 둘 이상에 걸쳐 있으면(항 제목은 상위 제목마다 1부터 다시 센다)
+  const exNum = /^[(（]\s*(\d{1,3})\s*[)）]/;
+  const exLine = /^[(（]\s*\d{1,3}\s*[)）]\s*(?:[a-h]\s*[.)]\s|[A-Z][A-Za-z]{0,2}\d?\s*[:：]|[[［]|[*?#]{1,2}\s*\S)/;
+  const numHead = blocks.map((b, i) => [b, i]).filter(([b]) => /^h[34]$/.test(b.role) && /번호/.test(b.reason || '') && exNum.test(trimmed({ text: b.text })));
+  const toBody = new Set(numHead.filter(([b]) => exLine.test(trimmed({ text: b.text }))).map(([, i]) => i));
+  if (numHead.length >= 2) {
+    const nums = numHead.map(([b]) => +exNum.exec(trimmed({ text: b.text }))[1]);
+    const rising = nums.every((n, k) => k === 0 || n > nums[k - 1]);
+    const gap = nums.some((n, k) => k > 0 && n > nums[k - 1] + 1);
+    const parentOf = (i) => { for (let q = i - 1; q >= 0; q--) if (/^h[12]$/.test(blocks[q].role)) return q; return -1; };
+    const parents = new Set(numHead.map(([, i]) => parentOf(i)));
+    if (rising && (gap || parents.size >= 2)) for (const [, i] of numHead) toBody.add(i);
+  }
+  for (const i of toBody) { blocks[i].role = 'body'; blocks[i].reason = '예문 번호(언어학 — 항 제목 아님)'; }
   return blocks;
 }
 
