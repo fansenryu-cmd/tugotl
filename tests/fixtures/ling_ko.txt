@@ -1,0 +1,46 @@
+한국어 보조사 ‘는’의 대조 해석과 문장 안 자리
+
+홍가람
+(가온대학교)
+
+Hong, Garam. 2026. Contrastive readings of the Korean particle nun and its position in the clause. This paper looks at how the particle nun is read when it appears in different positions of a Korean clause. Using invented sentences, it argues that the contrastive reading does not come from the position alone but from the set of alternatives that the context makes available. The paper also shows that the same pattern is found in short dialogues, and it closes with a note on what remains to be tested with corpus data.
+Keywords: contrastive topic, particle nun, clause position, alternatives, Korean
+
+1. 서론
+한국어의 보조사 ‘는’은 문장의 맨 앞에 올 때와 서술어 가까이에 올 때 서로 다르게 읽힌다고 알려져 있다. 이 글은 그 차이가 자리에서 나오는지, 문맥이 내어 주는 대안 집합에서 나오는지를 지어낸 예문으로 따져 본다.
+(1) a. 가람이는 사과를 먹었다.
+b. 가람이가 사과는 먹었다.
+(1a)는 가람이에 대해 말하는 문장으로 읽히기 쉽고, (1b)는 사과가 아닌 다른 것은 먹지 않았다는 뜻을 함께 전한다. 그러나 이런 차이가 늘 지켜지는 것은 아니다.
+(2) *가람이가 는 사과를 먹었다.
+(2)에서 보듯이 ‘는’은 홀로 설 수 없고 앞말에 붙어야 한다. 아래에서는 먼저 앞선 논의를 간추리고, 3장에서 이 글의 분석을 내놓는다.
+2. 앞선 논의
+2.1 화제와 대조
+화제와 대조를 하나의 형태가 맡는다고 보는 견해와 둘을 따로 보는 견해가 맞서 왔다. 다음 대화는 대조로만 읽히는 보기이다.
+(3) A: 누가 왔니?
+B: 나래는 왔어.
+(3)의 대답은 나래가 아닌 사람이 왔는지는 모른다는 뜻을 품는다. 묻는 말이 대안 집합을 미리 열어 두었기 때문이다.
+2.2 문장 안 자리
+자리에 따른 설명은 ‘는’이 붙은 말이 문장 어디에 놓이느냐를 본다. 아래 구조 표시는 이 설명이 내세우는 두 자리를 보인다.
+(4) [TP Garam-i-nun [VP sakwa-lul mek-ess-ta]]
+(5) Garam-i-ka sakwa-nun mek-ess-ta.
+(4)와 (5)는 로마자로 적은 예문이며, 뜻풀이는 (1)과 같다.
+3. 분석
+3.1 대안 집합이 주어질 때
+문맥이 대안을 내어 주면 ‘는’은 자리에 상관없이 대조로 읽힌다. (6)은 문장 맨 앞에서도 대조 해석이 나오는 보기이다.
+(6) 오늘은 비가 온다.
+(7) ?오늘은 비는 온다.
+(7)은 어색하지만 아주 못 쓰는 문장은 아니다. 대안이 둘씩 겹쳐 열리기 때문에 읽는 이가 어느 쪽을 맞세울지 고르기 어렵다.
+3.2 대안 집합이 없을 때
+대안이 주어지지 않으면 맨 앞의 ‘는’은 화제로 읽힌다. 이때에도 서술어 가까이의 ‘는’은 대안을 스스로 불러들인다.
+(8) a. 그 책은 나래가 읽었다.
+b. 나래가 그 책은 읽었다.
+이름씨 마디 안에서도 같은 맞섬이 보인다. 다음 두 보기는 문장이 아니라 마디이다.
+(9) 나래의 그 책
+(10) 가람이가 읽은 책은
+(9)에는 맞세울 것이 없지만 (10)은 가람이가 읽지 않은 책을 떠올리게 한다.
+4. 결론
+이 글은 보조사 ‘는’의 대조 해석이 자리만으로 정해지지 않고 문맥이 여는 대안 집합에 기댄다고 보았다. 지어낸 예문에 기댄 논의이므로 말뭉치 자료로 다시 따져 보는 일이 남는다.
+참고문헌
+홍가람. 2021. 지어낸 보조사 연구. 가온언어연구 3(1), 1-20.
+모나래. 2019. 화제와 대조에 관한 지어낸 논의. 가온어문 12, 45-70.
+Moh, Narae. 2018. An invented note on topic marking. Journal of Invented Linguistics 5(2), 101-120.

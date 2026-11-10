@@ -8,6 +8,7 @@ import { THIRD_PARTY_LICENSES } from './licenses.js';
 import { initEngine, analyzeTemplate, renderTemplatePage, buildDocument } from './engine.js';
 import { parseManuscript } from './parse.js';
 import { hwpxToDocx } from './hwpx2docx.js';
+import { safeUrl, sourceParts, hasLink } from './links.js';
 import { recognize, reorderSections, buildToc, applyBlanks, applySubstitutions, estimateLength, lengthCheck, checklist, roleLabel } from './structure.js';
 
 const $ = (sel, el = document) => el.querySelector(sel);
@@ -27,16 +28,6 @@ const lsSet = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); retu
 const BUILTIN_IDS = new Set(JOURNALS.map((j) => j.id));
 const BUILTIN_TPL = new Set(JOURNALS.filter((j) => j.template).map((j) => j.template.file));
 const RESERVED_ID = /^(__proto__|constructor|prototype|toString|valueOf|hasOwnProperty)$/i;
-// 투고처 주소: http(s)만, 자격증명·역슬래시·제어문자 없이, 호스트가 실제로 파싱되는 것만
-const safeUrl = (u) => {
-  if (typeof u !== 'string' || u.length > 2048 || /[\s\\"'<>\u0000-\u001f]/.test(u)) return '';
-  try {
-    const x = new URL(u); if (!/^https?:$/.test(x.protocol) || x.username || x.password || !/^[a-z0-9.-]+$/i.test(x.hostname) || !x.hostname.includes('.')) return '';
-    const labels = x.hostname.replace(/\.$/, '').split('.');   // 각 레이블은 영숫자로 시작·끝나고 63자 이하(빈 레이블·앞뒤 하이픈 거부)
-    if (labels.length < 2 || !labels.every((l) => /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/i.test(l))) return '';
-    return x.href;
-  } catch { return ''; }
-};
 const isoDate = (s) => { if (typeof s !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(s)) return false; const d = new Date(s + 'T00:00:00Z'); return !Number.isNaN(d.getTime()) && d.toISOString().slice(0, 10) === s; };   // 2026-02-30 같은 없는 날은 거부
 const monthDay = (s) => { if (typeof s !== 'string' || !/^\d{2}-\d{2}$/.test(s)) return false; const [m, d] = s.split('-').map(Number); if (m < 1 || m > 12 || d < 1) return false; return new Date(Date.UTC(2024, m - 1, d)).getUTCDate() === d; };   // 윤년 기준으로 월·일이 실제 날인지
 function sanitizeSchedule(s) {
@@ -565,8 +556,8 @@ function renderJournal(main) {
     body.append(h('h3', {}, '내장 서식 파일'));
     if (forms.length) body.append(h('div', { class: 'docs' }, ...forms.map((f) => { const bytes = state.forms[f.file]; return h('div', { class: 'doc' }, h('b', {}, f.label), h('span', { class: 'small' }, f.file, bytes ? ` · ${(bytes.length / 1024).toFixed(0)} KB` : ' · 파일 없음'), h('div', {}, h('button', { class: 'btn ghost sm', disabled: bytes ? null : '', onclick: () => downloadBytes(bytes, f.file) }, '내려받기'))); })));
     else body.append(h('p', { class: 'muted' }, '이 학회의 신청서·동의서 파일은 투고처(위 주소)에서 받습니다.'));
-    const links = (j.sources || []).filter((s) => /^https?:/.test(s));
-    if (links.length) { body.append(h('h3', {}, '규정 원문·안내 주소')); body.append(h('ul', {}, ...links.filter(safeUrl).map((u) => h('li', {}, h('a', { href: u, target: '_blank', rel: 'noopener noreferrer' }, u))))); }
+    const links = (j.sources || []).map((s) => sourceParts(cleanSource(s))).filter(hasLink);   // 주소가 든 출처만 — 주소는 링크로, 붙은 설명은 글자로(v2.4.2)
+    if (links.length) { body.append(h('h3', {}, '규정 원문·안내 주소')); body.append(h('ul', { class: 'srclinks' }, ...links.map((parts) => h('li', {}, ...parts.map((x) => (typeof x === 'object' ? h('a', { href: x.url, target: '_blank', rel: 'noopener noreferrer' }, x.text) : x)))))); }
     body.append(h('h3', {}, '체재')); body.append(h('p', {}, j.structureText || (j.structure || []).map((g) => SECTION_LABELS[g]).join(' → ')));
     body.append(h('h3', {}, '분량·초록')); body.append(kv([['분량', j.length?.text], ['국문초록', j.abstract?.ko], ['영문초록', j.abstract?.en], ['주제어', j.abstract?.keywords], ['익명화', j.anonymize]]));
     if (userNotes(j.notes).length) { body.append(h('h3', {}, '메모')); body.append(li(userNotes(j.notes))); }

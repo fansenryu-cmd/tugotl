@@ -86,6 +86,7 @@ tr:last-child td { border-bottom: 0; }
 .hero b { color: var(--fg); font-weight: 600; }
 .kv { display: grid; grid-template-columns: 112px 1fr; gap: 6px 16px; font-size: 13.5px; }
 .kv dt { color: var(--muted-fg); } .kv dd { margin: 0; overflow-wrap: anywhere; }
+.srclinks li { overflow-wrap: anywhere; }
 
 /* 드롭 */
 .dropzone { border: 1.5px dashed var(--input); border-radius: 14px; background: var(--card); min-height: 320px; display: grid; place-items: center; text-align: center; padding: 40px 24px; transition: border-color 150ms, background-color 150ms; cursor: pointer; }

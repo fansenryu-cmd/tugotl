@@ -239,20 +239,34 @@ export function recognize(paragraphs, journal) {
       else if (down[b.role] && /번호/.test(b.reason || '')) { b.role = down[b.role]; b.reason = (b.role === 'h3' ? '항 번호' : '목 번호') + '(로마 숫자 장 아래 한 단계)'; }
     }
   }
-  // 언어학 예문 번호(2026-11-09 영어학 학회): ‘(1) a. …’, ‘(3) A: …’ 같은 예문 줄이 ‘(n)’ 항 제목으로 잡히지 않게 본문으로 돌린다.
-  // ① 줄 자체가 예문 꼴(번호 뒤 a./b. 하위 예문, A:/B: 화자, [ 괄호 구조, * ? # 문법성 표시)이거나
-  // ② ‘(n)’ 제목들의 번호가 장·절이 바뀌어도 1부터 다시 시작하지 않고 커지기만 하면서, 중간을 건너뛰거나 장·절 둘 이상에 걸쳐 있으면(항 제목은 상위 제목마다 1부터 다시 센다)
-  const exNum = /^[(（]\s*(\d{1,3})\s*[)）]/;
-  const exLine = /^[(（]\s*\d{1,3}\s*[)）]\s*(?:[a-h]\s*[.)]\s|[A-Z][A-Za-z]{0,2}\d?\s*[:：]|[[［]|[*?#]{1,2}\s*\S)/;
-  const numHead = blocks.map((b, i) => [b, i]).filter(([b]) => /^h[34]$/.test(b.role) && /번호/.test(b.reason || '') && exNum.test(trimmed({ text: b.text })));
-  const toBody = new Set(numHead.filter(([b]) => exLine.test(trimmed({ text: b.text }))).map(([, i]) => i));
-  if (numHead.length >= 2) {
-    const nums = numHead.map(([b]) => +exNum.exec(trimmed({ text: b.text }))[1]);
-    const rising = nums.every((n, k) => k === 0 || n > nums[k - 1]);
-    const gap = nums.some((n, k) => k > 0 && n > nums[k - 1] + 1);
+  // 언어학 예문 번호(2026-11-09 영어학 학회, 11-10 고침): ‘(1) a. …’, ‘(3) A: …’, ‘(2) John left.’ 같은 예문 줄이 ‘(n)’ 항 제목으로 잡히지 않게 본문으로 돌린다.
+  // ① 줄 자체가 예문 꼴 — 하위 예문(a. b.), 화자(A: B:), 문법성 표시(* ?), 괄호 구조([TP …]), 마침표·물음표로 끝나는 영문 문장(이 마지막 꼴은 글에 예문 꼴 줄이 둘 이상일 때만)
+  // ② 번호가 장·절을 넘어 이어짐 — 항 제목은 상위 제목마다 1부터 다시 세지만 예문 번호는 글 전체에서 이어진다(세 줄 이상, 두 절 이상, 한 절에 둘 이상)
+  // ③ 한 절에 예문 꼴 줄이 둘 이상이고 그 절의 번호가 한 줄로 이어지면 같은 절의 나머지 ‘(n)’ 줄도 예문
+  // 11-10: 진짜 항 제목이 본문으로 내려가던 세 경우를 막았다 — 긴 ‘(2)’ 제목이 본문으로 잡혀 (1)·(3)이 건너뛴 번호로 보이던 것(번호를 셀 때 본문으로 잡힌 ‘(n)’ 줄도 넣고, 건너뜀만으로는 내리지 않는다),
+  //        절마다 하나씩인 ‘(1)’·‘(2)’, ‘(1) AI: 개념과 정의’·‘(2) [연구 1] 설계’ 꼴(쌍점·대괄호 조건은 영문 줄이거나 문장으로 끝날 때만)
+  const exNum = /^[(（]\s*(\d{1,3})\s*[)）]\s*/;
+  const exOpen = /^[(（]\s*\d{1,3}\s*[)）](?=\s|[A-Za-z*?#[［"'“‘])/;   // 번호 셈에 넣을 본문 줄: ‘(5)에서 보듯’처럼 조사가 바로 붙은 줄(예문을 가리키는 문장)은 뺀다
+  const exText = (b) => trimmed({ text: b.text });
+  const exStop = /[.?!]["'”’)\]]*$/;
+  const exHard = (r) => { const noH = !hasHangul(r);
+    return /^[a-h]\s*[.)]\s+\S/.test(r) || (/^[A-Z]\d?\s*[:：]\s*\S/.test(r) && (noH || exStop.test(r))) || /^[*?]{1,2}\s*[^\s*?]/.test(r)
+      || (noH && /^#\s*\S/.test(r) && exStop.test(r)) || (noH && /^[[［]/.test(r) && ((r.match(/[[［]/g) || []).length >= 2 || exStop.test(r))); };
+  const exSoft = (r) => !hasHangul(r) && /^\S+\s+\S/.test(r) && exStop.test(r) && !/(?:\b(?:vs|etc|al|Jr|Sr|Inc|Ltd|St|Dr|Mr|Mrs|Ms)|\b[A-Z])\.$/.test(r);
+  const isExCand = (b) => /^h[34]$/.test(b.role) && /번호/.test(b.reason || '') && exNum.test(exText(b));
+  const numLines = blocks.map((b, i) => [b, i]).filter(([b]) => isExCand(b) || (/^(?:body|bodyFirst|quote)$/.test(b.role) && exOpen.test(exText(b))));
+  const numHead = numLines.filter(([b]) => isExCand(b));
+  const toBody = new Set();
+  if (numHead.length) {
+    const soft = [];
+    for (const [b, i] of numHead) { const r = exText(b).replace(exNum, ''); if (exHard(r)) toBody.add(i); else if (exSoft(r)) soft.push(i); }
+    if (toBody.size + soft.length >= 2) for (const i of soft) toBody.add(i);
     const parentOf = (i) => { for (let q = i - 1; q >= 0; q--) if (/^h[12]$/.test(blocks[q].role)) return q; return -1; };
-    const parents = new Set(numHead.map(([, i]) => parentOf(i)));
-    if (rising && (gap || parents.size >= 2)) for (const [, i] of numHead) toBody.add(i);
+    const numOf = (b) => +exNum.exec(exText(b))[1];
+    const risingIn = (list) => list.every(([b], k) => k === 0 || numOf(b) > numOf(list[k - 1][0]));
+    const bySec = new Map(); for (const e of numLines) { const p = parentOf(e[1]); if (!bySec.has(p)) bySec.set(p, []); bySec.get(p).push(e); }
+    if (numLines.length >= 3 && bySec.size >= 2 && [...bySec.values()].some((l) => l.length >= 2) && risingIn(numLines)) for (const [, i] of numHead) toBody.add(i);
+    for (const list of bySec.values()) if (list.filter(([, i]) => toBody.has(i)).length >= 2 && risingIn(list)) for (const [b, i] of list) if (isExCand(b)) toBody.add(i);
   }
   for (const i of toBody) { blocks[i].role = 'body'; blocks[i].reason = '예문 번호(언어학 — 항 제목 아님)'; }
   return blocks;

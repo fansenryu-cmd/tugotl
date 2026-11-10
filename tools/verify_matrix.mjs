@@ -21,10 +21,13 @@ import { initEngine, buildDocument, resolveRoles, HwpDocument } from '../src/eng
 import { parseManuscript } from '../src/parse.js';
 import { recognize, buildToc, reorderSections, applyBlanks, applySubstitutions } from '../src/structure.js';
 import { JOURNALS, ROLE_DEFS, GENERIC_FORMAT, FLOAT_ROLES } from '../src/journals.js';
+import { checkExpect, expectFor } from './fixture_roles_test.mjs';
 await initEngine(fs.readFileSync(new URL('../node_modules/@rhwp/core/rhwp_bg.wasm', import.meta.url)));
 const arg = (k, d) => (process.argv.includes(k) ? process.argv[process.argv.indexOf(k) + 1] : d);
 const ids = arg('--journals', '') ? arg('--journals', '').split(',') : JOURNALS.map((j) => j.id);
-const papers = arg('--papers', 'tests/원고/paper1.hwp,tests/원고/paper2.hwp,tests/원고/paper3.hwp,tests/원고/paper4.hwp,tests/원고/paper5.hwp').split(',');
+// 기본 원고: 개인 원고 5편(tests/원고 — 저장소에 없음, 있으면 씀) + 지어낸 원고 3편(tests/fixtures — 저장소에 있음. 예문 번호·영문 원고·괄호 번호 제목, 기대 판정은 *.expect.json)
+const papers = arg('--papers', 'tests/원고/paper1.hwp,tests/원고/paper2.hwp,tests/원고/paper3.hwp,tests/원고/paper4.hwp,tests/원고/paper5.hwp,tests/fixtures/ling_ko.txt,tests/fixtures/ling_en.txt,tests/fixtures/edu_ko.txt').split(',').filter((f) => fs.existsSync(f) || (console.log(`(원고 없음 — 건너뜀: ${f})`), false));
+if (!papers.length) { console.error('시험할 원고가 없습니다'); process.exit(1); }
 const samplesDir = arg('--samples', 'tests/audit_fable2/samples'); const mdOut = arg('--md', null);
 const J = (s) => { try { return JSON.parse(s); } catch { return {}; } };
 const GROUP = Object.fromEntries(ROLE_DEFS.map((r) => [r.id, r.group]));
@@ -59,6 +62,7 @@ for (const id of ids) {
   for (const pf of papers) {
     let parsed = parsedCache.get(pf); if (!parsed) { parsed = await parseManuscript(path.basename(pf), new Uint8Array(fs.readFileSync(pf))); parsedCache.set(pf, parsed); }
     let blocks = recognize(parsed.paragraphs, j);
+    const expect = expectFor(pf); const expectBad = expect ? checkExpect(blocks, expect) : [];   // 지어낸 원고의 기대 판정(예문은 제목이 아님 · 제목은 제목 · 영문 초록)
     blocks = buildToc(blocks, j).blocks; blocks = reorderSections(blocks, j).blocks;
     const unit = j.footnote?.pageUnit || 'keep'; blocks = applySubstitutions(blocks, j, { pageUnit: unit === 'pp.' ? 'p.' : unit, marks: 'keep' }).blocks;
     blocks = applyBlanks(blocks, j).blocks;
@@ -89,6 +93,7 @@ for (const id of ids) {
       (perRole[b.role] ||= []).push({ font: tb.hangul || cp.fontFamily, latin: tb.latin, size: tb.size || (cp.fontSize || 0) / 100, bold: tb.bold ?? !!cp.bold, align: pp.alignment, ls: pp.lineSpacing, indent: px2pt(pp.indent), ml: px2pt(pp.marginLeft), text: t.trim() });
     }
     if (unmatched) pr.structure.push(`산출물에서 못 찾은 문단 ${unmatched}`);
+    pr.structure.push(...expectBad);
     // 체재 검사
     const has = (r) => (perRole[r] || []).length;
     const h1 = has('h1');
@@ -129,12 +134,13 @@ for (const id of ids) {
   if (fs.existsSync(mapFile)) { const map = JSON.parse(fs.readFileSync(mapFile, 'utf8')); const folder = Object.entries(map).find(([, v]) => v === id)?.[0]; if (folder) { const prof = fs.readdirSync(samplesDir).filter((f) => f.startsWith(folder + '_') && f.endsWith('.json')).map((f) => JSON.parse(fs.readFileSync(path.join(samplesDir, f), 'utf8'))).filter((p) => p.page_mm); if (prof.length) row.published = { n: prof.length, page: mode(prof.map((p) => p.page_mm.join('×'))), body: `${mode(prof.map((p) => p.body.size_pt))}pt ${mode(prof.map((p) => p.body.line_spacing_pct))}%`, fn: mode(prof.map((p) => p.footnote?.size_pt)), title: mode(prof.map((p) => p.title?.size_pt)), h1: mode(prof.map((p) => p.h1?.size_pt)) }; } }
   row.ok = row.papers.every((p) => p.ok) && !Object.keys(row.roleIssues).length && !row.labelIssues.size;
   report.push(row);
-  console.log(`${row.ok ? '●' : '○'} ${id.padEnd(14)} ${row.kind} ${row.papers.map((p) => (p.ok ? '✓' : '✗')).join('')} ${Object.keys(row.roleIssues).length ? '서식 ' + Object.entries(row.roleIssues).map(([r, d]) => r + '(' + d.join(',') + ')').join(' ') : ''} ${row.labelIssues.size ? '표지 ' + [...row.labelIssues].join(' ') : ''} ${row.papers.flatMap((p) => p.structure.map((s) => `${p.paper.replace('.hwp', '')}:${s}`)).join(' ')}`);
+  console.log(`${row.ok ? '●' : '○'} ${id.padEnd(14)} ${row.kind} ${row.papers.map((p) => (p.ok ? '✓' : '✗')).join('')} ${Object.keys(row.roleIssues).length ? '서식 ' + Object.entries(row.roleIssues).map(([r, d]) => r + '(' + d.join(',') + ')').join(' ') : ''} ${row.labelIssues.size ? '표지 ' + [...row.labelIssues].join(' ') : ''} ${row.papers.flatMap((p) => p.structure.map((s) => `${p.paper.replace(/\.(hwp|txt)$/, '')}:${s}`)).join(' ')}`);
 }
 console.log(`\n${report.filter((r) => r.ok).length}/${report.length} 학회 통과, ${Math.round((Date.now() - t0) / 1000)}초`);
+fs.mkdirSync('tests/out', { recursive: true });
 fs.writeFileSync('tests/out/verify_matrix.json', JSON.stringify(report.map((r) => ({ ...r, labelIssues: [...r.labelIssues] })), null, 1));
 if (mdOut) {
-  let s = `# 전수 재검증 매트릭스 (${new Date().toISOString().slice(0, 10)})\n\n원고 ${papers.length}편 × 학회 ${report.length}곳. ✓는 체재(목차·초록·주제어·참고문헌·영문초록·순서)와 역할별 서식(글꼴·크기·굵게·정렬·줄간격·들여쓰기·왼쪽 여백)이 학회 서식(바탕틀 예시/규정값)과 일치.\n\n| 학회 | 방식 | ${papers.map((p) => path.basename(p).replace('.hwp', '')).join(' | ')} | 서식 불일치 | 표지 |\n|---|---|${papers.map(() => '---').join('|')}|---|---|\n`;
+  let s = `# 전수 재검증 매트릭스 (${new Date().toISOString().slice(0, 10)})\n\n원고 ${papers.length}편 × 학회 ${report.length}곳. ✓는 체재(목차·초록·주제어·참고문헌·영문초록·순서)와 역할별 서식(글꼴·크기·굵게·정렬·줄간격·들여쓰기·왼쪽 여백)이 학회 서식(바탕틀 예시/규정값)과 일치.\n\n| 학회 | 방식 | ${papers.map((p) => path.basename(p).replace(/\.(hwp|txt)$/, '')).join(' | ')} | 서식 불일치 | 표지 |\n|---|---|${papers.map(() => '---').join('|')}|---|---|\n`;
   for (const r of report) s += `| ${r.journal} | ${r.kind} | ${r.papers.map((p) => (p.ok ? '✓' : '✗ ' + p.structure.join('; ')) + (p.missingInSource?.length ? ' (원고에 ' + p.missingInSource.join('·') + ' 없음)' : '')).join(' | ')} | ${Object.entries(r.roleIssues).map(([k, d]) => `${k}: ${d.join(', ')}`).join('; ') || '—'} | ${[...r.labelIssues].join('; ') || '—'} |
 `;
   fs.writeFileSync(mdOut, s);

@@ -1,0 +1,27 @@
+{
+  "examples": [
+    "(1) a. The student",
+    "(2) *The student",
+    "(3) A: Who came",
+    "(4) [TP The book",
+    "(5) The student read only",
+    "(6) Today it is",
+    "(7) ?Today the rain",
+    "(8) a. That book",
+    "(9) that book of",
+    "(10) the book that Garam"
+  ],
+  "headings": [
+    "1. Introduction",
+    "2. Background",
+    "2.1 Topic and Contrast",
+    "2.2 Position in the Clause",
+    "3. Analysis",
+    "3.1 When Alternatives Are Given",
+    "3.2 When No Alternatives Are Given",
+    "4. Conclusion"
+  ],
+  "abstractEn": [
+    "Hong, Garam. 2026."
+  ]
+}
