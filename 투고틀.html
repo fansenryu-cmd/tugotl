@@ -99,6 +99,7 @@ tr:last-child td { border-bottom: 0; }
 .hero b { color: var(--fg); font-weight: 600; }
 .kv { display: grid; grid-template-columns: 112px 1fr; gap: 6px 16px; font-size: 13.5px; }
 .kv dt { color: var(--muted-fg); } .kv dd { margin: 0; overflow-wrap: anywhere; }
+.srclinks li { overflow-wrap: anywhere; }
 
 /* 드롭 */
 .dropzone { border: 1.5px dashed var(--input); border-radius: 14px; background: var(--card); min-height: 320px; display: grid; place-items: center; text-align: center; padding: 40px 24px; transition: border-color 150ms, background-color 150ms; cursor: pointer; }
@@ -364,7 +365,7 @@ main.over .dropline { display: block; }
       <div class="mast-status" id="status" role="status" aria-live="polite"><span class="dot" aria-hidden="true"></span><span id="status-text">엔진 준비 중…</span></div>
       <div class="skins" id="skins" role="radiogroup" aria-label="화면 스킨"><span class="sk-label">스킨</span><button type="button" class="sw sw-default" data-skin="" role="radio" aria-label="다크 스튜디오(기본)" title="다크 스튜디오(기본)"></button><button type="button" class="sw sw-paper" data-skin="paper" role="radio" aria-label="종이·서지" title="종이·서지"></button><button type="button" class="sw sw-mono" data-skin="mono" role="radio" aria-label="모노크롬 미니멀" title="모노크롬 미니멀"></button><button type="button" class="sw sw-navy" data-skin="navy" role="radio" aria-label="네이비·크림" title="네이비·크림"></button><button type="button" class="sw sw-type" data-skin="type" role="radio" aria-label="타이포 편집" title="타이포 편집"></button><button type="button" class="sw sw-slack" data-skin="slack" role="radio" aria-label="보라(슬랙식, 이전 기본)" title="보라(슬랙식, 이전 기본)"></button><button type="button" class="sw sw-violet" data-skin="violet" role="radio" aria-label="바이올렛" title="바이올렛"></button></div>
       <div class="mast-note" id="status-note" hidden>본 투고 양식 편집은 프로그램 규칙에 따른 것으로 완벽한 편집이 아닙니다. 저장한 원고는 투고 전에 반드시 저자가 직접 확인해 주세요.</div>
-      <div class="side-fine">원고는 이 브라우저 안에서만 처리되며 전송되지 않습니다 · <a href="https://github.com/edwardkim/rhwp" target="_blank" rel="noopener">rhwp</a> · v2.4.1 · 빌드 2026-11-09 09:34</div>
+      <div class="side-fine">원고는 이 브라우저 안에서만 처리되며 전송되지 않습니다 · <a href="https://github.com/edwardkim/rhwp" target="_blank" rel="noopener">rhwp</a> · v2.4.2 · 빌드 2026-11-10 01:00</div>
     </div>
   </aside>
   <main id="main" tabindex="-1"></main>
@@ -5257,7 +5258,7 @@ main.over .dropline { display: block; }
         var prevlen = -1;
         var curlen;
         var nextlen = tree[0 * 2 + 1];
-        var count = 0;
+        var count2 = 0;
         var max_count = 7;
         var min_count = 4;
         if (nextlen === 0) {
@@ -5268,21 +5269,21 @@ main.over .dropline { display: block; }
         for (n = 0; n <= max_code; n++) {
           curlen = nextlen;
           nextlen = tree[(n + 1) * 2 + 1];
-          if (++count < max_count && curlen === nextlen) {
+          if (++count2 < max_count && curlen === nextlen) {
             continue;
-          } else if (count < min_count) {
-            s.bl_tree[curlen * 2] += count;
+          } else if (count2 < min_count) {
+            s.bl_tree[curlen * 2] += count2;
           } else if (curlen !== 0) {
             if (curlen !== prevlen) {
               s.bl_tree[curlen * 2]++;
             }
             s.bl_tree[REP_3_6 * 2]++;
-          } else if (count <= 10) {
+          } else if (count2 <= 10) {
             s.bl_tree[REPZ_3_10 * 2]++;
           } else {
             s.bl_tree[REPZ_11_138 * 2]++;
           }
-          count = 0;
+          count2 = 0;
           prevlen = curlen;
           if (nextlen === 0) {
             max_count = 138;
@@ -5301,7 +5302,7 @@ main.over .dropline { display: block; }
         var prevlen = -1;
         var curlen;
         var nextlen = tree[0 * 2 + 1];
-        var count = 0;
+        var count2 = 0;
         var max_count = 7;
         var min_count = 4;
         if (nextlen === 0) {
@@ -5311,27 +5312,27 @@ main.over .dropline { display: block; }
         for (n = 0; n <= max_code; n++) {
           curlen = nextlen;
           nextlen = tree[(n + 1) * 2 + 1];
-          if (++count < max_count && curlen === nextlen) {
+          if (++count2 < max_count && curlen === nextlen) {
             continue;
-          } else if (count < min_count) {
+          } else if (count2 < min_count) {
             do {
               send_code(s, curlen, s.bl_tree);
-            } while (--count !== 0);
+            } while (--count2 !== 0);
           } else if (curlen !== 0) {
             if (curlen !== prevlen) {
               send_code(s, curlen, s.bl_tree);
-              count--;
+              count2--;
             }
             send_code(s, REP_3_6, s.bl_tree);
-            send_bits(s, count - 3, 2);
-          } else if (count <= 10) {
+            send_bits(s, count2 - 3, 2);
+          } else if (count2 <= 10) {
             send_code(s, REPZ_3_10, s.bl_tree);
-            send_bits(s, count - 3, 3);
+            send_bits(s, count2 - 3, 3);
           } else {
             send_code(s, REPZ_11_138, s.bl_tree);
-            send_bits(s, count - 11, 7);
+            send_bits(s, count2 - 11, 7);
           }
-          count = 0;
+          count2 = 0;
           prevlen = curlen;
           if (nextlen === 0) {
             max_count = 138;
@@ -7313,20 +7314,20 @@ main.over .dropline { display: block; }
         var base = null;
         var base_index = 0;
         var end;
-        var count = new utils.Buf16(MAXBITS + 1);
+        var count2 = new utils.Buf16(MAXBITS + 1);
         var offs = new utils.Buf16(MAXBITS + 1);
         var extra = null;
         var extra_index = 0;
         var here_bits, here_op, here_val;
         for (len = 0; len <= MAXBITS; len++) {
-          count[len] = 0;
+          count2[len] = 0;
         }
         for (sym = 0; sym < codes; sym++) {
-          count[lens[lens_index + sym]]++;
+          count2[lens[lens_index + sym]]++;
         }
         root = bits;
         for (max = MAXBITS; max >= 1; max--) {
-          if (count[max] !== 0) {
+          if (count2[max] !== 0) {
             break;
           }
         }
@@ -7340,7 +7341,7 @@ main.over .dropline { display: block; }
           return 0;
         }
         for (min = 1; min < max; min++) {
-          if (count[min] !== 0) {
+          if (count2[min] !== 0) {
             break;
           }
         }
@@ -7350,7 +7351,7 @@ main.over .dropline { display: block; }
         left = 1;
         for (len = 1; len <= MAXBITS; len++) {
           left <<= 1;
-          left -= count[len];
+          left -= count2[len];
           if (left < 0) {
             return -1;
           }
@@ -7360,7 +7361,7 @@ main.over .dropline { display: block; }
         }
         offs[1] = 0;
         for (len = 1; len < MAXBITS; len++) {
-          offs[len + 1] = offs[len] + count[len];
+          offs[len + 1] = offs[len] + count2[len];
         }
         for (sym = 0; sym < codes; sym++) {
           if (lens[lens_index + sym] !== 0) {
@@ -7423,7 +7424,7 @@ main.over .dropline { display: block; }
             huff = 0;
           }
           sym++;
-          if (--count[len] === 0) {
+          if (--count2[len] === 0) {
             if (len === max) {
               break;
             }
@@ -7437,7 +7438,7 @@ main.over .dropline { display: block; }
             curr = len - drop;
             left = 1 << curr;
             while (curr + drop < max) {
-              left -= count[curr + drop];
+              left -= count2[curr + drop];
               if (left <= 0) {
                 break;
               }
@@ -17733,10 +17734,10 @@ main.over .dropline { display: block; }
       layout: { paper: "A4(21 \xD7 29.7 cm), MS-Word 97 \uC774\uC0C1", margins: "\uC704 63.5 \xB7 \uC544\uB798 53.5 \xB7 \uC67C\uCABD 44.5 \xB7 \uC624\uB978\uCABD 44.5 \xB7 \uBA38\uB9AC\uAE00 53.5 \xB7 \uBC14\uB2E5\uAE00 0 mm(\uB17C\uBB38 \uD22C\uACE0 \uC591\uC2DD \u2018\uC704\uCABD 6.35 cm, \uC544\uB798\uCABD 5.35 cm, \uC67C\uCABD\xB7\uC624\uB978\uCABD 4.45 cm, \uBA38\uB9AC\uAE00 5.35 cm, \uBC14\uB2E5\uAE00 0 cm\u2019). \uBA38\uB9AC\uB9D0\xB7\uCABD\uC218\uB294 \uD3B8\uC9D1\uC704\uC6D0\uD68C\uAC00 \uB123\uC74C", body: "\uC601\uBB38 Times New Roman\xB7\uD55C\uAE00 \uBC14\uD0D5\uCCB4 10pt \uBCF4\uD1B5\uCCB4, \uC591\uCABD \uB9DE\uCDA4, \uCCAB \uC904 \uB4E4\uC5EC\uC4F0\uAE30 0.125 inch, \uC904\uAC04\uACA9 \uACE0\uC815 14.5pt. \uC808\xB7\uC18C\uC808 \uB2E4\uC74C \uCCAB \uB2E8\uB77D\uC740 \uB4E4\uC5EC\uC4F0\uC9C0 \uC54A\uC74C, \uB2E8\uB77D \uC0AC\uC774 \uBE48 \uC904 \uC5C6\uC74C", quote: "\uAE34 \uC778\uC6A9\uBB38: \uBCF8\uBB38\uACFC \uAC19\uC740 \uAE00\uAF34 10pt, \uC591\uCABD \uB9DE\uCDA4, \uC67C\uCABD\xB7\uC624\uB978\uCABD 0.25 inch \uB4E4\uC5EC\uC4F0\uAE30, \uC904\uAC04\uACA9 \uACE0\uC815 14.5pt, \uB2E8\uC77C \uBB38\uB2E8, \uBCF8\uBB38\uACFC \uC55E\uB4A4\uB85C \uD55C \uC904(\uBE48 \uC904\uC740 \uACE0\uC815 12pt)", footnote: "9pt \uBCF4\uD1B5\uCCB4, \uC591\uCABD \uB9DE\uCDA4, \uCCAB \uC904 \uB0B4\uC5B4\uC4F0\uAE30 1.81\uAE00\uC790, \uC904\uAC04\uACA9 \uACE0\uC815 12pt", headings: "\uC808 \uC81C\uBAA9(\uD55C \uC790\uB9AC) 12pt \uAD75\uAC8C \uAC00\uC6B4\uB370, \uC904\uAC04\uACA9 \uACE0\uC815 14.5pt, \uC55E\uB4A4 \uD55C \uC904, \uBC88\uD638 \uB4A4 \uC810\uACFC \uD55C \uCE78(1. Introduction to alphabets) \u2013 \uC18C\uC808(\uC138 \uC790\uB9AC\uAE4C\uC9C0) 10pt \uBCF4\uD1B5\uCCB4 \uAC00\uC6B4\uB370, \uC55E\uB4A4 \uD55C \uC904, \uBC88\uD638 \uB4A4 \uC810 \uC5C6\uC74C(1.2 \u2026, 1.2.1 \u2026) \u2013 \uC18C\uC808(\uB124 \uC790\uB9AC \uC774\uC0C1) 10pt \uBCF4\uD1B5\uCCB4 \uC591\uCABD \uB9DE\uCDA4, \uC55E \uD55C \uC904\xB7\uB4A4 \uBE48 \uC904 \uC5C6\uC74C(1.2.1.2 \u2026). \uBAA8\uB450 \uCCAB \uAE00\uC790\uB9CC \uB300\uBB38\uC790", title: "\uB17C\uBB38 \uC81C\uBAA9 14pt \uAD75\uAC8C, \uCCAB \uAE00\uC790\uB9CC \uB300\uBB38\uC790, \uC591\uCABD \uB9DE\uCDA4, \uC904\uAC04\uACA9 \uACE0\uC815 15pt / \uC800\uC790\uBA85 12pt \uAD75\uAC8C\xB7\uC18C\uC18D 12pt \uBCF4\uD1B5\uCCB4, \uC591\uCABD \uB9DE\uCDA4, \uACE0\uC815 13pt, \uD55C \uBA85\uB2F9 \uD55C \uC904 / Abstract\xB7Keywords \uC81C\uBAA9 \uAD75\uAC8C 12pt \uACE0\uC815 16pt, \uB0B4\uC6A9 10pt \uACE0\uC815 12pt / \uBD80\uB85D \uC81C\uBAA9 10pt \uAD75\uAC8C \uAC00\uC6B4\uB370(\uC704 \uB450 \uC904\xB7\uC544\uB798 \uD55C \uC904) / \uCC38\uACE0\uBB38\uD5CC \uC81C\uBAA9 10pt \uAD75\uAC8C \uAC00\uC6B4\uB370(\uCCAB \uC790 \uD070 \uB300\uBB38\uC790\xB7\uB098\uBA38\uC9C0 \uC791\uC740 \uB300\uBB38\uC790, \uC704 \uB450 \uC904\xB7\uC544\uB798 \uD55C \uC904) / \uCC38\uACE0\uBB38\uD5CC \uB0B4\uC6A9 10pt, \uCCAB \uC904 \uB0B4\uC5B4\uC4F0\uAE30 3\uAE00\uC790, \uACE0\uC815 14.5pt / \uC8FC\uC18C \uCC38\uACE0\uBB38\uD5CC \uC544\uB798 \uB450 \uC904 \uB5BC\uACE0 8pt, \uC67C\uCABD, \uACE0\uC815 12pt", tables: "\uD45C\xB7\uADF8\uB9BC \uAC00\uC6B4\uB370, \uBCF8\uBB38\uACFC \uD55C \uC904 \uB5BC\uAE30. \uADF8\uB9BC \uC81C\uBAA9\uC740 \uADF8\uB9BC \uC544\uB798(Figure 1. A spectrogram), \uD45C \uC81C\uBAA9\uC740 \uD45C \uC704(Table 2. \u2026), \uB458 \uB2E4 10pt \uAD75\uAC8C \uAC00\uC6B4\uB370 \uACE0\uC815 12pt. Tableau\uB294 \uC608\uBB38\uCC98\uB7FC \uBC88\uD638, \uC120 \uB450\uAED8 \xBEpt, \uC74C\uC601 \uD68C\uC0C9 20%. \uBC1C\uC74C\uAE30\uD638\uB294 [\uC0BD\uC785]\u2192[\uAE30\uD638] \uB610\uB294 SILDoulosIPA93" },
       labels: { abstractEnHead: "Abstract", keywordsEn: "Keywords", refHead: "References" },
       blanks: { beforeH1: 1, afterH1: 1, beforeH2: 1, afterH2: 1, beforeH3: 1, afterH3: 1, beforeH4: 1, aroundQuote: 1, beforeRefHead: 2, afterRefHead: 1 },
-      format: { page: { width: 210, height: 297, top: 63.5, bottom: 53.5, left: 44.5, right: 44.5, header: 53.5, footer: 0, gutter: 0 }, font: "Times New Roman", roles: { title: { size: 14, bold: true, align: "justify" }, author: { size: 12, bold: true, align: "justify" }, affiliation: { size: 12, align: "justify" }, abstractEnHead: { size: 12, bold: true, align: "justify" }, abstractEn: { size: 10, align: "justify" }, keywordsEn: { size: 10, align: "justify" }, h1: { size: 12, bold: true, align: "center" }, h2: { size: 10, align: "center" }, h3: { size: 10, align: "center" }, h4: { size: 10, align: "justify" }, body: { size: 10, align: "justify", indent: 9 }, bodyFirst: { size: 10, align: "justify", indent: 0 }, quote: { size: 10, align: "justify", marginLeft: 18, marginRight: 18 }, caption: { size: 10, bold: true, align: "center" }, footnote: { size: 9, align: "justify" }, refHead: { size: 10, bold: true, align: "center" }, ref: { size: 10, align: "justify", indent: -30, marginLeft: 30 } } },
+      format: { page: { width: 210, height: 297, top: 63.5, bottom: 53.5, left: 44.5, right: 44.5, header: 53.5, footer: 0, gutter: 0 }, font: "Times New Roman", fontHangul: "\uBC14\uD0D5\uCCB4", roles: { title: { size: 14, bold: true, align: "justify" }, author: { size: 12, bold: true, align: "justify" }, affiliation: { size: 12, align: "justify" }, abstractEnHead: { size: 12, bold: true, align: "justify" }, abstractEn: { size: 10, align: "justify" }, keywordsEn: { size: 10, align: "justify" }, h1: { size: 12, bold: true, align: "center" }, h2: { size: 10, align: "center" }, h3: { size: 10, align: "center" }, h4: { size: 10, align: "justify" }, body: { size: 10, align: "justify", indent: 9 }, bodyFirst: { size: 10, align: "justify", indent: 0 }, quote: { size: 10, align: "justify", marginLeft: 18, marginRight: 18 }, caption: { size: 10, bold: true, align: "center" }, footnote: { size: 9, align: "justify" }, refHead: { size: 10, bold: true, align: "center" }, ref: { size: 10, align: "justify", indent: -30, marginLeft: 30 } } },
       copyright: "\uAC8C\uC7AC\uAC00 \uD655\uC815\uB418\uBA74 \uB17C\uBB38\uC5D0 \uB530\uB978 \uAD8C\uB9AC\xB7\uC774\uC775\xB7\uC800\uC791\uAD8C \uBC0F \uB514\uC9C0\uD138 \uC800\uC791\uAD8C\uC5D0 \uB300\uD55C \uBAA8\uB4E0 \uAD8C\uD55C \uD589\uC0AC\uB97C \uD55C\uAD6D\uC74C\uC6B4\uB860\uD559\uD68C\uC5D0 \uC774\uC591\uD558\uB294 \uB370 \uB3D9\uC758(\uADDC\uC815 \uC81C3\uC7A5 1\u2462 \uC800\uC791\uAD8C \uC774\uC591 \uADDC\uC815)",
       contact: "phonologykorea@naver.com(\uD559\uD68C \u2014 \uC785\uD68C \uBB38\uC758, \uB17C\uBB38 \uD22C\uACE0 \uC694\uB839) / http://www.phonology.or.kr / https://phonology.jams.or.kr",
-      notes: ["id\uB294 JAMS \uD558\uC704 \uB3C4\uBA54\uC778 phonology(phonology.jams.or.kr \u2014 \uD559\uD68C \uD648\uD398\uC774\uC9C0\uC758 \u2018\uB17C\uBB38\uD22C\uACE0\u2019 \uBC30\uB108\uAC00 \uAC00\uB9AC\uD0A4\uB294 \uC8FC\uC18C)", "\uBC14\uD0D5\uD2C0 \uC5C6\uC74C: \uACF5\uC2DD \uC591\uC2DD\uC774 MS Word(1_\uC791\uC131\uC6A9_\uB17C\uBB38\uD22C\uACE0\uC591\uC2DD_2026_01_28.doc)\uC640 PDF(1_\uB17C\uBB38\uD22C\uACE0\uC591\uC2DD_2026_04_30.pdf)\uBFD0(\uD559\uD68C \uD648\uD398\uC774\uC9C0 \uACF5\uC9C0\uAC00 \uB9C1\uD06C\uD55C \uD559\uD68C Google Drive \u2018\uB17C\uBB38\uD22C\uACE0\uC694\uB839\u2019 \uD3F4\uB354). format\uC740 PDF \uC591\uC2DD \uD45C\uC758 \uC22B\uC790", "\uC904\uAC04\uACA9\uC774 \uBAA8\uB450 \u2018\uACE0\uC815 pt\u2019(\uBCF8\uBB38 14.5, \uC81C\uBAA9 15, \uC800\uC790 13, \uCD08\uB85D\xB7\uAC01\uC8FC 12)\uB77C % \uAC12\uC73C\uB85C \uC62E\uAE30\uC9C0 \uC54A\uC74C \u2014 format\uC5D0 lineSpacing \uC5C6\uC74C(\uBCC0\uD658\uAE30 \uAE30\uBCF8\uAC12\uC774 \uB4E4\uC5B4\uAC00\uBBC0\uB85C \uD55C\uAE00\uC5D0\uC11C \uACE0\uC815 \uC904\uAC04\uACA9\uC73C\uB85C \uB9DE\uCDB0\uC57C \uD568)", "\uB4E4\uC5EC\uC4F0\uAE30 \uB2E8\uC704 \uD658\uC0B0: 0.125 inch = 9pt(\uBCF8\uBB38 \uCCAB \uC904), 0.25 inch = 18pt(\uC778\uC6A9\uBB38 \uC88C\uC6B0), \uCC38\uACE0\uBB38\uD5CC \uB0B4\uC5B4\uC4F0\uAE30 3\uAE00\uC790 = 10pt \xD7 3 = 30pt. \uAC01\uC8FC \uB0B4\uC5B4\uC4F0\uAE30 1.81\uAE00\uC790\uB294 format\uC5D0 \uB123\uC9C0 \uC54A\uC74C", "\uCC38\uACE0\uBB38\uD5CC \uC81C\uBAA9: PDF \uC591\uC2DD(2018.9 \uAC1C\uC815 \uD45C\uAE30)\uC740 \u2018REFERENCES\u2019(\uCCAB \uC790 \uD070 \uB300\uBB38\uC790\xB7\uB098\uBA38\uC9C0 \uC791\uC740 \uB300\uBB38\uC790), 2026.1 \uC791\uC131\uC6A9 DOC \uC591\uC2DD\uC740 \u2018References\u2019 \u2014 \uCD5C\uC2E0 DOC\uB97C \uB530\uB984", "Keywords\uB294 \uC81C\uBAA9 \uD55C \uC904\uACFC \uB0B4\uC6A9 \uD55C \uC904\uB85C \uB098\uB268(\uC81C\uBAA9 \uB4A4 \uC30D\uC810 \uC5C6\uC74C). labels.keywordsEn\uC740 \u2018Keywords\u2019\uB85C \uB450\uC5C8\uC9C0\uB9CC \uBCC0\uD658\uAE30\uB294 \uC6D0\uACE0\uC758 \u2018Keywords: \u2026\u2019 \uD55C \uC904\uC744 \uBC14\uAFB8\uBBC0\uB85C \uB0B4\uC6A9\uC744 \uB2E4\uC74C \uC904\uB85C \uB0B4\uB9AC\uB294 \uAC83\uC740 \uC9C1\uC811 \uD574\uC57C \uD568", "\uC808 \uC81C\uBAA9 \uB2E8\uACC4: \uD55C \uC790\uB9AC(1.)=h1 12pt \uAD75\uAC8C \uAC00\uC6B4\uB370, \uB450\xB7\uC138 \uC790\uB9AC(1.2, 1.2.1)=h2\xB7h3 10pt \uAC00\uC6B4\uB370, \uB124 \uC790\uB9AC \uC774\uC0C1=h4 10pt \uC591\uCABD", "12\uC6D4\uD638 \uB9C8\uAC10\uC774 \uBB38\uC11C\uB9C8\uB2E4 \uB2E4\uB984: \uB17C\uBB38 \uD22C\uACE0 \uC694\uB839 10\uC6D4 30\uC77C, \uC628\uB77C\uC778 \uB17C\uBB38 \uD22C\uACE0 \uC548\uB0B4\xB732\uC9D1 3\uD638 \uACF5\uC9C0 10\uC6D4 31\uC77C \u2014 10\uC6D4 31\uC77C\uC744 \uC500", "\uBCC4\uC1C4\uBCF8 \uBE44\uC6A9\uC774 \uBB38\uC11C\uB9C8\uB2E4 \uB2E4\uB984: \uB17C\uBB38 \uD22C\uACE0 \uC694\uB839 5\uB9CC\uC6D0, \uC628\uB77C\uC778 \uB17C\uBB38 \uD22C\uACE0 \uC548\uB0B4 1\uBD80\uB2F9 4,000\uC6D0(\uCD5C\uC2E0 \uC218\uC815\uC77C 2026.8.28) \u2014 \uB458 \uB2E4 \uC801\uC74C", "\uBD84\uB7C9 \u201820\uB9E4 \uB0B4\uC678\u2019\uB294 \uC6D0\uACE0\uC9C0 \uB9E4\uC218\uAC00 \uC544\uB2C8\uB77C \uCABD\uC73C\uB85C \uBD04(\uAC8C\uC7AC\uB8CC \uAE30\uC900\uC774 25\uCABD)", "\uD3B8\uC9D1\uC704\uC6D0\uC7A5\xB7\uC7AC\uBB34\uC774\uC0AC \uAC1C\uC778 \uC774\uBA54\uC77C\xB7\uAC1C\uC778 \uBA85\uC758 \uACC4\uC88C\uC640 KCI \uBC1C\uD589\uAE30\uAD00 \uC5F0\uB77D\uCC98(\uAC1C\uC778 \uD734\uB300\uC804\uD654)\uB294 \uB123\uC9C0 \uC54A\uC74C", "KCI: 2004.01 \uB4F1\uC7AC \u2192 2018.12 \uB4F1\uC7AC\uD6C4\uBCF4\uB85C \uD558\uB77D \u2192 2019.01 \uB4F1\uC7AC\uD559\uC220\uC9C0 \uC7AC\uC120\uC815, 2022.01 \uC720\uC9C0. grade \uC5F0\uB3C4\uB294 \uC7AC\uC120\uC815 \uC5F0\uB3C4"],
+      notes: ["\uAE00\uAF34: \uC591\uC2DD \u2018\uC601\uBB38 Times New Roman\xB7\uD55C\uAE00 \uBC14\uD0D5\uCCB4\u2019 \u2014 \uBCC0\uD658\uAE30\uB294 \uD55C\uAE00\xB7\uD55C\uC790 \uAE00\uC790\uB97C \uBC14\uD0D5\uCCB4, \uC601\uBB38 \uAE00\uC790\uB97C Times New Roman\uC73C\uB85C \uB123\uC74C(format.fontHangul, v2.4.2\uBD80\uD130. \uADF8 \uC804\uC5D0\uB294 \uD55C\uAE00 \uCE78\uB3C4 Times New Roman\uC73C\uB85C \uC9C0\uC815\uB410\uC74C)", "id\uB294 JAMS \uD558\uC704 \uB3C4\uBA54\uC778 phonology(phonology.jams.or.kr \u2014 \uD559\uD68C \uD648\uD398\uC774\uC9C0\uC758 \u2018\uB17C\uBB38\uD22C\uACE0\u2019 \uBC30\uB108\uAC00 \uAC00\uB9AC\uD0A4\uB294 \uC8FC\uC18C)", "\uBC14\uD0D5\uD2C0 \uC5C6\uC74C: \uACF5\uC2DD \uC591\uC2DD\uC774 MS Word(1_\uC791\uC131\uC6A9_\uB17C\uBB38\uD22C\uACE0\uC591\uC2DD_2026_01_28.doc)\uC640 PDF(1_\uB17C\uBB38\uD22C\uACE0\uC591\uC2DD_2026_04_30.pdf)\uBFD0(\uD559\uD68C \uD648\uD398\uC774\uC9C0 \uACF5\uC9C0\uAC00 \uB9C1\uD06C\uD55C \uD559\uD68C Google Drive \u2018\uB17C\uBB38\uD22C\uACE0\uC694\uB839\u2019 \uD3F4\uB354). format\uC740 PDF \uC591\uC2DD \uD45C\uC758 \uC22B\uC790", "\uC904\uAC04\uACA9\uC774 \uBAA8\uB450 \u2018\uACE0\uC815 pt\u2019(\uBCF8\uBB38 14.5, \uC81C\uBAA9 15, \uC800\uC790 13, \uCD08\uB85D\xB7\uAC01\uC8FC 12)\uB77C % \uAC12\uC73C\uB85C \uC62E\uAE30\uC9C0 \uC54A\uC74C \u2014 format\uC5D0 lineSpacing \uC5C6\uC74C(\uBCC0\uD658\uAE30 \uAE30\uBCF8\uAC12\uC774 \uB4E4\uC5B4\uAC00\uBBC0\uB85C \uD55C\uAE00\uC5D0\uC11C \uACE0\uC815 \uC904\uAC04\uACA9\uC73C\uB85C \uB9DE\uCDB0\uC57C \uD568)", "\uB4E4\uC5EC\uC4F0\uAE30 \uB2E8\uC704 \uD658\uC0B0: 0.125 inch = 9pt(\uBCF8\uBB38 \uCCAB \uC904), 0.25 inch = 18pt(\uC778\uC6A9\uBB38 \uC88C\uC6B0), \uCC38\uACE0\uBB38\uD5CC \uB0B4\uC5B4\uC4F0\uAE30 3\uAE00\uC790 = 10pt \xD7 3 = 30pt. \uAC01\uC8FC \uB0B4\uC5B4\uC4F0\uAE30 1.81\uAE00\uC790\uB294 format\uC5D0 \uB123\uC9C0 \uC54A\uC74C", "\uCC38\uACE0\uBB38\uD5CC \uC81C\uBAA9: PDF \uC591\uC2DD(2018.9 \uAC1C\uC815 \uD45C\uAE30)\uC740 \u2018REFERENCES\u2019(\uCCAB \uC790 \uD070 \uB300\uBB38\uC790\xB7\uB098\uBA38\uC9C0 \uC791\uC740 \uB300\uBB38\uC790), 2026.1 \uC791\uC131\uC6A9 DOC \uC591\uC2DD\uC740 \u2018References\u2019 \u2014 \uCD5C\uC2E0 DOC\uB97C \uB530\uB984", "Keywords\uB294 \uC81C\uBAA9 \uD55C \uC904\uACFC \uB0B4\uC6A9 \uD55C \uC904\uB85C \uB098\uB268(\uC81C\uBAA9 \uB4A4 \uC30D\uC810 \uC5C6\uC74C). labels.keywordsEn\uC740 \u2018Keywords\u2019\uB85C \uB450\uC5C8\uC9C0\uB9CC \uBCC0\uD658\uAE30\uB294 \uC6D0\uACE0\uC758 \u2018Keywords: \u2026\u2019 \uD55C \uC904\uC744 \uBC14\uAFB8\uBBC0\uB85C \uB0B4\uC6A9\uC744 \uB2E4\uC74C \uC904\uB85C \uB0B4\uB9AC\uB294 \uAC83\uC740 \uC9C1\uC811 \uD574\uC57C \uD568", "\uC808 \uC81C\uBAA9 \uB2E8\uACC4: \uD55C \uC790\uB9AC(1.)=h1 12pt \uAD75\uAC8C \uAC00\uC6B4\uB370, \uB450\xB7\uC138 \uC790\uB9AC(1.2, 1.2.1)=h2\xB7h3 10pt \uAC00\uC6B4\uB370, \uB124 \uC790\uB9AC \uC774\uC0C1=h4 10pt \uC591\uCABD", "12\uC6D4\uD638 \uB9C8\uAC10\uC774 \uBB38\uC11C\uB9C8\uB2E4 \uB2E4\uB984: \uB17C\uBB38 \uD22C\uACE0 \uC694\uB839 10\uC6D4 30\uC77C, \uC628\uB77C\uC778 \uB17C\uBB38 \uD22C\uACE0 \uC548\uB0B4\xB732\uC9D1 3\uD638 \uACF5\uC9C0 10\uC6D4 31\uC77C \u2014 10\uC6D4 31\uC77C\uC744 \uC500", "\uBCC4\uC1C4\uBCF8 \uBE44\uC6A9\uC774 \uBB38\uC11C\uB9C8\uB2E4 \uB2E4\uB984: \uB17C\uBB38 \uD22C\uACE0 \uC694\uB839 5\uB9CC\uC6D0, \uC628\uB77C\uC778 \uB17C\uBB38 \uD22C\uACE0 \uC548\uB0B4 1\uBD80\uB2F9 4,000\uC6D0(\uCD5C\uC2E0 \uC218\uC815\uC77C 2026.8.28) \u2014 \uB458 \uB2E4 \uC801\uC74C", "\uBD84\uB7C9 \u201820\uB9E4 \uB0B4\uC678\u2019\uB294 \uC6D0\uACE0\uC9C0 \uB9E4\uC218\uAC00 \uC544\uB2C8\uB77C \uCABD\uC73C\uB85C \uBD04(\uAC8C\uC7AC\uB8CC \uAE30\uC900\uC774 25\uCABD)", "\uD3B8\uC9D1\uC704\uC6D0\uC7A5\xB7\uC7AC\uBB34\uC774\uC0AC \uAC1C\uC778 \uC774\uBA54\uC77C\xB7\uAC1C\uC778 \uBA85\uC758 \uACC4\uC88C\uC640 KCI \uBC1C\uD589\uAE30\uAD00 \uC5F0\uB77D\uCC98(\uAC1C\uC778 \uD734\uB300\uC804\uD654)\uB294 \uB123\uC9C0 \uC54A\uC74C", "KCI: 2004.01 \uB4F1\uC7AC \u2192 2018.12 \uB4F1\uC7AC\uD6C4\uBCF4\uB85C \uD558\uB77D \u2192 2019.01 \uB4F1\uC7AC\uD559\uC220\uC9C0 \uC7AC\uC120\uC815, 2022.01 \uC720\uC9C0. grade \uC5F0\uB3C4\uB294 \uC7AC\uC120\uC815 \uC5F0\uB3C4"],
       sources: ["http://www.phonology.or.kr/xe/submit_howto (\uB17C\uBB38 \uD22C\uACE0 \uC694\uB839, 2026.9.4 \uC218\uC815)", "http://www.phonology.or.kr/xe/Edit_review (\uB17C\uBB38\uAE30\uACE0\uC640 \uC2EC\uC0AC \uBC0F \uD3B8\uC9D1\uC5D0 \uAD00\uD55C \uADDC\uC815, 2022.6.1 \uC2DC\uD589)", "http://www.phonology.or.kr/xe/list/8456 (\uC628\uB77C\uC778 \uB17C\uBB38 \uD22C\uACE0 \uC548\uB0B4, 2026.8.28 \uC218\uC815)\xB7/xe/list/2762 (\uB17C\uBB38 \uD22C\uACE0\uC2DC \uC720\uC758\uC0AC\uD56D, 2026.10.21 \uC218\uC815)", "\uD559\uD68C Google Drive \u2018\uB17C\uBB38\uD22C\uACE0\uC694\uB839\u2019 \uD3F4\uB354(\uC704 8456 \uACF5\uC9C0 \uB9C1\uD06C): 1_\uC791\uC131\uC6A9_\uB17C\uBB38\uD22C\uACE0\uC591\uC2DD_2026_01_28.doc, 1_\uB17C\uBB38\uD22C\uACE0\uC591\uC2DD_2026_04_30.pdf", "https://phonology.jams.or.kr \uB17C\uBB38\uD22C\uACE0 \uADDC\uC815(guidDivCd=02, \uCCA8\uBD80 \uD648\uD398\uC774\uC9C0 \uAC8C\uC2DC\uC6A9_\uB17C\uBB38\uAE30\uACE0\uC640 \uC2EC\uC0AC \uBC0F \uD3B8\uC9D1\uC5D0 \uAD00\uD55C \uADDC\uC815 \uAC1C\uC815\uC548(20220601).pdf)", "\uD559\uD68C \uD648\uD398\uC774\uC9C0 \uACF5\uC9C0 \u201832\uC9D1 3\uD638 \uB17C\uBB38 \uD22C\uACE0 \uC548\uB0B4 10\uC6D4 31\uC77C\uAE4C\uC9C0\u2019(2026-10-21, /xe/38036)", "KCI \uD559\uC220\uC9C0 \uC815\uBCF4(\uC74C\uC131\uC74C\uC6B4\uD615\uD0DC\uB860\uC5F0\uAD6C SPPM, sereId=000584)"],
       updated: "2026-11-09"
     },
@@ -18237,10 +18238,10 @@ main.over .dropline { display: block; }
       layout: { paper: "A4(210 \xD7 297 mm)", margins: "HWP: \uC704\xB7\uC544\uB798 42 \xB7 \uC67C\uCABD\xB7\uC624\uB978\uCABD 42 \xB7 \uBA38\uB9AC\uB9D0\xB7\uAF2C\uB9AC\uB9D0 9 mm(\uC791\uC131\uC694\uB839 1.1 \uB098). MS Word: \uC67C\uCABD\xB7\uC624\uB978\uCABD 4.2 cm, \uC704\uCABD\xB7\uC544\uB798\uCABD 5.1 cm, \uBA38\uB9AC\uAE00\xB7\uBC14\uB2E5\uAE00 4.2 cm(1.1 \uAC00)", body: "\uAE00\uC790 \uD06C\uAE30 10, \uBC14\uD0D5\uCCB4(\uD55C\uAE00)\xB7Times New Roman(\uC601\uC5B4), \uC7A5\uD3C9 100%, \uAE00\uC790 \uAC04\uACA9 -2(\uD55C\uAE00)\xB7\uC881\uAC8C 0.1pt(\uC601\uC5B4), \uC904 \uAC04\uACA9 \uACE0\uC815\uAC12 14.5pt(\uC791\uC131\uC694\uB839 1.2\xB71.3, \uCCB4\uC7AC \uC608)", quote: "\uADDC\uC815\uC5D0 \uC5C6\uC74C. \uC608\uBB38\uC740 (1), (2) \uC21C\uC11C, 10pt, \uB4E4\uC5EC\uC4F0\uAE30, \uC704\uC544\uB798 \uD55C \uC904\uC529 \uB744\uC6C0. \uC608 \uC548\uC758 \uC791\uC740 \uD56D\uC740 \uAD6D\uC5B4 \uB17C\uBB38 \u3131, \u3134, \uC601\uC5B4 \uB17C\uBB38 a, b. \uC601\uC5B4 \uB17C\uBB38\uC758 \uBE44\uC601\uC5B4 \uC608\uB294 English transliteration \uC774\uD0E4\uB9AD, morpheme-by-morpheme gloss\uB294 \uB2E8\uC5B4\uB07C\uB9AC \uC815\uB82C, \uC601\uC5B4 \uBC88\uC5ED\uC740 \uC791\uC740\uB530\uC634\uD45C. \uD55C\uAE00 \uB85C\uB9C8\uC790 \uD45C\uAE30\uB294 Yale \uD45C\uAE30\uBC95(\uC791\uC131\uC694\uB839 2.6)", footnote: "Times New Roman/\uBC14\uD0D5\uCCB4 9, \uBCF4\uD1B5, \uC904 \uAC04\uACA9 \uACE0\uC815\uAC12 10pt, \uCCAB \uC904 \uB0B4\uC5B4\uC4F0\uAE30 0.8\uC790, \uC591\uCABD \uD63C\uD569(\uC791\uC131\uC694\uB839 2.7)", headings: "\uBC88\uD638 1. \u2013 1.1. \u2013 1.1.1. \u2013 1.1.1.1. \uBAA8\uB450 \uB4E4\uC5EC\uC4F0\uAE30 \uC5C6\uC774 \uC67C\uCABD \uC815\uB82C. \uCCAB\uC9F8 \uC218\uC900 12pt \uC9C4\uD558\uAC8C, \uB458\uC9F8 \uC218\uC900 11pt \uC9C4\uD558\uAC8C(\uBAA8\uB4E0 \uB0B4\uC6A9\uC5B4 \uCCAB \uAE00\uC790 \uB300\uBB38\uC790), \uC14B\uC9F8 \uC774\uD558 11pt \uBCF4\uD1B5 \uAE00\uC528(\uC81C\uBAA9 \uCCAB \uAE00\uC790\uB9CC \uB300\uBB38\uC790). \uC18C\uC81C\uBAA9\uC740 \uC704\uC544\uB798\uB85C \uD55C \uC904\uC529 \uB744\uC6C0(\uC791\uC131\uC694\uB839 2.5) \u2014 \uCCB4\uC7AC \uC608\uB294 1.1.1.\xB71.1.1.1.\uC744 \u2018\uBCF8\uBB38\uACFC \uB744\uC6B0\uC9C0 \uC54A\uC74C\u2019", title: "\uB17C\uBB38 \uC81C\uBAA9 14pt \uC9C4\uD558\uAC8C \uAC00\uC6B4\uB370, 2\uD589 \uC774\uB0B4 \uAD8C\uC7A5, \uC904 \uAC04\uACA9 \uACE0\uC815\uAC12 14.5pt / \uD544\uC790 \uC774\uB984\xB7(\uC9C1\uC704, \uC18C\uC18D) Times New Roman/\uBC14\uD0D5\uCCB4 11 \uBCF4\uD1B5 \uAC00\uC6B4\uB370 / \uC601\uBB38 \uCD08\uB85D Times New Roman 9, \uC904 \uAC04\uACA9 \uACE0\uC815\uAC12 12.5pt, \uC67C\uCABD\xB7\uC624\uB978\uCABD \uC5EC\uBC31 2.5\uC790, \uBB38\uB2E8 \uC704 0.3\uC904, \uC591\uCABD \uD63C\uD569 / Key words Times New Roman/\uBC14\uD0D5\uCCB4 9 \uBCF4\uD1B5, \uC591\uCABD \uC5EC\uBC31 2.5\uC790, \uC67C\uCABD \uC815\uB82C, \uCCAB \uC904 \uB0B4\uC5B4\uC4F0\uAE30 5\uC790(\uCCB4\uC7AC \uC608) / \uCC38\uACE0\uBB38\uD5CC \uC81C\uBAA9 11pt \uC9C4\uD558\uAC8C \uAC00\uC6B4\uB370, \uBAA9\uB85D Times New Roman/\uBC14\uD0D5\uCCB4 10 \uBCF4\uD1B5, \uCCAB \uC904 \uB0B4\uC5B4\uC4F0\uAE30 3\uC790 / \uB9C8\uC9C0\uB9C9 \uCABD \uC800\uC790 \uC815\uBCF4 10pt, \uC904 \uAC04\uACA9 134%, \uC67C\uCABD \uC815\uB82C / \uBD80\uB85D \uC81C\uBAA9 11pt \uC9C4\uD558\uAC8C \uAC00\uC6B4\uB370", tables: "\uD45C\xB7\uADF8\uB9BC \uAE00\uC790 \uD06C\uAE30 10, \uC704\xB7\uC544\uB798 \uD55C \uC904 \uB744\uC5B4 \uBC30\uCE58. \uC81C\uBAA9\uC740 \uD45C\uB294 \uC704\uCABD, \uADF8\uB9BC\uC740 \uC544\uB798\uCABD, \uAC00\uC6B4\uB370 \uC815\uB82C \uBCF4\uD1B5 \uAE00\uC528: <\uD45C1>, <\uADF8\uB9BC1>(\uD55C\uAE00), <Table 1>, <Figure 1>(\uC601\uC5B4). \uC601\uC5B4 \uC81C\uBAA9\uC740 \uB0B4\uC6A9\uC5B4 \uCCAB \uAE00\uC790 \uB300\uBB38\uC790, \uAE00\uC790 \uD06C\uAE30 9. \uD45C \uC548\uC740 Times New Roman/\uBC14\uD0D5\uCCB4 9, \uC904 \uAC04\uACA9 \uACE0\uC815\uAC12 10pt, \uC120 \uB450\uAED8 1/2pt(\uC791\uC131\uC694\uB839 2.9)" },
       labels: { keywordsEn: "Key words:", refHead: "\uCC38\uACE0\uBB38\uD5CC" },
       blanks: { afterTitle: 2, afterAuthor: 2, afterAbstractEn: 1, afterKeywordsEn: 2, beforeH1: 1, afterH1: 1, beforeH2: 1, afterH2: 1, beforeRefHead: 2, afterRefHead: 1 },
-      format: { page: { width: 210, height: 297, top: 42, bottom: 42, left: 42, right: 42, header: 9, footer: 9 }, font: "\uBC14\uD0D5\uCCB4", roles: { title: { size: 14, bold: true, align: "center", lineSpacing: 104, ratio: 100, spacing: -2 }, author: { size: 11, align: "center", ratio: 100, spacing: -2 }, abstractEn: { font: "Times New Roman", size: 9, align: "justify", lineSpacing: 139, marginLeft: 22.5, marginRight: 22.5 }, keywordsEn: { font: "Times New Roman", size: 9, align: "left", marginLeft: 22.5, marginRight: 22.5 }, h1: { size: 12, bold: true, align: "left", ratio: 100, spacing: -2 }, h2: { size: 11, bold: true, align: "left", ratio: 100, spacing: -2 }, h3: { size: 11, align: "left", ratio: 100, spacing: -2 }, h4: { size: 11, align: "left", ratio: 100, spacing: -2 }, body: { size: 10, align: "justify", lineSpacing: 145, ratio: 100, spacing: -2 }, caption: { size: 10, align: "center", ratio: 100, spacing: -2 }, footnote: { size: 9, align: "justify", lineSpacing: 111, ratio: 100, spacing: -2, indent: -7.2, marginLeft: 7.2 }, refHead: { size: 11, bold: true, align: "center", ratio: 100, spacing: -2 }, ref: { size: 10, lineSpacing: 145, ratio: 100, spacing: -2, indent: -30, marginLeft: 30 } } },
+      format: { page: { width: 210, height: 297, top: 42, bottom: 42, left: 42, right: 42, header: 9, footer: 9 }, font: "Times New Roman", fontHangul: "\uBC14\uD0D5\uCCB4", roles: { title: { size: 14, bold: true, align: "center", lineSpacing: 104, ratio: 100, spacing: -2 }, author: { size: 11, align: "center", ratio: 100, spacing: -2 }, abstractEn: { size: 9, align: "justify", lineSpacing: 139, marginLeft: 22.5, marginRight: 22.5 }, keywordsEn: { size: 9, align: "left", marginLeft: 22.5, marginRight: 22.5 }, h1: { size: 12, bold: true, align: "left", ratio: 100, spacing: -2 }, h2: { size: 11, bold: true, align: "left", ratio: 100, spacing: -2 }, h3: { size: 11, align: "left", ratio: 100, spacing: -2 }, h4: { size: 11, align: "left", ratio: 100, spacing: -2 }, body: { size: 10, align: "justify", lineSpacing: 145, ratio: 100, spacing: -2 }, caption: { size: 10, align: "center", ratio: 100, spacing: -2 }, footnote: { size: 9, align: "justify", lineSpacing: 111, ratio: 100, spacing: -2, indent: -7.2, marginLeft: 7.2 }, refHead: { size: 11, bold: true, align: "center", ratio: 100, spacing: -2 }, ref: { size: 10, lineSpacing: 145, ratio: 100, spacing: -2, indent: -30, marginLeft: 30 } } },
       copyright: "\uD22C\uACE0 \uB17C\uBB38\uC740 \uD3B8\uC9D1\uC704\uC6D0\uD68C \uC2EC\uC0AC\uB97C \uAC70\uCCD0 \uAC8C\uC7AC\uAC00 \uD655\uC815\uB418\uBA74 \uAC8C\uC7AC\uB420 \uC218 \uC788\uC73C\uBA70, \uAC8C\uC7AC\uB41C \uB17C\uBB38\uC758 \uC800\uC791\uAD8C\uC740 \uD559\uD68C\uC5D0 \uADC0\uC18D(\uD3B8\uC9D1\uC704\uC6D0\uD68C \uADDC\uC815 \uC81C12\uC870)",
       contact: "discog2019@daum.net([\uB2F4\uD654\uC640 \uC778\uC9C0] \uD3B8\uC9D1\uC704\uC6D0\uD68C) / discogkorea@daum.net(\uD559\uD68C \uB300\uD45C \uBA54\uC77C) / 02-880-6054(\uD559\uD68C) \u2014 JAMS\xB7\uD559\uD68C \uD648\uD398\uC774\uC9C0 \uD558\uB2E8, 33\uAD8C 4\uD638 \uACF5\uC9C0",
-      notes: ["\uD3B8\uC9D1 \uC218\uCE58\uB294 \u300C\uB2F4\uD654\uC640 \uC778\uC9C0\u300D \uB17C\uBB38 \uC791\uC131 \uC694\uB839(JAMS 33\uAD8C 4\uD638 \uACF5\uC9C0 \uCCA8\uBD802_\uB17C\uBB38\uC791\uC131\uC694\uB839_2025.pdf = \uD559\uD68C \uD648\uD398\uC774\uC9C0 \u2018\uB17C\uBB38\uC791\uC131 \uC591\uC2DD\u2019\uC758 \uCCA8\uBD803_\uB17C\uBB38\uC791\uC131\uC694\uB839_2025.pdf, \uAC19\uC740 \uAE00)\uC758 1\xB72\uC808\uACFC \u20186. \uB17C\uBB38 \uCCB4\uC7AC \uC608\u2019\uC5D0\uC11C \uC77D\uC74C. \uACF5\uC2DD HWP \uC591\uC2DD\uC774 \uC5C6\uC5B4 \uBC14\uD0D5\uD2C0 \uC5C6\uC74C(\uD559\uD68C \uD648\uD398\uC774\uC9C0 \uB17C\uBB38\uC791\uC131 \uC591\uC2DD \uD654\uBA74\uC758 \u2018\uC601\uC5B4\uB17C\uBB38\uC0D8\uD50C\xB7\uD55C\uAE00\uB17C\uBB38\uC0D8\uD50C\u2019\uC740 \uC8FC\uC11D \uCC98\uB9AC\uB3FC \uBCF4\uC774\uC9C0 \uC54A\uB294 \uC61B DOCX\uB77C \uC4F0\uC9C0 \uC54A\uC74C)", "\uC5EC\uBC31\uC740 HWP \uAC12(\uC704\xB7\uC544\uB798\xB7\uC88C\uC6B0 42, \uBA38\uB9AC\uB9D0\xB7\uAF2C\uB9AC\uB9D0 9 mm)\uC744 \uC500. \uAC19\uC740 \uC791\uC131\uC694\uB839\uC758 MS Word \uAC12(\uC88C\uC6B0 4.2 cm, \uC704\xB7\uC544\uB798 5.1 cm, \uBA38\uB9AC\uAE00\xB7\uBC14\uB2E5\uAE00 4.2 cm)\uC740 \uB2E4\uB984 \u2014 \uD55C\uAE00 \uBC14\uD0D5\uC774\uB77C HWP \uAC12. \uC81C\uBCF8 \uC5EC\uBC31\uC740 \uADDC\uC815\uC5D0 \uC5C6\uC74C", "\uC904 \uAC04\uACA9\uC740 \uADDC\uC815\uC774 \uBAA8\uB450 \u2018\uACE0\uC815\uAC12\u2019(\uC81C\uBAA9\xB7\uBCF8\uBB38\xB7\uCC38\uACE0\uBB38\uD5CC 14.5pt, \uC601\uBB38 \uCD08\uB85D 12.5pt, \uAC01\uC8FC 10pt) \u2014 format\uC740 % \uC904\uAC04\uACA9\uB9CC \uBC1B\uC544 \uAE00\uC790 \uD06C\uAE30 \uB300\uBE44\uB85C \uD658\uC0B0\uD574 \uB123\uC74C(14.5/14\u2248104, 14.5/10=145, 12.5/9\u2248139, 10/9\u2248111). \uC800\uC790\xB7\uC7A5\uC808 \uC81C\uBAA9\xB7Key words\xB7\uD45C \uC81C\uBAA9\uC758 \uC904 \uAC04\uACA9\uC740 \uADDC\uC815\uC5D0 \uC5C6\uC5B4 \uBE44\uC6C0", "\u20182.5\uC790\u2019\xB7\u20180.8\uC790\u2019\xB7\u20183\uC790\u2019\uB294 \uADF8 \uBB38\uB2E8 \uAE00\uC790 \uD06C\uAE30 \uAE30\uC900\uC73C\uB85C pt \uD658\uC0B0: \uC601\uBB38 \uCD08\uB85D\xB7Key words \uC88C\uC6B0 \uC5EC\uBC31 2.5\uC790 \xD7 9pt = 22.5pt, \uAC01\uC8FC \uB0B4\uC5B4\uC4F0\uAE30 0.8\uC790 \xD7 9pt = 7.2pt, \uCC38\uACE0\uBB38\uD5CC \uB0B4\uC5B4\uC4F0\uAE30 3\uC790 \xD7 10pt = 30pt. \uC601\uBB38 \uCD08\uB85D \u2018\uBB38\uB2E8 \uC704 0.3\uC904\u2019\uC740 \uB123\uC9C0 \uC54A\uC74C", "Key words \u2018\uCCAB \uC904 \uB0B4\uC5B4\uC4F0\uAE30\u2019: \uC791\uC131\uC694\uB839 2.3\uC740 \uC22B\uC790 \uC5C6\uC774 \u2018\uCCAB \uC904 \uB0B4\uC5B4\uC4F0\uAE30\u2019(\uB4A4 \u20184)\u2019\uB294 \uB2E4\uC74C \uD56D\uBAA9 \uBC88\uD638), \uCCB4\uC7AC \uC608\uB294 \u2018\uCCAB \uC904 \uB0B4\uC5B4\uC4F0\uAE30 5\uC790\u2019 \u2014 \uC88C\uC6B0 \uC5EC\uBC31\uACFC \uD568\uAED8 \uC4F0\uB294 \uB0B4\uC5B4\uC4F0\uAE30\uB294 format\uC73C\uB85C \uC62E\uAE30\uAE30 \uC5B4\uB824\uC6CC \uC88C\uC6B0 \uC5EC\uBC31\uB9CC \uB123\uC74C", "\uAE00\uAF34: \uD55C\uAE00 \uBC14\uD0D5\uCCB4\xB7\uC601\uC5B4 Times New Roman. format.font\uB294 \uBC14\uD0D5\uCCB4, \uC601\uBB38 \uCD08\uB85D\xB7Key words\uB9CC Times New Roman. \uC601\uC5B4 \uB17C\uBB38\uC740 \uBCF8\uBB38\uB3C4 Times New Roman\uC774 \uB9DE\uC74C(\uC791\uC131\uC694\uB839 1.2) \u2014 \uBCC0\uD658 \uB4A4 \uC800\uC790\uAC00 \uD655\uC778", "\uC790\uAC04: \uC791\uC131\uC694\uB839 1.2 \u2018\uAC04\uACA9 \uC881\uAC8C 0.1pt(HWP) \uAE00\uC790 \uAC04\uACA9 -2\u2019, \uCCB4\uC7AC \uC608 \u2018\uAC04\uACA9 \u20132[\uD55C\uAE00], \uC881\uAC8C 0.1pt[\uC601\uC5B4]\u2019 \u2014 \uD55C\uAE00 \uAE00\uC790 \uAC04\uACA9 -2\uB97C \uBC14\uD0D5\uCCB4 \uC5ED\uD560 spacing -2\uB85C \uB123\uACE0 Times New Roman \uC5ED\uD560\uC5D0\uB294 \uB123\uC9C0 \uC54A\uC74C", "\uB458\uC9F8 \uC218\uC900 \uC81C\uBAA9\uC740 \uC791\uC131\uC694\uB839 2.5 \u2018\uC9C4\uD558\uAC8C\u2019, \uCCB4\uC7AC \uC608 \u20181.1. (\uAE00\uC790 \uD06C\uAE30 11, \uBCF4\uD1B5; \uC67C\uCABD \uC815\uB82C, \uC9C4\uD558\uAC8C)\u2019 \u2014 \uC9C4\uD558\uAC8C\uB85C \uB460. \uC14B\uC9F8 \uC218\uC900 \uC774\uD558 11pt \uBCF4\uD1B5. \uD45C \uC81C\uBAA9 \uAE00\uC790 \uD06C\uAE30\uB294 \uD55C\uAE00 10(\uD45C\xB7\uADF8\uB9BC \uAE00\uC790 \uD06C\uAE30), \uC601\uC5B4 \uC81C\uBAA9 9 \u2014 caption\uC740 10", "\uAD6D\uBB38 \uCD08\uB85D \uC5C6\uC774 \uC601\uBB38 \uCD08\uB85D(200\uB2E8\uC5B4 \uC774\uB0B4, \uB2E8\uC5B4 \uC218 \uBA85\uAE30)\uB9CC \uCCAB \uD398\uC774\uC9C0\uC5D0 \uB450\uB294 \uCCB4\uC7AC \u2014 \uBCC4\uB3C4 Abstract \uC81C\uBAA9\uC774 \uC5C6\uACE0 \uCD08\uB85D \uCCAB\uBA38\uB9AC\uAC00 \uC11C\uC9C0(\uC800\uC790. \uC5F0\uB3C4. \uC81C\uBAA9. Discourse and Cognition \uAD8C:\uD638, \uCABD.) \u2014 labels\uC5D0 abstractEnHead\uB97C \uB450\uC9C0 \uC54A\uC74C", "\uCC38\uACE0\uBB38\uD5CC \uC81C\uBAA9\uC740 \uD55C\uAE00 \uB17C\uBB38 \u2018\uCC38\uACE0\uBB38\uD5CC\u2019, \uC601\uC5B4 \uB17C\uBB38 \u2018References\u2019(\uC791\uC131\uC694\uB839 2.10) \u2014 labels\uB294 \uD55C\uAE00 \uB17C\uBB38 \uAE30\uC900 \u2018\uCC38\uACE0\uBB38\uD5CC\u2019", "\uBE48 \uC904\uC740 \uCCB4\uC7AC \uC608(\uC81C\uBAA9 \uB4A4 2\uC904, \uD544\uC790 \uB4A4 2\uC904, \uCD08\uB85D \uB4A4 1\uC904, Key words \uB4A4 2\uC904, \uCC38\uACE0\uBB38\uD5CC \uC55E 2\uC904\xB7\uB4A4 1\uC904)\uC640 \uC791\uC131\uC694\uB839 2.5(\uC18C\uC81C\uBAA9 \uC704\uC544\uB798 \uD55C \uC904)\uC5D0\uC11C \uC77D\uC74C. \uCCB4\uC7AC \uC608\uC758 1.1.1.\xB71.1.1.1. \u2018\uBCF8\uBB38\uACFC \uB744\uC6B0\uC9C0 \uC54A\uC74C\u2019\uC774\uB77C \uC14B\uC9F8 \uC218\uC900 \uC774\uD558\uB294 \uB123\uC9C0 \uC54A\uC74C. \uC800\uC790 \uC815\uBCF4 \uC55E 3\uC904\xB7\uB0A0\uC9DC \uBB38\uC7A5 \uC55E 2\uC904\uC740 \uD574\uB2F9 \uC5ED\uD560\uC774 \uC5C6\uC5B4 layout\uC5D0\uB9CC", "\uBCF8\uBB38 \uC778\uC6A9\uC774 \uC800\uC790\u2013\uC5F0\uB3C4(\uCABD) \uBC29\uC2DD\uC774\uACE0 \uCC38\uC870\uC8FC(\uCD9C\uCC98 \uAC01\uC8FC) \uAE08\uC9C0 \u2014 pageUnit keep", "\uB9C8\uAC10\uC77C: \uD22C\uACE0\uADDC\uC815\xB7\uD3B8\uC9D1\uC704\uC6D0\uD68C \uADDC\uC815 \uC81C13\uC870\uB294 1\uD638 \uB9C8\uAC10 12\uC6D4 28\uC77C, 33\uAD8C 4\uD638 \uACF5\uC9C0 \uC77C\uC815\uD45C\uB294 12\uC6D4 31\uC77C(\uAC19\uC740 \uD45C\uC5D0 32\uAD8C 1~3\uD638\uB85C \uC798\uBABB \uC801\uD78C \uC904\uB3C4 \uC788\uC74C) \u2014 \uADDC\uC815\uC758 12\uC6D4 28\uC77C\uC744 \uC500", "\uC800\uC790 \uC815\uBCF4 \uC775\uBA85\uD654 \uC694\uAD6C\uAC00 \uC5C6\uACE0 \uC624\uD788\uB824 \uCCAB \uCABD \uC18C\uC18D\xB7\uC9C1\uC704, \uB9C8\uC9C0\uB9C9 \uCABD \uD558\uB2E8 \uC800\uC790 \uC815\uBCF4 \uAE30\uC7AC\uB97C \uC694\uAD6C\uD568", "\uACF5\uC9C0\xB7\uADDC\uC815\uC5D0 \uC2EC\uC0AC\uB8CC\xB7\uAC8C\uC7AC\uB8CC\xB7\uD68C\uBE44 \uACC4\uC88C \uBC88\uD638\uC640 \uC608\uAE08\uC8FC \uC2E4\uBA85, \uD3B8\uC9D1\uC704\uC6D0\uD68C \uC5F0\uB77D\uCC98\uC5D0 \uAD50\uC218 \uC5F0\uAD6C\uC2E4 \uC8FC\uC18C\xB7\uC804\uD654\uAC00 \uC788\uC73C\uB098 \uB370\uC774\uD130\uC5D0\uB294 \uB123\uC9C0 \uC54A\uC74C(\uD559\uD68C \uBA54\uC77C\xB7\uB300\uD45C \uC804\uD654\uB9CC)", "KCI: 2000.7 \uB4F1\uC7AC\uD6C4\uBCF4 \uC120\uC815, 2004.1 \uB4F1\uC7AC\uD559\uC220\uC9C0 \uC120\uC815, 2021.1 \uB4F1\uC7AC \uC720\uC9C0, 2027\uB144 \uC7AC\uC778\uC99D\uD3C9\uAC00 \uB300\uC0C1. \uC5F0 4\uD68C(2.28\xB75.31\xB78.31\xB711.30), \uCD5C\uADFC 2026.8 33(3)", "\uBC15\uC0AC\uD559\uC704 \uB17C\uBB38 \uCD08\uB85D\uC740 \uB9E4\uAD8C 4\uD638\uC5D0 \uBCC4\uB3C4 \uBAA8\uC9D1(\uC9C0\uB3C4\uAD50\uC218 \uCD94\uCC9C, \uD3B8\uC9D1\uC704\uC6D0\uD68C \uBA54\uC77C \uC81C\uCD9C) \u2014 \uC77C\uBC18 \uD22C\uACE0\uC640 \uBCC4\uAC1C"],
+      notes: ["\uD3B8\uC9D1 \uC218\uCE58\uB294 \u300C\uB2F4\uD654\uC640 \uC778\uC9C0\u300D \uB17C\uBB38 \uC791\uC131 \uC694\uB839(JAMS 33\uAD8C 4\uD638 \uACF5\uC9C0 \uCCA8\uBD802_\uB17C\uBB38\uC791\uC131\uC694\uB839_2025.pdf = \uD559\uD68C \uD648\uD398\uC774\uC9C0 \u2018\uB17C\uBB38\uC791\uC131 \uC591\uC2DD\u2019\uC758 \uCCA8\uBD803_\uB17C\uBB38\uC791\uC131\uC694\uB839_2025.pdf, \uAC19\uC740 \uAE00)\uC758 1\xB72\uC808\uACFC \u20186. \uB17C\uBB38 \uCCB4\uC7AC \uC608\u2019\uC5D0\uC11C \uC77D\uC74C. \uACF5\uC2DD HWP \uC591\uC2DD\uC774 \uC5C6\uC5B4 \uBC14\uD0D5\uD2C0 \uC5C6\uC74C(\uD559\uD68C \uD648\uD398\uC774\uC9C0 \uB17C\uBB38\uC791\uC131 \uC591\uC2DD \uD654\uBA74\uC758 \u2018\uC601\uC5B4\uB17C\uBB38\uC0D8\uD50C\xB7\uD55C\uAE00\uB17C\uBB38\uC0D8\uD50C\u2019\uC740 \uC8FC\uC11D \uCC98\uB9AC\uB3FC \uBCF4\uC774\uC9C0 \uC54A\uB294 \uC61B DOCX\uB77C \uC4F0\uC9C0 \uC54A\uC74C)", "\uC5EC\uBC31\uC740 HWP \uAC12(\uC704\xB7\uC544\uB798\xB7\uC88C\uC6B0 42, \uBA38\uB9AC\uB9D0\xB7\uAF2C\uB9AC\uB9D0 9 mm)\uC744 \uC500. \uAC19\uC740 \uC791\uC131\uC694\uB839\uC758 MS Word \uAC12(\uC88C\uC6B0 4.2 cm, \uC704\xB7\uC544\uB798 5.1 cm, \uBA38\uB9AC\uAE00\xB7\uBC14\uB2E5\uAE00 4.2 cm)\uC740 \uB2E4\uB984 \u2014 \uD55C\uAE00 \uBC14\uD0D5\uC774\uB77C HWP \uAC12. \uC81C\uBCF8 \uC5EC\uBC31\uC740 \uADDC\uC815\uC5D0 \uC5C6\uC74C", "\uC904 \uAC04\uACA9\uC740 \uADDC\uC815\uC774 \uBAA8\uB450 \u2018\uACE0\uC815\uAC12\u2019(\uC81C\uBAA9\xB7\uBCF8\uBB38\xB7\uCC38\uACE0\uBB38\uD5CC 14.5pt, \uC601\uBB38 \uCD08\uB85D 12.5pt, \uAC01\uC8FC 10pt) \u2014 format\uC740 % \uC904\uAC04\uACA9\uB9CC \uBC1B\uC544 \uAE00\uC790 \uD06C\uAE30 \uB300\uBE44\uB85C \uD658\uC0B0\uD574 \uB123\uC74C(14.5/14\u2248104, 14.5/10=145, 12.5/9\u2248139, 10/9\u2248111). \uC800\uC790\xB7\uC7A5\uC808 \uC81C\uBAA9\xB7Key words\xB7\uD45C \uC81C\uBAA9\uC758 \uC904 \uAC04\uACA9\uC740 \uADDC\uC815\uC5D0 \uC5C6\uC5B4 \uBE44\uC6C0", "\u20182.5\uC790\u2019\xB7\u20180.8\uC790\u2019\xB7\u20183\uC790\u2019\uB294 \uADF8 \uBB38\uB2E8 \uAE00\uC790 \uD06C\uAE30 \uAE30\uC900\uC73C\uB85C pt \uD658\uC0B0: \uC601\uBB38 \uCD08\uB85D\xB7Key words \uC88C\uC6B0 \uC5EC\uBC31 2.5\uC790 \xD7 9pt = 22.5pt, \uAC01\uC8FC \uB0B4\uC5B4\uC4F0\uAE30 0.8\uC790 \xD7 9pt = 7.2pt, \uCC38\uACE0\uBB38\uD5CC \uB0B4\uC5B4\uC4F0\uAE30 3\uC790 \xD7 10pt = 30pt. \uC601\uBB38 \uCD08\uB85D \u2018\uBB38\uB2E8 \uC704 0.3\uC904\u2019\uC740 \uB123\uC9C0 \uC54A\uC74C", "Key words \u2018\uCCAB \uC904 \uB0B4\uC5B4\uC4F0\uAE30\u2019: \uC791\uC131\uC694\uB839 2.3\uC740 \uC22B\uC790 \uC5C6\uC774 \u2018\uCCAB \uC904 \uB0B4\uC5B4\uC4F0\uAE30\u2019(\uB4A4 \u20184)\u2019\uB294 \uB2E4\uC74C \uD56D\uBAA9 \uBC88\uD638), \uCCB4\uC7AC \uC608\uB294 \u2018\uCCAB \uC904 \uB0B4\uC5B4\uC4F0\uAE30 5\uC790\u2019 \u2014 \uC88C\uC6B0 \uC5EC\uBC31\uACFC \uD568\uAED8 \uC4F0\uB294 \uB0B4\uC5B4\uC4F0\uAE30\uB294 format\uC73C\uB85C \uC62E\uAE30\uAE30 \uC5B4\uB824\uC6CC \uC88C\uC6B0 \uC5EC\uBC31\uB9CC \uB123\uC74C", "\uAE00\uAF34: \uD55C\uAE00 \uBC14\uD0D5\uCCB4\xB7\uC601\uC5B4 Times New Roman(\uC791\uC131\uC694\uB839 1.2) \u2014 \uBCC0\uD658\uAE30\uB294 \uD55C\uAE00\xB7\uD55C\uC790 \uAE00\uC790\uB97C \uBC14\uD0D5\uCCB4, \uC601\uBB38 \uAE00\uC790\uB97C Times New Roman\uC73C\uB85C \uB123\uC74C(format.fontHangul, v2.4.2\uBD80\uD130. \uADF8 \uC804\uC5D0\uB294 \uC601\uBB38 \uCD08\uB85D\xB7Key words\uB9CC Times New Roman\uC774\uACE0 \uBCF8\uBB38 \uC601\uBB38\uC740 \uBC14\uD0D5\uCCB4\uB85C \uC9C0\uC815\uB410\uC74C)", "\uC790\uAC04: \uC791\uC131\uC694\uB839 1.2 \u2018\uAC04\uACA9 \uC881\uAC8C 0.1pt(HWP) \uAE00\uC790 \uAC04\uACA9 -2\u2019, \uCCB4\uC7AC \uC608 \u2018\uAC04\uACA9 \u20132[\uD55C\uAE00], \uC881\uAC8C 0.1pt[\uC601\uC5B4]\u2019 \u2014 \uAE00\uC790 \uAC04\uACA9 -2\uB97C \uBCF8\uBB38\xB7\uC81C\uBAA9 \uACC4\uC5F4 \uC5ED\uD560\uC5D0 spacing -2\uB85C \uB123\uACE0 \uC601\uBB38 \uCD08\uB85D\xB7Key words \uC5ED\uD560\uC5D0\uB294 \uB123\uC9C0 \uC54A\uC74C(\uBCF8\uBB38 \uC18D \uC601\uBB38 \uAE00\uC790\uC5D0\uB3C4 \uAC19\uC740 -2\uAC00 \uB4E4\uC5B4\uAC10)", "\uB458\uC9F8 \uC218\uC900 \uC81C\uBAA9\uC740 \uC791\uC131\uC694\uB839 2.5 \u2018\uC9C4\uD558\uAC8C\u2019, \uCCB4\uC7AC \uC608 \u20181.1. (\uAE00\uC790 \uD06C\uAE30 11, \uBCF4\uD1B5; \uC67C\uCABD \uC815\uB82C, \uC9C4\uD558\uAC8C)\u2019 \u2014 \uC9C4\uD558\uAC8C\uB85C \uB460. \uC14B\uC9F8 \uC218\uC900 \uC774\uD558 11pt \uBCF4\uD1B5. \uD45C \uC81C\uBAA9 \uAE00\uC790 \uD06C\uAE30\uB294 \uD55C\uAE00 10(\uD45C\xB7\uADF8\uB9BC \uAE00\uC790 \uD06C\uAE30), \uC601\uC5B4 \uC81C\uBAA9 9 \u2014 caption\uC740 10", "\uAD6D\uBB38 \uCD08\uB85D \uC5C6\uC774 \uC601\uBB38 \uCD08\uB85D(200\uB2E8\uC5B4 \uC774\uB0B4, \uB2E8\uC5B4 \uC218 \uBA85\uAE30)\uB9CC \uCCAB \uD398\uC774\uC9C0\uC5D0 \uB450\uB294 \uCCB4\uC7AC \u2014 \uBCC4\uB3C4 Abstract \uC81C\uBAA9\uC774 \uC5C6\uACE0 \uCD08\uB85D \uCCAB\uBA38\uB9AC\uAC00 \uC11C\uC9C0(\uC800\uC790. \uC5F0\uB3C4. \uC81C\uBAA9. Discourse and Cognition \uAD8C:\uD638, \uCABD.) \u2014 labels\uC5D0 abstractEnHead\uB97C \uB450\uC9C0 \uC54A\uC74C", "\uCC38\uACE0\uBB38\uD5CC \uC81C\uBAA9\uC740 \uD55C\uAE00 \uB17C\uBB38 \u2018\uCC38\uACE0\uBB38\uD5CC\u2019, \uC601\uC5B4 \uB17C\uBB38 \u2018References\u2019(\uC791\uC131\uC694\uB839 2.10) \u2014 labels\uB294 \uD55C\uAE00 \uB17C\uBB38 \uAE30\uC900 \u2018\uCC38\uACE0\uBB38\uD5CC\u2019", "\uBE48 \uC904\uC740 \uCCB4\uC7AC \uC608(\uC81C\uBAA9 \uB4A4 2\uC904, \uD544\uC790 \uB4A4 2\uC904, \uCD08\uB85D \uB4A4 1\uC904, Key words \uB4A4 2\uC904, \uCC38\uACE0\uBB38\uD5CC \uC55E 2\uC904\xB7\uB4A4 1\uC904)\uC640 \uC791\uC131\uC694\uB839 2.5(\uC18C\uC81C\uBAA9 \uC704\uC544\uB798 \uD55C \uC904)\uC5D0\uC11C \uC77D\uC74C. \uCCB4\uC7AC \uC608\uC758 1.1.1.\xB71.1.1.1. \u2018\uBCF8\uBB38\uACFC \uB744\uC6B0\uC9C0 \uC54A\uC74C\u2019\uC774\uB77C \uC14B\uC9F8 \uC218\uC900 \uC774\uD558\uB294 \uB123\uC9C0 \uC54A\uC74C. \uC800\uC790 \uC815\uBCF4 \uC55E 3\uC904\xB7\uB0A0\uC9DC \uBB38\uC7A5 \uC55E 2\uC904\uC740 \uD574\uB2F9 \uC5ED\uD560\uC774 \uC5C6\uC5B4 layout\uC5D0\uB9CC", "\uBCF8\uBB38 \uC778\uC6A9\uC774 \uC800\uC790\u2013\uC5F0\uB3C4(\uCABD) \uBC29\uC2DD\uC774\uACE0 \uCC38\uC870\uC8FC(\uCD9C\uCC98 \uAC01\uC8FC) \uAE08\uC9C0 \u2014 pageUnit keep", "\uB9C8\uAC10\uC77C: \uD22C\uACE0\uADDC\uC815\xB7\uD3B8\uC9D1\uC704\uC6D0\uD68C \uADDC\uC815 \uC81C13\uC870\uB294 1\uD638 \uB9C8\uAC10 12\uC6D4 28\uC77C, 33\uAD8C 4\uD638 \uACF5\uC9C0 \uC77C\uC815\uD45C\uB294 12\uC6D4 31\uC77C(\uAC19\uC740 \uD45C\uC5D0 32\uAD8C 1~3\uD638\uB85C \uC798\uBABB \uC801\uD78C \uC904\uB3C4 \uC788\uC74C) \u2014 \uADDC\uC815\uC758 12\uC6D4 28\uC77C\uC744 \uC500", "\uC800\uC790 \uC815\uBCF4 \uC775\uBA85\uD654 \uC694\uAD6C\uAC00 \uC5C6\uACE0 \uC624\uD788\uB824 \uCCAB \uCABD \uC18C\uC18D\xB7\uC9C1\uC704, \uB9C8\uC9C0\uB9C9 \uCABD \uD558\uB2E8 \uC800\uC790 \uC815\uBCF4 \uAE30\uC7AC\uB97C \uC694\uAD6C\uD568", "\uACF5\uC9C0\xB7\uADDC\uC815\uC5D0 \uC2EC\uC0AC\uB8CC\xB7\uAC8C\uC7AC\uB8CC\xB7\uD68C\uBE44 \uACC4\uC88C \uBC88\uD638\uC640 \uC608\uAE08\uC8FC \uC2E4\uBA85, \uD3B8\uC9D1\uC704\uC6D0\uD68C \uC5F0\uB77D\uCC98\uC5D0 \uAD50\uC218 \uC5F0\uAD6C\uC2E4 \uC8FC\uC18C\xB7\uC804\uD654\uAC00 \uC788\uC73C\uB098 \uB370\uC774\uD130\uC5D0\uB294 \uB123\uC9C0 \uC54A\uC74C(\uD559\uD68C \uBA54\uC77C\xB7\uB300\uD45C \uC804\uD654\uB9CC)", "KCI: 2000.7 \uB4F1\uC7AC\uD6C4\uBCF4 \uC120\uC815, 2004.1 \uB4F1\uC7AC\uD559\uC220\uC9C0 \uC120\uC815, 2021.1 \uB4F1\uC7AC \uC720\uC9C0, 2027\uB144 \uC7AC\uC778\uC99D\uD3C9\uAC00 \uB300\uC0C1. \uC5F0 4\uD68C(2.28\xB75.31\xB78.31\xB711.30), \uCD5C\uADFC 2026.8 33(3)", "\uBC15\uC0AC\uD559\uC704 \uB17C\uBB38 \uCD08\uB85D\uC740 \uB9E4\uAD8C 4\uD638\uC5D0 \uBCC4\uB3C4 \uBAA8\uC9D1(\uC9C0\uB3C4\uAD50\uC218 \uCD94\uCC9C, \uD3B8\uC9D1\uC704\uC6D0\uD68C \uBA54\uC77C \uC81C\uCD9C) \u2014 \uC77C\uBC18 \uD22C\uACE0\uC640 \uBCC4\uAC1C"],
       sources: ["https://discog.jams.or.kr \uD559\uD68C\uC18C\uAC1C(guidDivCd=01)\xB7\uD559\uD68C\uB17C\uBB38\uD22C\uACE0 \uADDC\uC815(guidDivCd=02, \uCCA8\uBD801_\uB17C\uBB38\uD22C\uACE0\uADDC\uC815_2025.pdf)\xB7\uD3B8\uC9D1\uC704\uC6D0\uD68C(guidDivCd=03)", "https://discog.jams.or.kr/po/community/notice/noticeView.kci?notiSeq=000000054419 ([\uB2F4\uD654\uC640 \uC778\uC9C0] 33\uAD8C 4\uD638 \uB17C\uBB38 \uBAA8\uC9D1 \uBC0F \uBC15\uC0AC\uD559\uC704 \uB17C\uBB38 \uCD08\uB85D \uBAA8\uC9D1 \uC548\uB0B4, 9\uC6D4 30\uC77C \uB9C8\uAC10) \uCCA8\uBD80: \uCCA8\uBD801_\uB17C\uBB38\uD22C\uACE0\uADDC\uC815_2025.pdf, \uCCA8\uBD802_\uB17C\uBB38\uC791\uC131\uC694\uB839_2025.pdf", "https://discog.com/homepage/custom/paperrule (\uB17C\uBB38\uD22C\uACE0 \uC548\uB0B4/\uADDC\uC815), /paperform (\uB17C\uBB38\uC791\uC131 \uC591\uC2DD: \uCCA8\uBD803_\uB17C\uBB38\uC791\uC131\uC694\uB839_2025.pdf), /editrule (\uD3B8\uC9D1\uC704\uC6D0\uD68C \uADDC\uC815, 2018.5.14 \uAC1C\uC815), /researchrule (\uC5F0\uAD6C\uC724\uB9AC\uADDC\uC815), /signguide (\uD68C\uC6D0\uAC00\uC785 \uBC0F \uD68C\uBE44\uB0A9\uBD80 \uC548\uB0B4), /rule (\uD559\uD68C\uC815\uAD00)", "KCI \uD559\uC220\uC9C0 \uC815\uBCF4(\uB2F4\uD654\uC640 \uC778\uC9C0, sereId=000477)"],
       updated: "2026-11-09"
     },
@@ -18364,10 +18365,10 @@ main.over .dropline { display: block; }
       references: { order: "\uB17C\uBB38\uC5D0 \uC778\uC6A9\uD55C \uBB38\uD5CC\uB9CC \uBE60\uC9D0\uC5C6\uC774(all and only the works cited). \uD55C\uAD6D\uC5B4 \uB17C\uBB38\uC740 \uD55C\uAD6D\uC5B4 \uBB38\uD5CC(\uC800\uC790 \uAC00\uB098\uB2E4\uC21C) \u2192 \uC601\uC5B4 \uBB38\uD5CC(\uC800\uC790 \uC131 \uC54C\uD30C\uBCB3\uC21C). \uC601\uBB38 \uB17C\uBB38\uC758 \uD55C\uAD6D\uC5B4 \uBB38\uD5CC\uC740 \uC800\uC790\xB7\uC81C\uBAA9\uC744 Yale \uB85C\uB9C8\uC790\uB85C \uC801\uACE0 [ ] \uC548\uC5D0 \uC601\uC5B4 \uBC88\uC5ED(\uC81C9\uC7A5 2)", rules: ["\uAD6D\uBB38 \uBB38\uD5CC\uC740 \uAD6D\uBB38 \uD45C\uAE30 \uB4A4 \uAD04\uD638\uC5D0 \uC601\uBB38 \uC815\uBCF4 \uBCD1\uAE30(\uC81C8\uC7A5 \uC81C5\uC870 2, 8\uAD8C 3\uD638 \uACF5\uC9C0 \uAC15\uC870): \uBC15\uD558\uB098, & \uC815\uC219\uD76C(Park, H., & Jung, S.). (2024). IT \uCF58\uD150\uCE20 \uAE30\uBC18 ESP \uB300\uD559\uAD50\uC591\uD544\uC218 \uC601\uC5B4 \uD504\uB85C\uADF8\uB7A8 \uAC1C\uBC1C \uC0AC\uB840\uC5F0\uAD6C(The case study for developing a required IT & engineering content-based ESP general education program). ESP Review, 6(1), 12-35.", "\uD559\uC704\uB17C\uBB38: \uAE40\uB098\uB77C(Kim, N.). (2015). \uACF5\uB300\uC0DD\uC744 \uC704\uD55C ESP \uAD50\uC218\uC694\uBAA9 \uC5F0\uAD6C: \uC694\uAD6C\uBD84\uC11D\uACFC \uCF54\uD37C\uC2A4\uB97C \uC911\uC2EC\uC73C\uB85C(A study of ESP course design for engineering students: Focusing on needs analysis and corpus) (\uBBF8\uCD9C\uAC04 \uBC15\uC0AC\uD559\uC704\uB17C\uBB38)(Unpublished doctoral dissertation). \uD55C\uAD6D\uB300\uD559\uAD50(Hankook University).", "\uD559\uC220\uC9C0: Davis, J. N., Lange, D. L., & Samuels, S. J. (1988). Effects of text structure instruction: An experimental study on foreign language readers. Journal of Reading Behavior, 20(2), 19\u201334. https://doi.org/10.xxxx/xxxx \u2014 \uCABD\uC218 \uC55E pp. \uC5C6\uC74C", "\uB2E8\uD589\uBCF8: Mehan, H. (1979). Learning lessons: Social organization in the classroom. Harvard University Press. \u2014 \uCD9C\uD310\uC0AC \uD544\uC218, \uCD08\uD310\uC774 \uC544\uB2C8\uBA74 \uD310\uC218", "\uD3B8\uC800 \uC218\uB85D: Hunt, R. (1994). Speech genres, writing genres, school genres, and computer genres. In A. Freedman & P. Medway (Eds.), Learning and teaching genre (pp. 243\u2013262). Boynton/Cook.", "\uC7A1\uC9C0\xB7\uC2E0\uBB38: Gardner, H. (1981, December). Do babies sing a universal song? Psychology Today, pp. 70\u201376.", "\uC800\uC790 20\uBA85\uAE4C\uC9C0 \uBAA8\uB450, 21\uBA85 \uC774\uC0C1\uC740 \uCC98\uC74C 19\uBA85 \u2026 \uB9C8\uC9C0\uB9C9 \uC800\uC790", "\uC0DD\uC131\uD615 AI: OpenAI. (2026). ChatGPT (GPT-5 version) [Large language model]. https://chatgpt.com", "\uB4E4\uC5EC\uC4F0\uAE30 \uB458\uC9F8 \uC904 \uC774\uD558 3\uAE00\uC790(\uB0B4\uC5B4\uC4F0\uAE30)"] },
       layout: { paper: "\uBD09\uD22C B5(176 \xD7 250 mm) \u2014 \uADDC\uC815 \uC81C8\uC7A5 \uC81C2\uC870, \uC591\uC2DD DOCX 9979 \xD7 14175 twip", margins: "\uC704 24 \xB7 \uC544\uB798 20 \xB7 \uC67C\uCABD 20 \xB7 \uC624\uB978\uCABD 20 \xB7 \uBA38\uB9AC\uAE00 12 \xB7 \uBC14\uB2E5\uAE00 0 mm(\uADDC\uC815\xB7\uC591\uC2DD \uAC19\uC74C)", body: "\uAD6D\uBB38 \uBC14\uD0D5\uCCB4(\uC601\uBB38 Times New Roman) 10pt, \uC904\uAC04\uACA9 \uACE0\uC815 14.5pt, \uCCAB \uC904 1\uAE00\uC790 \uB4E4\uC5EC\uC4F0\uAE30, \uC591\uCABD \uB9DE\uCDA4, \uC7A5\uD3C9 100%, \uC790\uAC04 \uC881\uAC8C 0.1pt(\uC591\uC2DD -2 = -0.1pt). \uC601\uBB38 \uB17C\uBB38\uC740 Times New Roman 10pt", quote: "\uADDC\uC815\uC5D0 \uC5C6\uC74C", footnote: "\uBC14\uD0D5\uCCB4(\uC601\uBB38 Times New Roman) 9pt, \uC904\uAC04\uACA9 \uACE0\uC815 10pt, \uC591\uCABD \uB9DE\uCDA4(\uADDC\uC815). \uC591\uC2DD \uAC01\uC8FC \uC2A4\uD0C0\uC77C F_\uAC01\uC8FC\uBCF8\uBB38\uC740 9pt \uC904\uAC04\uACA9 1\uC904(single)", headings: "I.(\uC7A5: \uB3CB\uC6C0 12 \uAD75\uAC8C, \uC601\uBB38 \uB17C\uBB38 Arial 12 \uAD75\uAC8C, \uC67C\uCABD) \u2013 1.(\uC808: \uB3CB\uC6C0 11 \uBCF4\uD1B5, \uC601\uBB38 Arial 11) \u2013 1)(\uC18C\uC81C\uBAA9: \uB3CB\uC6C0 10 \uBCF4\uD1B5, \uC601\uBB38 Times New Roman 10) \u2013 (1)(\uC138\uBD80 \uC81C\uBAA9 10) \u2013 \u2460(\uBBF8\uC138 \uC81C\uBAA9 10), \uBAA8\uB450 \uC67C\uCABD \uB9DE\uCDA4\xB7\uB4E4\uC5EC\uC4F0\uAE30 \uC5C6\uC74C. \uAC01 \uC81C\uBAA9 \uC55E\uB4A4 \uD55C \uC904\uC529 \uB744\uC6C0", title: "\uB17C\uBB38 \uC81C\uBAA9 \uBC14\uD0D5\uCCB4 14 \uAD75\uAC8C \uAC00\uC6B4\uB370(\uC601\uBB38 Times New Roman 14 \uAD75\uAC8C), 2\uD589 \uC774\uB0B4 / \uC800\uC790\uBA85 \uBC14\uD0D5\uCCB4 10 \uAD75\uAC8C\xB7\uC18C\uC18D 10 \uBCF4\uD1B5, \uC624\uB978\uCABD \uB9DE\uCDA4 / \uC601\uBB38 \uC11C\uC9C0 \uC904 9 \uAD75\uAC8C, \uCD08\uB85D 9 \uBCF4\uD1B5, \uC8FC\uC81C\uC5B4 9 \uAD75\uAC8C \u2014 \uBAA8\uB450 \uC904\uAC04\uACA9 \uACE0\uC815 12.5pt, \uC88C\uC6B0 2.5\uAE00\uC790 \uB4E4\uC5EC\uC4F0\uAE30, \uC591\uCABD \uB9DE\uCDA4 / \uCC38\uACE0\uBB38\uD5CC\xB7\uBD80\uB85D \uC81C\uBAA9 \uB3CB\uC6C0(\uC601\uBB38 Arial) 11 \uBCF4\uD1B5 \uAC00\uC6B4\uB370 / \uCC38\uACE0\uBB38\uD5CC \uBC14\uD0D5\uCCB4 10, \uB458\uC9F8 \uC904 \uC774\uD558 3\uAE00\uC790 / \uC608\uC2DC\uC5B8\uC5B4 3\uC904 9 \uAD75\uAC8C \uC67C\uCABD / \uC800\uC790 \uC815\uBCF4 9 \uBCF4\uD1B5 \uC67C\uCABD", tables: "\uD45C\xB7\uADF8\uB9BC \uBC88\uD638\uC640 \uC81C\uBAA9\uC740 \uC704\uCABD \uAC00\uC6B4\uB370, \uBC88\uD638\uB9CC \uAD75\uAC8C(\uAD6D\uBB38 \u2018\uD45C 3\u2019, \u2018\uADF8\uB9BC 5\u2019, \uC601\uBB38 \u2018TABLE 3\u2019, \u2018FIGURE 5\u2019 \uB300\uBB38\uC790, \uC81C\uBAA9\uC740 \uBC88\uD638 \uC544\uB798 \uC904\uC5D0 \uC8FC\uC694 \uB2E8\uC5B4 \uB300\uBB38\uC790 \uC2DC\uC791). \uD45C \uC548 \uBC14\uD0D5\uCCB4 9, \uC904\uAC04\uACA9 \uACE0\uC815 10pt, \uC120 \uB450\uAED8 1/2pt, \uB0B4\uC6A9\uC5D0 \uAC00\uB85C\uC120 \uC5C6\uC74C. \uC601\uBB38 \uB17C\uBB38: \uC138\uB85C\uC120 \uC4F0\uC9C0 \uC54A\uACE0 \uCCAB \uAC00\uB85C\uC120 \uC774\uC911\uC120, \uB098\uBA38\uC9C0 \uB2E8\uC120, < > \uC4F0\uC9C0 \uC54A\uC74C. \uBCF8\uBB38\uC5D0\uC11C\uB294 \u2018\uD45C/\uADF8\uB9BC 5\uC5D0\uC11C \uBCF4\uB4EF\uC774\u2019, \u2018as shown in Table/Figure 3\u2019" },
       labels: { refHead: "\uCC38\uACE0\uBB38\uD5CC" },
-      format: { page: { width: 176, height: 250, top: 24, bottom: 20, left: 20, right: 20, header: 12, footer: 0, gutter: 0 }, font: "\uBC14\uD0D5\uCCB4", roles: { title: { size: 14, bold: true, align: "center", ratio: 100 }, author: { size: 10, bold: true, align: "right", ratio: 100 }, affiliation: { size: 10, align: "right", ratio: 100 }, abstractEn: { size: 9, align: "justify", ratio: 100, marginLeft: 25, marginRight: 25 }, keywordsEn: { size: 9, bold: true, align: "justify", ratio: 100, marginLeft: 25, marginRight: 25 }, h1: { font: "\uB3CB\uC6C0", size: 12, bold: true, align: "left", ratio: 100 }, h2: { font: "\uB3CB\uC6C0", size: 11, align: "left", ratio: 100 }, h3: { font: "\uB3CB\uC6C0", size: 10, align: "left", ratio: 100 }, h4: { font: "\uB3CB\uC6C0", size: 10, align: "left", ratio: 100 }, body: { size: 10, align: "justify", ratio: 100, indent: 10 }, caption: { size: 10, align: "center", ratio: 100 }, footnote: { size: 9, align: "justify", ratio: 100 }, refHead: { font: "\uB3CB\uC6C0", size: 11, align: "center", ratio: 100 }, ref: { size: 10, align: "justify", ratio: 100, indent: -30, marginLeft: 30 }, dates: { size: 9, align: "justify", ratio: 100 } } },
+      format: { page: { width: 176, height: 250, top: 24, bottom: 20, left: 20, right: 20, header: 12, footer: 0, gutter: 0 }, font: "Times New Roman", fontHangul: "\uBC14\uD0D5\uCCB4", roles: { title: { size: 14, bold: true, align: "center", ratio: 100 }, author: { size: 10, bold: true, align: "right", ratio: 100 }, affiliation: { size: 10, align: "right", ratio: 100 }, abstractEn: { size: 9, align: "justify", ratio: 100, marginLeft: 25, marginRight: 25 }, keywordsEn: { size: 9, bold: true, align: "justify", ratio: 100, marginLeft: 25, marginRight: 25 }, h1: { font: "\uB3CB\uC6C0", size: 12, bold: true, align: "left", ratio: 100 }, h2: { font: "\uB3CB\uC6C0", size: 11, align: "left", ratio: 100 }, h3: { font: "\uB3CB\uC6C0", size: 10, align: "left", ratio: 100 }, h4: { font: "\uB3CB\uC6C0", size: 10, align: "left", ratio: 100 }, body: { size: 10, align: "justify", ratio: 100, indent: 10 }, caption: { size: 10, align: "center", ratio: 100 }, footnote: { size: 9, align: "justify", ratio: 100 }, refHead: { font: "\uB3CB\uC6C0", size: 11, align: "center", ratio: 100 }, ref: { size: 10, align: "justify", ratio: 100, indent: -30, marginLeft: 30 }, dates: { size: 9, align: "justify", ratio: 100 } } },
       copyright: "\uD22C\uACE0 \uB17C\uBB38\uC740 \uAC8C\uC7AC \uC5EC\uBD80\uC640 \uC0C1\uAD00\uC5C6\uC774 \uB3CC\uB824\uC8FC\uC9C0 \uC54A\uACE0, \uAC8C\uC7AC \uB17C\uBB38\uC758 \uC800\uC791\uAD8C\uC740 \uC800\uC790\uC640 \uD559\uD68C\uAC00 \uACF5\uB3D9\uC73C\uB85C \uAC00\uC9D0. \uC804\uCCB4\xB7\uBD80\uBD84 \uC7AC\uC218\uB85D\uC740 \uC0AC\uC804\uC5D0 \uC800\uC790\uC640 \uD559\uD68C\uC758 \uB3D9\uC758(\uD22C\uACE0\uADDC\uC815 \uC81C7\uC7A5 \uC81C9\uC870). \uB17C\uBB38\uC800\uC791\uAD8C \uC591\uB3C4 \uB3D9\uC758\uC11C \uC81C\uCD9C",
       contact: "espkorea2025@gmail.com(\uD3B8\uC9D1\uC704\uC6D0\uD68C\xB7\uB17C\uBB38 \uD22C\uACE0 \uBB38\uC758) / espkorea.finance@gmail.com(\uD68C\uC6D0 \uC2B9\uC778\xB7\uD68C\uBE44\xB7\uC2EC\uC0AC\uB8CC) / espkoreamanager@gmail.com(\uD559\uD68C \uC0AC\uBB34\uAD6D) / 02-300-0335(\uD559\uD68C) \u2014 \uD559\uD68C \uD648\uD398\uC774\uC9C0 Contact Us\xB7JAMS \uD558\uB2E8",
-      notes: ["\uD604\uD589 \uADDC\uC815\uC740 8\uAD8C 3\uD638 \uC6D0\uACE0 \uBAA8\uC9D1 \uACF5\uC9C0(2026.9.5\xB710.1) \uCCA8\uBD80 \u20182026 ESP Review \uD22C\uACE0\uC591\uC2DD(\uBC30\uD3EC\uC6A9).zip\u2019\uC758 \u20181. \uB17C\uBB38 \uD22C\uACE0 \uADDC\uC815 \uBC0F \uB17C\uBB38 \uC791\uC131\uC2DC \uC720\uC758\uC0AC\uD56D(2026, 8\uAD8C 3\uD638\uBD80\uD130 \uC801\uC6A9).docx/pdf\u2019(\uC81C7~10\uC7A5)\uC640 \uD648\uD398\uC774\uC9C0 Editorial Board Regulation(\uC601\uBB38, 2026.4.30 4\uCC28 \uAC1C\uC815). JAMS \uD559\uD68C\uB17C\uBB38\uD22C\uACE0 \uADDC\uC815 \uD654\uBA74\uACFC \uCCA8\uBD80 \u2018\uD55C\uAD6DESP\uD559\uD68C_\uD22C\uACE0\uADDC\uC815(2021).pdf\u2019\uB294 \uC61B \uADDC\uC815(A4\xB7\uC704 50/\uC544\uB798 52/\uC88C\uC6B0 42 mm, \uB9C8\uAC10 3/30\xB79/30, \uBA54\uC77C \uD22C\uACE0, \uC2EC\uC0AC\uB8CC \uC720\uC608, \uAC19\uC740 \uC800\uC790 \uB2E8\uB3C5 \uB17C\uBB38 \uC5F0 1\uD68C) \u2014 \uC4F0\uC9C0 \uC54A\uC74C", "\uC591\uC2DD\uC740 MS Word(DOCX)\uBFD0\uC774\uB77C \uBC14\uD0D5\uD2C0 \uC5C6\uC74C. format \uC22B\uC790\uB294 \uADDC\uC815 \uD45C(\uC81C8\uC7A5 \uC81C4\uC870 2))\uC640 \uC591\uC2DD DOCX \uC2A4\uD0C0\uC77C\uC5D0\uC11C \uC77D\uC74C(\uC6A9\uC9C0 9979\xD714175 twip \u2192 176\xD7250 mm, \uC5EC\uBC31 1361/1134/680 twip \u2192 24/20/12 mm)", "\uC904\uAC04\uACA9\uC774 \uBAA8\uB450 \u2018\uACE0\uC815\uAC12\u2019(\uBCF8\uBB38\xB7\uC81C\uBAA9\xB7\uCC38\uACE0\uBB38\uD5CC 14.5pt, \uCD08\uB85D 12.5pt, \uAC01\uC8FC\xB7\uD45C 10pt)\uC774\uB77C % \uAC12\uC73C\uB85C \uC62E\uAE30\uC9C0 \uC54A\uC74C \u2014 format \uC5ED\uD560\uC5D0 lineSpacing \uC5C6\uC74C(\uBCC0\uD658\uAE30 \uAE30\uBCF8\uAC12\uC774 \uB4E4\uC5B4\uAC10). \uC790\uAC04 \u2018\uC881\uAC8C 0.1pt\u2019(\uC591\uC2DD w:spacing -2)\uB3C4 %\uB85C \uC62E\uAE30\uC9C0 \uC54A\uC74C", "\uBCF8\uBB38 \uCCAB \uC904 \uB4E4\uC5EC\uC4F0\uAE30: \uAD6D\uBB38 \uADDC\uC815 \u20181\uAE00\uC790\u2019, \uC601\uBB38 \uADDC\uC815 \u20181 point (2 characters)\u2019, \uC591\uC2DD B_\uBCF8\uBB38 181 twip(\uC57D 9pt) \u2014 10pt \uAE00\uC790 1\uAC1C\uB85C \uBCF4\uACE0 indent 10pt", "\uCD08\uB85D\xB7\uC8FC\uC81C\uC5B4 \uC88C\uC6B0 \uB4E4\uC5EC\uC4F0\uAE30: \uAD6D\uBB38 \uADDC\uC815 \u20182.5 \uAE00\uC790\u2019, \uC601\uBB38 \uADDC\uC815 \u20182.5-pt\u2019, \uC591\uC2DD \uCD08\uB85D\uBCF8\uBB38\xB7\uCD08\uB85D\uD0A4\uC6CC\uB4DC \uC2A4\uD0C0\uC77C leftChars/rightChars 250(left/right 500 twip = 25pt) \u2014 \uC591\uC2DD \uAC12 25pt", "\uCC38\uACE0\uBB38\uD5CC \uB0B4\uC5B4\uC4F0\uAE30: \uADDC\uC815 \u2018\uB458\uC9F8 \uC904 \uC774\uD558 3\uAE00\uC790\u2019, \uC591\uC2DD \uBB38\uB2E8 left 600\xB7hanging 600 twip(30pt) \u2014 indent -30\xB7marginLeft 30", "\uD45C\xB7\uADF8\uB9BC \uC81C\uBAA9: \uADDC\uC815 \uD45C\uB294 \u2018\uC81C\uBAA9 10 \uBC14\uD0D5\uCCB4 \uBCF4\uD1B5, \uC904\uAC04\uACA9 10pt, \uAC00\uC6B4\uB370\u2019, \uAC19\uC740 \uADDC\uC815\uC758 \uACAC\uBCF8\uC740 \uD45C \uBC88\uD638 \uBC14\uD0D5\uCCB4 10 \uAD75\uAC8C\xB7\uD45C \uC81C\uBAA9 9 \uBCF4\uD1B5(\uC591\uC2DD T_\uD45C\uBC88\uD638 10 \uAD75\uAC8C, T_\uD45C\uC81C\uBAA9 9) \u2014 caption\uC740 \uADDC\uC815 \uD45C\uC758 10pt(\uAD75\uAC8C \uB123\uC9C0 \uC54A\uC74C, \uBC88\uD638\uB9CC \uC800\uC790\uAC00 \uAD75\uAC8C)", "\uC7A5 \uC81C\uBAA9\xB7\uCC38\uACE0\uBB38\uD5CC \uC81C\uBAA9 \uAE00\uAF34: \uAD6D\uBB38 \uB3CB\uC6C0, \uC601\uBB38 \uB17C\uBB38 Arial. 1)\xB7(1)\xB7\u2460\uC740 \uAD6D\uBB38 \uADDC\uC815 \uB3CB\uC6C0 10, \uC601\uBB38 \uACAC\uBCF8 Times New Roman 10. \uC591\uC2DD \uAD6D\uBB38 \u2018\uCC38\uACE0\uBB38\uD5CC\u2019 \uC81C\uBAA9 \uAE00\uC790\uB294 \uB9D1\uC740 \uACE0\uB515 12pt\uB85C \uB36E\uC5EC \uC788\uC73C\uB098 \uADDC\uC815 \uD45C(\uB3CB\uC6C0 11)\uB97C \uB530\uB984", "\uAD6D\uBB38 \uB17C\uBB38\uC774 \uB2E4\uC218(KCI 2026\uB144 8\uAD8C 1\xB72\uD638 18\uD3B8 \uC911 \uAD6D\uBB38 11\uD3B8)\uB77C format \uAE00\uAF34\uC740 \uBC14\uD0D5\uCCB4\xB7\uB3CB\uC6C0, refHead \uD45C\uC9C0\uB294 \u2018\uCC38\uACE0\uBB38\uD5CC\u2019. \uC601\uBB38 \uB17C\uBB38\uC740 Times New Roman\xB7Arial, \u2018REFERENCES\u2019(\uC591\uC2DD)", "\u2018Abstract\u2019\xB7\u2018\uC8FC\uC81C\uC5B4\u2019 \uD45C\uC9C0\uAC00 \uC5C6\uC74C: \uCD08\uB85D\uC740 \uC800\uC790 \uB2E4\uC74C \uC601\uBB38 \uC11C\uC9C0 \uC904 \uB4A4\uC5D0 \uBC14\uB85C, \uC8FC\uC81C\uC5B4\uB294 \uB300\uAD04\uD638 \uC904 [\uC601\uC5B4/\uC601\uC5B4, \uD55C\uAD6D\uC5B4/\uD55C\uAD6D\uC5B4]. \uBCC0\uD658\uAE30\uB294 \uC774 \uAF34\uB85C \uBC14\uAFB8\uC9C0 \uBABB\uD558\uBBC0\uB85C \uC6D0\uACE0\uC758 \u2018Abstract\u2019\xB7\u2018Keywords:\u2019 \uD45C\uC9C0\uB294 \uC800\uC790\uAC00 \uC9C0\uC6B0\uACE0 \uB300\uAD04\uD638\uB85C \uACE0\uCCD0\uC57C \uD568. \uC601\uBB38 \uC11C\uC9C0 \uC904(\uCD08\uB85D\uC815\uBCF4)\xB7\uD559\uC220\uC9C0 \uAD8C\uD638 \uC904\xB7DOI \uC904\xB7\uC608\uC2DC\uC5B8\uC5B4 3\uC904\xB7\uC800\uC790 \uC815\uBCF4\uC5D0 \uB9DE\uB294 \uC5ED\uD560\uC774 \uC5C6\uC74C", "\uCC38\uACE0\uBB38\uD5CC \uB4A4 \u2018\uC608\uC2DC\uC5B8\uC5B4(Examples in)\xB7\uC801\uC6A9\uAC00\uB2A5 \uC5B8\uC5B4(Applicable Languages)\xB7\uC801\uC6A9\uAC00\uB2A5 \uC218\uC900(Applicable Levels: Primary/Secondary/Tertiary)\u2019 3\uC904\uC740 \uD544\uC218(\uC81C8\uC7A5 \uC81C8\uC870) \u2014 \uBCC0\uD658\uAE30\uAC00 \uB9CC\uB4E4\uC9C0 \uC54A\uC74C", "\uC800\uC790 \uC815\uBCF4: 8\uAD8C 3\uD638 \uACF5\uC9C0\uB294 \uB17C\uBB38\xB7\uD30C\uC77C\uBA85\uC5D0 \uC800\uC790 \uC815\uBCF4 \uB178\uCD9C \uAE08\uC9C0\uC778\uB370, \uD22C\uACE0\uADDC\uC815 \uC81C7\uC7A5 \uC81C3\uC870 3\uC740 \u2018\uC6D0\uACE0 \uC81C\uCD9C \uC2DC \uB17C\uBB38 \uB05D\uC5D0 \uC18C\uC18D\xB7\uC8FC\uC18C\xB7\uC804\uD654\uBC88\uD638\xB7\uC774\uBA54\uC77C \uBA85\uAE30\u2019, \uC601\uBB38 \uC81C10\uC7A5 2. 2)\uB3C4 \uB9C8\uC9C0\uB9C9 \uCABD\uC5D0 \uC800\uC790 \uC815\uBCF4 \u2014 \uACF5\uC9C0(\uC775\uBA85 \uD22C\uACE0)\uB97C \uC55E\uC5D0 \uB450\uACE0, \uC800\uC790 \uC815\uBCF4\uB294 \uAC8C\uC7AC\uAC00 \uB4A4 \uCD5C\uC885 \uC6D0\uACE0(\uC81C8\uC7A5 \uC81C9\uC870)\uB85C \uC801\uC74C", "\uAC01\uC8FC: \uADDC\uC815\uC740 \uC904\uAC04\uACA9 \uACE0\uC815 10pt, \uC591\uC2DD F_\uAC01\uC8FC\uBCF8\uBB38 \uC2A4\uD0C0\uC77C\uC740 9pt\xB7single(240 auto) \u2014 \uD06C\uAE30 9pt\uB9CC format\uC5D0", "\uBC1C\uD589\uC77C: \uD3B8\uC9D1\uC704\uC6D0\uD68C \uADDC\uC815 4/30\xB78/31\xB712/31, \uD559\uC220\uC9C0 \uC18C\uAC1C \u2018\uC5F0 3\uD68C(4\uC6D4, 8\uC6D4, 12\uC6D4)\u2019. KCI\uB294 04-30\xB708-30\xB712-30\uC73C\uB85C \uD45C\uAE30 \u2014 \uADDC\uC815 \uB0A0\uC9DC\uB97C \uC500", "KCI: 2021.1 \uB4F1\uC7AC\uD6C4\uBCF4 \uC120\uC815, 2023.1 \uB4F1\uC7AC \uC120\uC815(\uD559\uC220\uC9C0 \uC18C\uAC1C\uB294 \u20182023\uB144 12\uC6D4 \uD55C\uAD6D\uC5F0\uAD6C\uC7AC\uB2E8 \uB4F1\uC7AC\uD559\uC220\uC9C0 \uC120\uC815\u2019), 2026 \uC7AC\uC778\uC99D\uD3C9\uAC00 \uB300\uC0C1. 2019.6 \uCC3D\uAC04(\uC804\uC790\uC800\uB110), 4\uAD8C 1\uD638(2022.6)\uBD80\uD130 JAMS, 2025\uB144\uBD80\uD130 \uC5F0 3\uD68C", "\uC800\uC790\uBA85 \uC601\uBB38 \uD45C\uAE30: \uC601\uBB38 \uB17C\uBB38 \uC81C\uBAA9 \uBC11\uC740 \u2018\uC774\uB984 \uC131\u2019(Gil-Dong Hong), \uC601\uBB38 \uCD08\uB85D \uC11C\uC9C0 \uC904\xB7\uBAA9\uCC28\uB294 \u2018\uC131, \uC774\uB984\u2019(Hong, Gil-Dong)(\uC81C8\uC7A5 \uC81C6\uC870)", "\uC0DD\uC131\uD615 AI \uC0AC\uC6A9 \uACF5\uAC1C\xB7\uC778\uC6A9 \uC870\uD56D \uC2E0\uC124(\uC81C7\uC7A5 \uC81C10\uC870) \u2014 \uADF8\uB9BC \uC8FC \uC608: \uC8FC. \uADF8\uB9BC 2\uB97C \uC791\uC131\uD558\uB294 \uB370 ChatGPT-5.5\uC758 \uC0B0\uCD9C\uBB3C\uC744 \uD65C\uC6A9\uD568(OpenAI, 2026).", "\uD648\uD398\uC774\uC9C0(espkorea.org)\uB294 \uC601\uBB38 \uD654\uBA74, \uD559\uD68C \uACC4\uC88C\xB7\uC784\uC6D0 \uC774\uB984\uC740 \uB123\uC9C0 \uC54A\uC74C"],
+      notes: ["\uD604\uD589 \uADDC\uC815\uC740 8\uAD8C 3\uD638 \uC6D0\uACE0 \uBAA8\uC9D1 \uACF5\uC9C0(2026.9.5\xB710.1) \uCCA8\uBD80 \u20182026 ESP Review \uD22C\uACE0\uC591\uC2DD(\uBC30\uD3EC\uC6A9).zip\u2019\uC758 \u20181. \uB17C\uBB38 \uD22C\uACE0 \uADDC\uC815 \uBC0F \uB17C\uBB38 \uC791\uC131\uC2DC \uC720\uC758\uC0AC\uD56D(2026, 8\uAD8C 3\uD638\uBD80\uD130 \uC801\uC6A9).docx/pdf\u2019(\uC81C7~10\uC7A5)\uC640 \uD648\uD398\uC774\uC9C0 Editorial Board Regulation(\uC601\uBB38, 2026.4.30 4\uCC28 \uAC1C\uC815). JAMS \uD559\uD68C\uB17C\uBB38\uD22C\uACE0 \uADDC\uC815 \uD654\uBA74\uACFC \uCCA8\uBD80 \u2018\uD55C\uAD6DESP\uD559\uD68C_\uD22C\uACE0\uADDC\uC815(2021).pdf\u2019\uB294 \uC61B \uADDC\uC815(A4\xB7\uC704 50/\uC544\uB798 52/\uC88C\uC6B0 42 mm, \uB9C8\uAC10 3/30\xB79/30, \uBA54\uC77C \uD22C\uACE0, \uC2EC\uC0AC\uB8CC \uC720\uC608, \uAC19\uC740 \uC800\uC790 \uB2E8\uB3C5 \uB17C\uBB38 \uC5F0 1\uD68C) \u2014 \uC4F0\uC9C0 \uC54A\uC74C", "\uC591\uC2DD\uC740 MS Word(DOCX)\uBFD0\uC774\uB77C \uBC14\uD0D5\uD2C0 \uC5C6\uC74C. format \uC22B\uC790\uB294 \uADDC\uC815 \uD45C(\uC81C8\uC7A5 \uC81C4\uC870 2))\uC640 \uC591\uC2DD DOCX \uC2A4\uD0C0\uC77C\uC5D0\uC11C \uC77D\uC74C(\uC6A9\uC9C0 9979\xD714175 twip \u2192 176\xD7250 mm, \uC5EC\uBC31 1361/1134/680 twip \u2192 24/20/12 mm)", "\uC904\uAC04\uACA9\uC774 \uBAA8\uB450 \u2018\uACE0\uC815\uAC12\u2019(\uBCF8\uBB38\xB7\uC81C\uBAA9\xB7\uCC38\uACE0\uBB38\uD5CC 14.5pt, \uCD08\uB85D 12.5pt, \uAC01\uC8FC\xB7\uD45C 10pt)\uC774\uB77C % \uAC12\uC73C\uB85C \uC62E\uAE30\uC9C0 \uC54A\uC74C \u2014 format \uC5ED\uD560\uC5D0 lineSpacing \uC5C6\uC74C(\uBCC0\uD658\uAE30 \uAE30\uBCF8\uAC12\uC774 \uB4E4\uC5B4\uAC10). \uC790\uAC04 \u2018\uC881\uAC8C 0.1pt\u2019(\uC591\uC2DD w:spacing -2)\uB3C4 %\uB85C \uC62E\uAE30\uC9C0 \uC54A\uC74C", "\uBCF8\uBB38 \uCCAB \uC904 \uB4E4\uC5EC\uC4F0\uAE30: \uAD6D\uBB38 \uADDC\uC815 \u20181\uAE00\uC790\u2019, \uC601\uBB38 \uADDC\uC815 \u20181 point (2 characters)\u2019, \uC591\uC2DD B_\uBCF8\uBB38 181 twip(\uC57D 9pt) \u2014 10pt \uAE00\uC790 1\uAC1C\uB85C \uBCF4\uACE0 indent 10pt", "\uCD08\uB85D\xB7\uC8FC\uC81C\uC5B4 \uC88C\uC6B0 \uB4E4\uC5EC\uC4F0\uAE30: \uAD6D\uBB38 \uADDC\uC815 \u20182.5 \uAE00\uC790\u2019, \uC601\uBB38 \uADDC\uC815 \u20182.5-pt\u2019, \uC591\uC2DD \uCD08\uB85D\uBCF8\uBB38\xB7\uCD08\uB85D\uD0A4\uC6CC\uB4DC \uC2A4\uD0C0\uC77C leftChars/rightChars 250(left/right 500 twip = 25pt) \u2014 \uC591\uC2DD \uAC12 25pt", "\uCC38\uACE0\uBB38\uD5CC \uB0B4\uC5B4\uC4F0\uAE30: \uADDC\uC815 \u2018\uB458\uC9F8 \uC904 \uC774\uD558 3\uAE00\uC790\u2019, \uC591\uC2DD \uBB38\uB2E8 left 600\xB7hanging 600 twip(30pt) \u2014 indent -30\xB7marginLeft 30", "\uD45C\xB7\uADF8\uB9BC \uC81C\uBAA9: \uADDC\uC815 \uD45C\uB294 \u2018\uC81C\uBAA9 10 \uBC14\uD0D5\uCCB4 \uBCF4\uD1B5, \uC904\uAC04\uACA9 10pt, \uAC00\uC6B4\uB370\u2019, \uAC19\uC740 \uADDC\uC815\uC758 \uACAC\uBCF8\uC740 \uD45C \uBC88\uD638 \uBC14\uD0D5\uCCB4 10 \uAD75\uAC8C\xB7\uD45C \uC81C\uBAA9 9 \uBCF4\uD1B5(\uC591\uC2DD T_\uD45C\uBC88\uD638 10 \uAD75\uAC8C, T_\uD45C\uC81C\uBAA9 9) \u2014 caption\uC740 \uADDC\uC815 \uD45C\uC758 10pt(\uAD75\uAC8C \uB123\uC9C0 \uC54A\uC74C, \uBC88\uD638\uB9CC \uC800\uC790\uAC00 \uAD75\uAC8C)", "\uC7A5 \uC81C\uBAA9\xB7\uCC38\uACE0\uBB38\uD5CC \uC81C\uBAA9 \uAE00\uAF34: \uAD6D\uBB38 \uB3CB\uC6C0, \uC601\uBB38 \uB17C\uBB38 Arial. 1)\xB7(1)\xB7\u2460\uC740 \uAD6D\uBB38 \uADDC\uC815 \uB3CB\uC6C0 10, \uC601\uBB38 \uACAC\uBCF8 Times New Roman 10. \uC591\uC2DD \uAD6D\uBB38 \u2018\uCC38\uACE0\uBB38\uD5CC\u2019 \uC81C\uBAA9 \uAE00\uC790\uB294 \uB9D1\uC740 \uACE0\uB515 12pt\uB85C \uB36E\uC5EC \uC788\uC73C\uB098 \uADDC\uC815 \uD45C(\uB3CB\uC6C0 11)\uB97C \uB530\uB984", "\uAD6D\uBB38 \uB17C\uBB38\uC774 \uB2E4\uC218(KCI 2026\uB144 8\uAD8C 1\xB72\uD638 18\uD3B8 \uC911 \uAD6D\uBB38 11\uD3B8)\uB77C \uC81C\uBAA9 \uAE00\uAF34\uC740 \uB3CB\uC6C0, refHead \uD45C\uC9C0\uB294 \u2018\uCC38\uACE0\uBB38\uD5CC\u2019(\uC601\uBB38 \uB17C\uBB38\uC740 Arial\xB7\u2018REFERENCES\u2019 \u2014 \uC9C1\uC811 \uBC14\uAFC0 \uAC83). \uBCF8\uBB38 \uAE00\uAF34\uC740 \uADDC\uC815 \u2018\uAD6D\uBB38 \uBC14\uD0D5\uCCB4(\uC601\uBB38 Times New Roman)\u2019\uB300\uB85C \uD55C\uAE00\xB7\uD55C\uC790 \uAE00\uC790\uB294 \uBC14\uD0D5\uCCB4, \uC601\uBB38 \uAE00\uC790\uB294 Times New Roman\uC73C\uB85C \uB123\uC74C(format.fontHangul, v2.4.2\uBD80\uD130. \uADF8 \uC804\uC5D0\uB294 \uC601\uBB38\uB3C4 \uBC14\uD0D5\uCCB4\uB85C \uC9C0\uC815\uB410\uC74C)", "\u2018Abstract\u2019\xB7\u2018\uC8FC\uC81C\uC5B4\u2019 \uD45C\uC9C0\uAC00 \uC5C6\uC74C: \uCD08\uB85D\uC740 \uC800\uC790 \uB2E4\uC74C \uC601\uBB38 \uC11C\uC9C0 \uC904 \uB4A4\uC5D0 \uBC14\uB85C, \uC8FC\uC81C\uC5B4\uB294 \uB300\uAD04\uD638 \uC904 [\uC601\uC5B4/\uC601\uC5B4, \uD55C\uAD6D\uC5B4/\uD55C\uAD6D\uC5B4]. \uBCC0\uD658\uAE30\uB294 \uC774 \uAF34\uB85C \uBC14\uAFB8\uC9C0 \uBABB\uD558\uBBC0\uB85C \uC6D0\uACE0\uC758 \u2018Abstract\u2019\xB7\u2018Keywords:\u2019 \uD45C\uC9C0\uB294 \uC800\uC790\uAC00 \uC9C0\uC6B0\uACE0 \uB300\uAD04\uD638\uB85C \uACE0\uCCD0\uC57C \uD568. \uC601\uBB38 \uC11C\uC9C0 \uC904(\uCD08\uB85D\uC815\uBCF4)\xB7\uD559\uC220\uC9C0 \uAD8C\uD638 \uC904\xB7DOI \uC904\xB7\uC608\uC2DC\uC5B8\uC5B4 3\uC904\xB7\uC800\uC790 \uC815\uBCF4\uC5D0 \uB9DE\uB294 \uC5ED\uD560\uC774 \uC5C6\uC74C", "\uCC38\uACE0\uBB38\uD5CC \uB4A4 \u2018\uC608\uC2DC\uC5B8\uC5B4(Examples in)\xB7\uC801\uC6A9\uAC00\uB2A5 \uC5B8\uC5B4(Applicable Languages)\xB7\uC801\uC6A9\uAC00\uB2A5 \uC218\uC900(Applicable Levels: Primary/Secondary/Tertiary)\u2019 3\uC904\uC740 \uD544\uC218(\uC81C8\uC7A5 \uC81C8\uC870) \u2014 \uBCC0\uD658\uAE30\uAC00 \uB9CC\uB4E4\uC9C0 \uC54A\uC74C", "\uC800\uC790 \uC815\uBCF4: 8\uAD8C 3\uD638 \uACF5\uC9C0\uB294 \uB17C\uBB38\xB7\uD30C\uC77C\uBA85\uC5D0 \uC800\uC790 \uC815\uBCF4 \uB178\uCD9C \uAE08\uC9C0\uC778\uB370, \uD22C\uACE0\uADDC\uC815 \uC81C7\uC7A5 \uC81C3\uC870 3\uC740 \u2018\uC6D0\uACE0 \uC81C\uCD9C \uC2DC \uB17C\uBB38 \uB05D\uC5D0 \uC18C\uC18D\xB7\uC8FC\uC18C\xB7\uC804\uD654\uBC88\uD638\xB7\uC774\uBA54\uC77C \uBA85\uAE30\u2019, \uC601\uBB38 \uC81C10\uC7A5 2. 2)\uB3C4 \uB9C8\uC9C0\uB9C9 \uCABD\uC5D0 \uC800\uC790 \uC815\uBCF4 \u2014 \uACF5\uC9C0(\uC775\uBA85 \uD22C\uACE0)\uB97C \uC55E\uC5D0 \uB450\uACE0, \uC800\uC790 \uC815\uBCF4\uB294 \uAC8C\uC7AC\uAC00 \uB4A4 \uCD5C\uC885 \uC6D0\uACE0(\uC81C8\uC7A5 \uC81C9\uC870)\uB85C \uC801\uC74C", "\uAC01\uC8FC: \uADDC\uC815\uC740 \uC904\uAC04\uACA9 \uACE0\uC815 10pt, \uC591\uC2DD F_\uAC01\uC8FC\uBCF8\uBB38 \uC2A4\uD0C0\uC77C\uC740 9pt\xB7single(240 auto) \u2014 \uD06C\uAE30 9pt\uB9CC format\uC5D0", "\uBC1C\uD589\uC77C: \uD3B8\uC9D1\uC704\uC6D0\uD68C \uADDC\uC815 4/30\xB78/31\xB712/31, \uD559\uC220\uC9C0 \uC18C\uAC1C \u2018\uC5F0 3\uD68C(4\uC6D4, 8\uC6D4, 12\uC6D4)\u2019. KCI\uB294 04-30\xB708-30\xB712-30\uC73C\uB85C \uD45C\uAE30 \u2014 \uADDC\uC815 \uB0A0\uC9DC\uB97C \uC500", "KCI: 2021.1 \uB4F1\uC7AC\uD6C4\uBCF4 \uC120\uC815, 2023.1 \uB4F1\uC7AC \uC120\uC815(\uD559\uC220\uC9C0 \uC18C\uAC1C\uB294 \u20182023\uB144 12\uC6D4 \uD55C\uAD6D\uC5F0\uAD6C\uC7AC\uB2E8 \uB4F1\uC7AC\uD559\uC220\uC9C0 \uC120\uC815\u2019), 2026 \uC7AC\uC778\uC99D\uD3C9\uAC00 \uB300\uC0C1. 2019.6 \uCC3D\uAC04(\uC804\uC790\uC800\uB110), 4\uAD8C 1\uD638(2022.6)\uBD80\uD130 JAMS, 2025\uB144\uBD80\uD130 \uC5F0 3\uD68C", "\uC800\uC790\uBA85 \uC601\uBB38 \uD45C\uAE30: \uC601\uBB38 \uB17C\uBB38 \uC81C\uBAA9 \uBC11\uC740 \u2018\uC774\uB984 \uC131\u2019(Gil-Dong Hong), \uC601\uBB38 \uCD08\uB85D \uC11C\uC9C0 \uC904\xB7\uBAA9\uCC28\uB294 \u2018\uC131, \uC774\uB984\u2019(Hong, Gil-Dong)(\uC81C8\uC7A5 \uC81C6\uC870)", "\uC0DD\uC131\uD615 AI \uC0AC\uC6A9 \uACF5\uAC1C\xB7\uC778\uC6A9 \uC870\uD56D \uC2E0\uC124(\uC81C7\uC7A5 \uC81C10\uC870) \u2014 \uADF8\uB9BC \uC8FC \uC608: \uC8FC. \uADF8\uB9BC 2\uB97C \uC791\uC131\uD558\uB294 \uB370 ChatGPT-5.5\uC758 \uC0B0\uCD9C\uBB3C\uC744 \uD65C\uC6A9\uD568(OpenAI, 2026).", "\uD648\uD398\uC774\uC9C0(espkorea.org)\uB294 \uC601\uBB38 \uD654\uBA74, \uD559\uD68C \uACC4\uC88C\xB7\uC784\uC6D0 \uC774\uB984\uC740 \uB123\uC9C0 \uC54A\uC74C"],
       sources: ["https://www.espkorea.org \uACF5\uC9C0\uC0AC\uD56D(Notice) \u2018[ESP Korea] ESP Review 8\uAD8C 3\uD638 \uB17C\uBB38 \uD22C\uACE0 \uC548\uB0B4(Call for Papers)\u2019(2026.9.5)\xB7\u2018ESP Review 8\uAD8C 3\uD638 \uB17C\uBB38 \uD22C\uACE0 \uC5F0\uC7A5 \uC548\uB0B4\u2019(2026.10.1) \uCCA8\uBD80 2026 ESP Review \uD22C\uACE0\uC591\uC2DD(\uBC30\uD3EC\uC6A9).zip: 1. \uB17C\uBB38 \uD22C\uACE0 \uADDC\uC815 \uBC0F \uB17C\uBB38 \uC791\uC131\uC2DC \uC720\uC758\uC0AC\uD56D(2026, 8\uAD8C 3\uD638\uBD80\uD130 \uC801\uC6A9).docx\xB7.pdf, 2. Korean Template (2026, 8\uAD8C 3\uD638\uBD80\uD130 \uC801\uC6A9).docx, 3. English Template (2026, 8\uAD8C 3\uD638\uBD80\uD130 \uC801\uC6A9).docx, 4. \uC5F0\uAD6C\uC724\uB9AC\uADDC\uC815 \uC900\uC218 \uC11C\uC57D\uC11C.docx, 5. \uD55C\uAD6DESP\uD559\uD68C_\uB17C\uBB38\uC800\uC791\uAD8C \uC591\uB3C4 \uB3D9\uC758\uC11C.hwp", "https://www.espkorea.org/subList/32000007146 (Submission Guidelines: \uD22C\uACE0 \uC548\uB0B4\xB7\uD68C\uBE44\xB7\uC2EC\uC0AC\uB8CC\xB7\uAC8C\uC7AC\uB8CC, Korean/English Template(2026 \uC218\uC815\uBCF8) \uB0B4\uB824\uBC1B\uAE30)", "https://www.espkorea.org/subList/32000007147 (Editorial Board Regulation, 2026.4.30 4\uCC28 \uAC1C\uC815)", "https://www.espkorea.org/subList/32000007144 (Introduction to ESP Review), /subList/32000007154 (Contact Us)", "https://espkorea.jams.or.kr \uD559\uD68C\uC18C\uAC1C(guidDivCd=01)\xB7\uD559\uD68C\uB17C\uBB38\uD22C\uACE0 \uADDC\uC815(guidDivCd=02, \uCCA8\uBD80 \uD55C\uAD6DESP\uD559\uD68C_\uD22C\uACE0\uADDC\uC815(2021).pdf \u2014 \uC61B \uADDC\uC815)\xB7\uD559\uC220\uC9C0\uC18C\uAC1C", "KCI \uD559\uC220\uC9C0 \uC815\uBCF4(ESP Review, sereId=SER000005911)\xB7\uAD8C\uD638 \uB17C\uBB38 \uBAA9\uB85D(8\uAD8C 1\xB72\uD638)"],
       updated: "2026-11-09"
     },
@@ -21078,11 +21079,11 @@ Apache License
      * @param {number} count
      * @returns {string}
      */
-    deleteText(section_idx, para_idx, char_offset, count) {
+    deleteText(section_idx, para_idx, char_offset, count2) {
       let deferred2_0;
       let deferred2_1;
       try {
-        const ret = wasm.hwpdocument_deleteText(this.__wbg_ptr, section_idx, para_idx, char_offset, count);
+        const ret = wasm.hwpdocument_deleteText(this.__wbg_ptr, section_idx, para_idx, char_offset, count2);
         var ptr1 = ret[0];
         var len1 = ret[1];
         if (ret[3]) {
@@ -21110,11 +21111,11 @@ Apache License
      * @param {number} count
      * @returns {string}
      */
-    deleteTextInCell(section_idx, parent_para_idx, control_idx, cell_idx, cell_para_idx, char_offset, count) {
+    deleteTextInCell(section_idx, parent_para_idx, control_idx, cell_idx, cell_para_idx, char_offset, count2) {
       let deferred2_0;
       let deferred2_1;
       try {
-        const ret = wasm.hwpdocument_deleteTextInCell(this.__wbg_ptr, section_idx, parent_para_idx, control_idx, cell_idx, cell_para_idx, char_offset, count);
+        const ret = wasm.hwpdocument_deleteTextInCell(this.__wbg_ptr, section_idx, parent_para_idx, control_idx, cell_idx, cell_para_idx, char_offset, count2);
         var ptr1 = ret[0];
         var len1 = ret[1];
         if (ret[3]) {
@@ -21137,13 +21138,13 @@ Apache License
      * @param {number} count
      * @returns {string}
      */
-    deleteTextInCellByPath(section_idx, parent_para_idx, path_json, char_offset, count) {
+    deleteTextInCellByPath(section_idx, parent_para_idx, path_json, char_offset, count2) {
       let deferred3_0;
       let deferred3_1;
       try {
         const ptr0 = passStringToWasm0(path_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
         const len0 = WASM_VECTOR_LEN;
-        const ret = wasm.hwpdocument_deleteTextInCellByPath(this.__wbg_ptr, section_idx, parent_para_idx, ptr0, len0, char_offset, count);
+        const ret = wasm.hwpdocument_deleteTextInCellByPath(this.__wbg_ptr, section_idx, parent_para_idx, ptr0, len0, char_offset, count2);
         var ptr2 = ret[0];
         var len2 = ret[1];
         if (ret[3]) {
@@ -21171,11 +21172,11 @@ Apache License
      * @param {number} count
      * @returns {string}
      */
-    deleteTextInCellDeferredPagination(section_idx, parent_para_idx, control_idx, cell_idx, cell_para_idx, char_offset, count) {
+    deleteTextInCellDeferredPagination(section_idx, parent_para_idx, control_idx, cell_idx, cell_para_idx, char_offset, count2) {
       let deferred2_0;
       let deferred2_1;
       try {
-        const ret = wasm.hwpdocument_deleteTextInCellDeferredPagination(this.__wbg_ptr, section_idx, parent_para_idx, control_idx, cell_idx, cell_para_idx, char_offset, count);
+        const ret = wasm.hwpdocument_deleteTextInCellDeferredPagination(this.__wbg_ptr, section_idx, parent_para_idx, control_idx, cell_idx, cell_para_idx, char_offset, count2);
         var ptr1 = ret[0];
         var len1 = ret[1];
         if (ret[3]) {
@@ -21229,11 +21230,11 @@ Apache License
      * @param {number} count
      * @returns {string}
      */
-    deleteTextInFootnote(section_idx, para_idx, control_idx, fn_para_idx, char_offset, count) {
+    deleteTextInFootnote(section_idx, para_idx, control_idx, fn_para_idx, char_offset, count2) {
       let deferred2_0;
       let deferred2_1;
       try {
-        const ret = wasm.hwpdocument_deleteTextInFootnote(this.__wbg_ptr, section_idx, para_idx, control_idx, fn_para_idx, char_offset, count);
+        const ret = wasm.hwpdocument_deleteTextInFootnote(this.__wbg_ptr, section_idx, para_idx, control_idx, fn_para_idx, char_offset, count2);
         var ptr1 = ret[0];
         var len1 = ret[1];
         if (ret[3]) {
@@ -21260,11 +21261,11 @@ Apache License
      * @param {number} count
      * @returns {string}
      */
-    deleteTextInHeaderFooter(section_idx, is_header, apply_to, hf_para_idx, char_offset, count) {
+    deleteTextInHeaderFooter(section_idx, is_header, apply_to, hf_para_idx, char_offset, count2) {
       let deferred2_0;
       let deferred2_1;
       try {
-        const ret = wasm.hwpdocument_deleteTextInHeaderFooter(this.__wbg_ptr, section_idx, is_header, apply_to, hf_para_idx, char_offset, count);
+        const ret = wasm.hwpdocument_deleteTextInHeaderFooter(this.__wbg_ptr, section_idx, is_header, apply_to, hf_para_idx, char_offset, count2);
         var ptr1 = ret[0];
         var len1 = ret[1];
         if (ret[3]) {
@@ -25426,11 +25427,11 @@ Apache License
      * @param {number} count
      * @returns {string}
      */
-    getTextInCell(section_idx, parent_para_idx, control_idx, cell_idx, cell_para_idx, char_offset, count) {
+    getTextInCell(section_idx, parent_para_idx, control_idx, cell_idx, cell_para_idx, char_offset, count2) {
       let deferred2_0;
       let deferred2_1;
       try {
-        const ret = wasm.hwpdocument_getTextInCell(this.__wbg_ptr, section_idx, parent_para_idx, control_idx, cell_idx, cell_para_idx, char_offset, count);
+        const ret = wasm.hwpdocument_getTextInCell(this.__wbg_ptr, section_idx, parent_para_idx, control_idx, cell_idx, cell_para_idx, char_offset, count2);
         var ptr1 = ret[0];
         var len1 = ret[1];
         if (ret[3]) {
@@ -25453,13 +25454,13 @@ Apache License
      * @param {number} count
      * @returns {string}
      */
-    getTextInCellByPath(section_idx, parent_para_idx, path_json, char_offset, count) {
+    getTextInCellByPath(section_idx, parent_para_idx, path_json, char_offset, count2) {
       let deferred3_0;
       let deferred3_1;
       try {
         const ptr0 = passStringToWasm0(path_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
         const len0 = WASM_VECTOR_LEN;
-        const ret = wasm.hwpdocument_getTextInCellByPath(this.__wbg_ptr, section_idx, parent_para_idx, ptr0, len0, char_offset, count);
+        const ret = wasm.hwpdocument_getTextInCellByPath(this.__wbg_ptr, section_idx, parent_para_idx, ptr0, len0, char_offset, count2);
         var ptr2 = ret[0];
         var len2 = ret[1];
         if (ret[3]) {
@@ -25511,11 +25512,11 @@ Apache License
      * @param {number} count
      * @returns {string}
      */
-    getTextRange(section_idx, para_idx, char_offset, count) {
+    getTextRange(section_idx, para_idx, char_offset, count2) {
       let deferred2_0;
       let deferred2_1;
       try {
-        const ret = wasm.hwpdocument_getTextRange(this.__wbg_ptr, section_idx, para_idx, char_offset, count);
+        const ret = wasm.hwpdocument_getTextRange(this.__wbg_ptr, section_idx, para_idx, char_offset, count2);
         var ptr1 = ret[0];
         var len1 = ret[1];
         if (ret[3]) {
@@ -31583,11 +31584,11 @@ Apache License
     const srcH = opts.src.header || "";
     const S = { charPr: items(srcH, "charPr"), paraPr: items(srcH, "paraPr"), borderFill: items(srcH, "borderFill"), tabPr: items(srcH, "tabPr"), numbering: items(srcH, "numbering"), bullet: items(srcH, "bullet") };
     const next = {};
-    const count = {};
+    const count2 = {};
     for (const k of Object.keys(LIST)) {
       const ids = Object.keys(items(opts.header, k)).map(Number);
       next[k] = ids.length ? Math.max(...ids) + 1 : /^(borderFill|numbering|bullet)$/.test(k) ? 1 : 0;
-      count[k] = ids.length;
+      count2[k] = ids.length;
     }
     const added = { paraPr: [], borderFill: [], tabPr: [], numbering: [], bullet: [] };
     const cache = {};
@@ -31708,7 +31709,7 @@ Apache License
       for (const [k, arr] of Object.entries(added)) {
         if (!arr.length) continue;
         const list = LIST[k];
-        const cnt = count[k] + arr.length;
+        const cnt = count2[k] + arr.length;
         const selfClosed = new RegExp(`<hh:${list} itemCnt="\\d+"\\s*/>`);
         if (selfClosed.test(h2)) h2 = h2.replace(selfClosed, () => `<hh:${list} itemCnt="${cnt}">${arr.join("")}</hh:${list}>`);
         else if (new RegExp(`<hh:${list} itemCnt="\\d+"`).test(h2)) h2 = h2.replace(new RegExp(`<hh:${list} itemCnt="\\d+"`), `<hh:${list} itemCnt="${cnt}"`).replace(`</hh:${list}>`, () => `${arr.join("")}</hh:${list}>`);
@@ -34280,6 +34281,47 @@ Apache License
     return { bytes, footnotes: footnotes.length, pictures: media.length, warnings: [...new Set(warn)] };
   }
 
+  // src/links.js
+  var safeUrl = (u) => {
+    if (typeof u !== "string" || u.length > 2048 || /[\s\\"'<>\u0000-\u001f]/.test(u)) return "";
+    try {
+      const x = new URL(u);
+      if (!/^https?:$/.test(x.protocol) || x.username || x.password || !/^[a-z0-9.-]+$/i.test(x.hostname) || !x.hostname.includes(".")) return "";
+      const labels = x.hostname.replace(/\.$/, "").split(".");
+      if (labels.length < 2 || !labels.every((l) => /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/i.test(l))) return "";
+      return x.href;
+    } catch {
+      return "";
+    }
+  };
+  var URL_RUN = /https?:\/\/[A-Za-z0-9\-._~:/?#[\]@!$&()*+,;=%]+/g;
+  var count = (s, ch) => s.split(ch).length - 1;
+  var trimUrl = (u) => {
+    for (; ; ) {
+      const c = u.at(-1);
+      if (".,;:!?([*".includes(c) || c === ")" && count(u, ")") > count(u, "(") || c === "]" && count(u, "]") > count(u, "[")) u = u.slice(0, -1);
+      else if (count(u, "(") > count(u, ")")) u = u.slice(0, u.lastIndexOf("("));
+      else if (count(u, "[") > count(u, "]")) u = u.slice(0, u.lastIndexOf("["));
+      else return u;
+    }
+  };
+  var sourceParts = (s) => {
+    if (typeof s !== "string") return [];
+    const out = [];
+    let last = 0;
+    for (const m of s.matchAll(URL_RUN)) {
+      const raw = trimUrl(m[0]);
+      const href = safeUrl(raw);
+      if (!href) continue;
+      if (m.index > last) out.push(s.slice(last, m.index));
+      out.push({ url: href, text: raw });
+      last = m.index + raw.length;
+    }
+    if (last < s.length) out.push(s.slice(last));
+    return out;
+  };
+  var hasLink = (parts) => parts.some((p) => typeof p === "object");
+
   // src/structure.js
   var ROLE_GROUP2 = Object.fromEntries(ROLE_DEFS.map((r) => [r.id, r.group]));
   var roleLabel = (id) => (ROLE_DEFS.find((r) => r.id === id) || { label: id }).label;
@@ -34746,20 +34788,43 @@ Apache License
         }
       }
     }
-    const exNum = /^[(（]\s*(\d{1,3})\s*[)）]/;
-    const exLine = /^[(（]\s*\d{1,3}\s*[)）]\s*(?:[a-h]\s*[.)]\s|[A-Z][A-Za-z]{0,2}\d?\s*[:：]|[[［]|[*?#]{1,2}\s*\S)/;
-    const numHead = blocks.map((b, i) => [b, i]).filter(([b]) => /^h[34]$/.test(b.role) && /번호/.test(b.reason || "") && exNum.test(trimmed({ text: b.text })));
-    const toBody = new Set(numHead.filter(([b]) => exLine.test(trimmed({ text: b.text }))).map(([, i]) => i));
-    if (numHead.length >= 2) {
-      const nums = numHead.map(([b]) => +exNum.exec(trimmed({ text: b.text }))[1]);
-      const rising = nums.every((n, k) => k === 0 || n > nums[k - 1]);
-      const gap = nums.some((n, k) => k > 0 && n > nums[k - 1] + 1);
+    const exNum = /^[(（]\s*(\d{1,3})\s*[)）]\s*/;
+    const exOpen = /^[(（]\s*\d{1,3}\s*[)）](?=\s|[A-Za-z*?#[［"'“‘])/;
+    const exText = (b) => trimmed({ text: b.text });
+    const exStop = /[.?!]["'”’)\]]*$/;
+    const exHard = (r) => {
+      const noH = !hasHangul(r);
+      return /^[a-h]\s*[.)]\s+\S/.test(r) || /^[A-Z]\d?\s*[:：]\s*\S/.test(r) && (noH || exStop.test(r)) || /^[*?]{1,2}\s*[^\s*?]/.test(r) || noH && /^#\s*\S/.test(r) && exStop.test(r) || noH && /^[[［]/.test(r) && ((r.match(/[[［]/g) || []).length >= 2 || exStop.test(r));
+    };
+    const exSoft = (r) => !hasHangul(r) && /^\S+\s+\S/.test(r) && exStop.test(r) && !/(?:\b(?:vs|etc|al|Jr|Sr|Inc|Ltd|St|Dr|Mr|Mrs|Ms)|\b[A-Z])\.$/.test(r);
+    const isExCand = (b) => /^h[34]$/.test(b.role) && /번호/.test(b.reason || "") && exNum.test(exText(b));
+    const numLines = blocks.map((b, i) => [b, i]).filter(([b]) => isExCand(b) || /^(?:body|bodyFirst|quote)$/.test(b.role) && exOpen.test(exText(b)));
+    const numHead = numLines.filter(([b]) => isExCand(b));
+    const toBody = /* @__PURE__ */ new Set();
+    if (numHead.length) {
+      const soft = [];
+      for (const [b, i] of numHead) {
+        const r = exText(b).replace(exNum, "");
+        if (exHard(r)) toBody.add(i);
+        else if (exSoft(r)) soft.push(i);
+      }
+      if (toBody.size + soft.length >= 2) for (const i of soft) toBody.add(i);
       const parentOf = (i) => {
         for (let q = i - 1; q >= 0; q--) if (/^h[12]$/.test(blocks[q].role)) return q;
         return -1;
       };
-      const parents = new Set(numHead.map(([, i]) => parentOf(i)));
-      if (rising && (gap || parents.size >= 2)) for (const [, i] of numHead) toBody.add(i);
+      const numOf = (b) => +exNum.exec(exText(b))[1];
+      const risingIn = (list) => list.every(([b], k) => k === 0 || numOf(b) > numOf(list[k - 1][0]));
+      const bySec = /* @__PURE__ */ new Map();
+      for (const e of numLines) {
+        const p = parentOf(e[1]);
+        if (!bySec.has(p)) bySec.set(p, []);
+        bySec.get(p).push(e);
+      }
+      if (numLines.length >= 3 && bySec.size >= 2 && [...bySec.values()].some((l) => l.length >= 2) && risingIn(numLines)) for (const [, i] of numHead) toBody.add(i);
+      for (const list of bySec.values()) if (list.filter(([, i]) => toBody.has(i)).length >= 2 && risingIn(list)) {
+        for (const [b, i] of list) if (isExCand(b)) toBody.add(i);
+      }
     }
     for (const i of toBody) {
       blocks[i].role = "body";
@@ -35264,18 +35329,6 @@ Apache License
   var BUILTIN_IDS = new Set(JOURNALS.map((j) => j.id));
   var BUILTIN_TPL = new Set(JOURNALS.filter((j) => j.template).map((j) => j.template.file));
   var RESERVED_ID = /^(__proto__|constructor|prototype|toString|valueOf|hasOwnProperty)$/i;
-  var safeUrl = (u) => {
-    if (typeof u !== "string" || u.length > 2048 || /[\s\\"'<>\u0000-\u001f]/.test(u)) return "";
-    try {
-      const x = new URL(u);
-      if (!/^https?:$/.test(x.protocol) || x.username || x.password || !/^[a-z0-9.-]+$/i.test(x.hostname) || !x.hostname.includes(".")) return "";
-      const labels = x.hostname.replace(/\.$/, "").split(".");
-      if (labels.length < 2 || !labels.every((l) => /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/i.test(l))) return "";
-      return x.href;
-    } catch {
-      return "";
-    }
-  };
   var isoDate = (s) => {
     if (typeof s !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(s)) return false;
     const d = /* @__PURE__ */ new Date(s + "T00:00:00Z");
@@ -36191,10 +36244,10 @@ ${b.text}` }, b.text, ...objTags, b.footnotes?.length ? h("span", { class: "fn" 
         return h("div", { class: "doc" }, h("b", {}, f.label), h("span", { class: "small" }, f.file, bytes ? ` \xB7 ${(bytes.length / 1024).toFixed(0)} KB` : " \xB7 \uD30C\uC77C \uC5C6\uC74C"), h("div", {}, h("button", { class: "btn ghost sm", disabled: bytes ? null : "", onclick: () => downloadBytes(bytes, f.file) }, "\uB0B4\uB824\uBC1B\uAE30")));
       })));
       else body.append(h("p", { class: "muted" }, "\uC774 \uD559\uD68C\uC758 \uC2E0\uCCAD\uC11C\xB7\uB3D9\uC758\uC11C \uD30C\uC77C\uC740 \uD22C\uACE0\uCC98(\uC704 \uC8FC\uC18C)\uC5D0\uC11C \uBC1B\uC2B5\uB2C8\uB2E4."));
-      const links = (j.sources || []).filter((s) => /^https?:/.test(s));
+      const links = (j.sources || []).map((s) => sourceParts(cleanSource(s))).filter(hasLink);
       if (links.length) {
         body.append(h("h3", {}, "\uADDC\uC815 \uC6D0\uBB38\xB7\uC548\uB0B4 \uC8FC\uC18C"));
-        body.append(h("ul", {}, ...links.filter(safeUrl).map((u) => h("li", {}, h("a", { href: u, target: "_blank", rel: "noopener noreferrer" }, u)))));
+        body.append(h("ul", { class: "srclinks" }, ...links.map((parts) => h("li", {}, ...parts.map((x) => typeof x === "object" ? h("a", { href: x.url, target: "_blank", rel: "noopener noreferrer" }, x.text) : x)))));
       }
       body.append(h("h3", {}, "\uCCB4\uC7AC"));
       body.append(h("p", {}, j.structureText || (j.structure || []).map((g) => SECTION_LABELS[g]).join(" \u2192 ")));
