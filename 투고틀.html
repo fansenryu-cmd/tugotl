@@ -365,7 +365,7 @@ main.over .dropline { display: block; }
       <div class="mast-status" id="status" role="status" aria-live="polite"><span class="dot" aria-hidden="true"></span><span id="status-text">엔진 준비 중…</span></div>
       <div class="skins" id="skins" role="radiogroup" aria-label="화면 스킨"><span class="sk-label">스킨</span><button type="button" class="sw sw-default" data-skin="" role="radio" aria-label="다크 스튜디오(기본)" title="다크 스튜디오(기본)"></button><button type="button" class="sw sw-paper" data-skin="paper" role="radio" aria-label="종이·서지" title="종이·서지"></button><button type="button" class="sw sw-mono" data-skin="mono" role="radio" aria-label="모노크롬 미니멀" title="모노크롬 미니멀"></button><button type="button" class="sw sw-navy" data-skin="navy" role="radio" aria-label="네이비·크림" title="네이비·크림"></button><button type="button" class="sw sw-type" data-skin="type" role="radio" aria-label="타이포 편집" title="타이포 편집"></button><button type="button" class="sw sw-slack" data-skin="slack" role="radio" aria-label="보라(슬랙식, 이전 기본)" title="보라(슬랙식, 이전 기본)"></button><button type="button" class="sw sw-violet" data-skin="violet" role="radio" aria-label="바이올렛" title="바이올렛"></button></div>
       <div class="mast-note" id="status-note" hidden>본 투고 양식 편집은 프로그램 규칙에 따른 것으로 완벽한 편집이 아닙니다. 저장한 원고는 투고 전에 반드시 저자가 직접 확인해 주세요.</div>
-      <div class="side-fine">원고는 이 브라우저 안에서만 처리되며 전송되지 않습니다 · <a href="https://github.com/edwardkim/rhwp" target="_blank" rel="noopener">rhwp</a> · v2.4.2 · 빌드 2026-11-10 01:00</div>
+      <div class="side-fine">원고는 이 브라우저 안에서만 처리되며 전송되지 않습니다 · <a href="https://github.com/edwardkim/rhwp" target="_blank" rel="noopener">rhwp</a> · v2.4.3 · 빌드 2026-11-15 11:01</div>
     </div>
   </aside>
   <main id="main" tabindex="-1"></main>
@@ -31559,17 +31559,17 @@ Apache License
     return [...x.matchAll(/<hp:t\b[^>]*>([\s\S]*?)<\/hp:t>/g)].map((t) => decode(t[1])).join("").length;
   }
   function describeObject(xml, tag) {
-    const num2 = (re) => {
+    const num3 = (re) => {
       const m = re.exec(xml);
       return m ? +m[1] : 0;
     };
     const cap = /<hp:caption\b[\s\S]*?<\/hp:caption>/.exec(xml);
     const caption = cap ? [...cap[0].matchAll(/<hp:t\b[^>]*>([\s\S]*?)<\/hp:t>/g)].map((t) => t[1].replace(/<[^>]+>/g, "")).join("").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&amp;/g, "&").trim() : "";
-    const w = num2(/<hp:sz width="(\d+)"/), h2 = num2(/<hp:sz width="\d+"[^>]*height="(\d+)"/);
+    const w = num3(/<hp:sz width="(\d+)"/), h2 = num3(/<hp:sz width="\d+"[^>]*height="(\d+)"/);
     const p1 = tag === "tbl" ? (/<hp:p\b[\s\S]*?<\/hp:p>/.exec(xml.replace(/<hp:caption\b[\s\S]*?<\/hp:caption>/g, "")) || [""])[0] : "";
     const first = [...p1.matchAll(/<hp:t\b[^>]*>([\s\S]*?)<\/hp:t>/g)].map((t) => t[1].replace(/<[^>]+>/g, "")).join("").replace(/&lt;/g, "<").replace(/&gt;/g, ">").trim();
     const toc = /^[<〈＜《\[【(（]?\s*(목\s*차|차\s*례|contents|table of contents)\s*[>〉＞》\]】)）]?$/i.test(first);
-    return { rows: tag === "tbl" ? num2(/rowCnt="(\d+)"/) : 0, cols: tag === "tbl" ? num2(/colCnt="(\d+)"/) : 0, width: w, height: h2, caption, ...toc ? { toc: true } : {} };
+    return { rows: tag === "tbl" ? num3(/rowCnt="(\d+)"/) : 0, cols: tag === "tbl" ? num3(/colCnt="(\d+)"/) : 0, width: w, height: h2, caption, ...toc ? { toc: true } : {} };
   }
   var LIST = { charPr: "charProperties", paraPr: "paraProperties", borderFill: "borderFills", tabPr: "tabProperties", numbering: "numberings", bullet: "bullets" };
   var ORDER = ["fontfaces", "borderFills", "charProperties", "tabProperties", "numberings", "bullets", "paraProperties", "styles"];
@@ -31792,6 +31792,145 @@ Apache License
     }
   }
 
+  // src/preview.js
+  var FIX = /* @__PURE__ */ new Map([[985172, [12298, "\u300E"]], [985173, [12299, "\u300F"]]]);
+  var HAS_PUA = /[\u{F0854}\u{F0855}]/u;
+  var xmlDecode = (s) => s.replace(/&(?:#x([0-9a-f]+)|#(\d+)|(amp|lt|gt|quot|apos));/gi, (_, hx, dec, nm) => hx ? String.fromCodePoint(parseInt(hx, 16)) : dec ? String.fromCodePoint(+dec) : { amp: "&", lt: "<", gt: ">", quot: '"', apos: "'" }[nm.toLowerCase()]);
+  var num = (attrs, k) => {
+    const m = new RegExp(`\\s${k}="([^"]*)"`).exec(attrs);
+    return m ? +m[1] : NaN;
+  };
+  function puaRuns(tree) {
+    const runs = [];
+    const walk = (n) => {
+      if (!n || typeof n !== "object") return;
+      if (n.type === "TextRun" && typeof n.text === "string" && n.bbox && HAS_PUA.test(n.text)) runs.push(n);
+      for (const c of n.children || []) walk(c);
+    };
+    walk(tree);
+    return runs;
+  }
+  function fixPreviewSvg(svg, tree) {
+    if (typeof tree === "string") {
+      if (!HAS_PUA.test(tree)) return { svg, fixed: 0, skipped: 0 };
+      tree = JSON.parse(tree);
+    }
+    const runs = puaRuns(tree);
+    if (!runs.length) return { svg, fixed: 0, skipped: 0 };
+    const els = [];
+    for (const m of svg.matchAll(/<text\b([^>]*)>([^<]*)<\/text>/g)) {
+      let x = num(m[1], "x");
+      let y = num(m[1], "y");
+      const tf = /\stransform="([^"]*)"/.exec(m[1]);
+      if (tf) {
+        const t = /^\s*translate\(\s*([-\d.e+]+)[\s,]+([-\d.e+]+)\s*\)(?:\s*scale\(\s*[-\d.e+]+(?:[\s,]+[-\d.e+]+)?\s*\))?\s*$/i.exec(tf[1]);
+        if (!t || isFinite(x) || isFinite(y)) continue;
+        x = +t[1];
+        y = +t[2];
+      }
+      if (!isFinite(x) || !isFinite(y)) continue;
+      els.push({ start: m.index, end: m.index + m[0].length, open: m[0].slice(0, m[0].length - m[2].length - 7), raw: m[2], text: xmlDecode(m[2]), x, y });
+    }
+    const edits = /* @__PURE__ */ new Map();
+    let skipped = 0;
+    for (const run of runs) {
+      const src = [...run.text];
+      let disp;
+      if (typeof run.displayText === "string") disp = [...run.displayText];
+      else if (src.some((c) => {
+        const s = c.codePointAt(0);
+        return !FIX.has(s) && (s >= 57344 && s <= 63743 || s >= 983040);
+      })) {
+        skipped++;
+        continue;
+      } else disp = src.map((c) => {
+        const fx = FIX.get(c.codePointAt(0));
+        return fx ? String.fromCodePoint(fx[0]) : c;
+      });
+      if (src.length !== disp.length) {
+        skipped++;
+        continue;
+      }
+      let ok = true;
+      for (let i = 0; i < src.length && ok; i++) {
+        const s = src[i].codePointAt(0);
+        const d = disp[i].codePointAt(0);
+        if (FIX.has(s)) ok = d === FIX.get(s)[0];
+        else if (s !== d) ok = s >= 57344 && s <= 63743 || s >= 983040;
+      }
+      if (!ok) {
+        skipped++;
+        continue;
+      }
+      const { x, y, w, h: h2 } = run.bbox;
+      const line = [];
+      els.forEach((e, k) => {
+        if (e.y >= y - 0.5 && e.y <= y + h2 + 2) line.push(k);
+      });
+      line.sort((a, b) => els[a].x - els[b].x || a - b);
+      const chars = [], owner = [], head = [];
+      for (const k of line) [...els[k].text].forEach((c, t) => {
+        chars.push(c);
+        owner.push(k);
+        head.push(t === 0);
+      });
+      const want = [];
+      disp.forEach((c, i) => {
+        if (!/\s/u.test(c)) want.push(i);
+      });
+      const pat = want.map((i) => disp[i]);
+      const occ = [];
+      for (let s = 0; pat.length && s + pat.length <= chars.length; s++) {
+        if (!head[s] || s + pat.length < chars.length && !head[s + pat.length]) continue;
+        let m = true;
+        for (let t = 0; t < pat.length && m; t++) m = chars[s + t] === pat[t];
+        const ex = els[owner[s]].x;
+        if (m && ex >= x - 0.5 && ex < x + w - 0.5) occ.push(s);
+      }
+      const plan = [];
+      if (occ.length !== 1) ok = false;
+      for (let t = 0; ok && t < pat.length; t++) {
+        const fx = FIX.get(src[want[t]].codePointAt(0));
+        if (!fx) continue;
+        const k = owner[occ[0] + t];
+        const e = els[k];
+        if ([...e.text].length !== 1) {
+          ok = false;
+          break;
+        }
+        if (line.some((q) => q !== k && Math.abs(els[q].x - e.x) < 0.5 && Math.abs(els[q].y - e.y) < 0.5)) {
+          ok = false;
+          break;
+        }
+        plan.push([k, fx[1]]);
+      }
+      if (!ok || plan.some(([k]) => edits.has(k))) {
+        skipped++;
+        continue;
+      }
+      for (const [k, ch] of plan) edits.set(k, ch);
+    }
+    if (!edits.size) return { svg, fixed: 0, skipped };
+    let out = "";
+    let last = 0;
+    for (const k of [...edits.keys()].sort((a, b) => a - b)) {
+      const e = els[k];
+      out += svg.slice(last, e.start) + e.open + edits.get(k) + "</text>";
+      last = e.end;
+    }
+    out += svg.slice(last);
+    return { svg: out, fixed: edits.size, skipped };
+  }
+  function renderPreviewSvg(doc, page) {
+    const svg = doc.renderPageSvg(page);
+    try {
+      if (typeof doc.getPageRenderTree !== "function") return svg;
+      return fixPreviewSvg(svg, doc.getPageRenderTree(page)).svg;
+    } catch {
+      return svg;
+    }
+  }
+
   // src/engine.js
   var ROLE_GROUP = Object.fromEntries(ROLE_DEFS.map((r) => [r.id, r.group]));
   var U = {
@@ -31909,7 +32048,7 @@ Apache License
   function renderTemplatePage(bytes, page = 0) {
     const d = new HwpDocument(bytes);
     try {
-      return { svg: d.renderPageSvg(page), pages: d.pageCount() };
+      return { svg: renderPreviewSvg(d, page), pages: d.pageCount() };
     } finally {
       d.free();
     }
@@ -32378,8 +32517,8 @@ Apache License
           else runCount += segs.filter((g) => g.v.bold || g.v.italic || g.v.underline || g.v.superscript).length;
         }
         if (!segs.length) segs = [{ s: 0, e: q.text.length, v: { red } }];
-        const num2 = i === (f.numAt ?? 0) && !f.noNumber ? `<hp:ctrl><hp:autoNum num="${fnNum}" numType="FOOTNOTE">${fnFmt}</hp:autoNum></hp:ctrl>` : "";
-        const runs = segs.map((g, k) => `<hp:run charPrIDRef="${variantCs(fnShape.cs, g.v)}">${k === 0 ? num2 : ""}${tx(q.text.slice(g.s, g.e))}</hp:run>`).join("");
+        const num3 = i === (f.numAt ?? 0) && !f.noNumber ? `<hp:ctrl><hp:autoNum num="${fnNum}" numType="FOOTNOTE">${fnFmt}</hp:autoNum></hp:ctrl>` : "";
+        const runs = segs.map((g, k) => `<hp:run charPrIDRef="${variantCs(fnShape.cs, g.v)}">${k === 0 ? num3 : ""}${tx(q.text.slice(g.s, g.e))}</hp:run>`).join("");
         return `<hp:p id="${pid++}" paraPrIDRef="${fnShape.ps}" styleIDRef="${fnShape.styleId ?? 0}" pageBreak="0" columnBreak="0" merged="0">${runs}</hp:p>`;
       }).join("");
       return `${prefix}<hp:ctrl><hp:footNote number="${f.noNumber ? fnNum + 1 : fnNum}" suffixChar="${suffixCode}" instId="${fnCount}"><hp:subList id="" textDirection="HORIZONTAL" lineWrap="BREAK" vertAlign="TOP" linkListIDRef="0" linkListNextIDRef="0" textWidth="0" textHeight="0" hasTextRef="0" hasNumRef="0">${xml}</hp:subList></hp:footNote></hp:ctrl>`;
@@ -33901,13 +34040,13 @@ Apache License
     }
     return null;
   };
-  var num = (v, d = 0) => {
+  var num2 = (v, d = 0) => {
     const x = +v;
     return Number.isFinite(x) ? x : d;
   };
   var esc2 = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-  var twip = (hu) => Math.round(num(hu) / 5);
-  var emu = (hu) => Math.round(num(hu) * 127);
+  var twip = (hu) => Math.round(num2(hu) / 5);
+  var emu = (hu) => Math.round(num2(hu) * 127);
   function readHeader(xml) {
     const doc = parseXml(xml);
     const fonts = {};
@@ -33920,12 +34059,12 @@ Apache License
       const ul = kid(c, "hh:underline")?.attrs || {};
       const so = kid(c, "hh:strikeout")?.attrs || {};
       chars[c.attrs.id] = {
-        size: num(c.attrs.height, 1e3) / 100,
+        size: num2(c.attrs.height, 1e3) / 100,
         color: c.attrs.textColor && c.attrs.textColor !== "#000000" ? c.attrs.textColor.slice(1) : null,
         hangul: fonts.HANGUL?.[fr.hangul] || null,
         latin: fonts.LATIN?.[fr.latin] || fonts.HANGUL?.[fr.hangul] || null,
-        ratio: num(ra.hangul, 100),
-        spacing: num(sp.hangul, 0),
+        ratio: num2(ra.hangul, 100),
+        spacing: num2(sp.hangul, 0),
         bold: !!kid(c, "hh:bold"),
         italic: !!kid(c, "hh:italic"),
         underline: ul.type && ul.type !== "NONE",
@@ -33942,7 +34081,7 @@ Apache License
       const per = cs ? 100 : 200;
       const mg = kid(branch, "hh:margin");
       const ls = kid(branch, "hh:lineSpacing")?.attrs || kid(p, "hh:lineSpacing")?.attrs || {};
-      const v = (k) => num(kid(mg, k)?.attrs.value, 0) / per;
+      const v = (k) => num2(kid(mg, k)?.attrs.value, 0) / per;
       const bs = kid(p, "hh:breakSetting")?.attrs || {};
       paras[p.attrs.id] = {
         align: kid(p, "hh:align")?.attrs.horizontal || "JUSTIFY",
@@ -33952,7 +34091,7 @@ Apache License
         before: v("hc:prev"),
         after: v("hc:next"),
         lsType: ls.type || "PERCENT",
-        lsValue: num(ls.value, 160) / (ls.type && ls.type !== "PERCENT" ? per : 1),
+        lsValue: num2(ls.value, 160) / (ls.type && ls.type !== "PERCENT" ? per : 1),
         pageBreakBefore: bs.pageBreakBefore === "1",
         keepNext: bs.keepWithNext === "1",
         keepLines: bs.keepLines === "1",
@@ -34184,13 +34323,13 @@ Apache License
       const out = [];
       if (cap.top.length) out.push(...await cap.renderTop());
       const rows = kids(tbl, "hp:tr");
-      const nCols = num(tbl.attrs.colCnt, 1);
+      const nCols = num2(tbl.attrs.colCnt, 1);
       const cells = [];
       for (const tr of rows) for (const tc of kids(tr, "hp:tc")) {
         const ad = kid(tc, "hp:cellAddr")?.attrs || {};
         const sp = kid(tc, "hp:cellSpan")?.attrs || {};
         const sz = kid(tc, "hp:cellSz")?.attrs || {};
-        cells.push({ tc, r: num(ad.rowAddr), c: num(ad.colAddr), cs: Math.max(1, num(sp.colSpan, 1)), rs: Math.max(1, num(sp.rowSpan, 1)), w: twip(sz.width), bf: H.borders[tc.attrs.borderFillIDRef], va: kid(tc, "hp:subList")?.attrs.vertAlign || "TOP" });
+        cells.push({ tc, r: num2(ad.rowAddr), c: num2(ad.colAddr), cs: Math.max(1, num2(sp.colSpan, 1)), rs: Math.max(1, num2(sp.rowSpan, 1)), w: twip(sz.width), bf: H.borders[tc.attrs.borderFillIDRef], va: kid(tc, "hp:subList")?.attrs.vertAlign || "TOP" });
       }
       if (!cells.length) {
         warn.push("\uCE78 \uC5C6\uB294 \uD45C\uB294 \uC62E\uAE30\uC9C0 \uC54A\uC74C");
@@ -34244,9 +34383,9 @@ Apache License
       const anf = fp ? kid(fp, "hp:autoNumFormat") : null;
       if (anf) fnSuffix = anf.attrs.suffixChar ?? ")";
       const nl = fp ? kid(fp, "hp:noteLine")?.attrs : null;
-      if (nl) noteLine = { length: num(nl.length, -1), width: parseFloat(nl.width) || 0.12, color: (nl.color || "#000000").replace("#", ""), type: nl.type || "SOLID" };
+      if (nl) noteLine = { length: num2(nl.length, -1), width: parseFloat(nl.width) || 0.12, color: (nl.color || "#000000").replace("#", ""), type: nl.type || "SOLID" };
       const ns = fp ? kid(fp, "hp:noteSpacing")?.attrs : null;
-      if (ns) noteSp = { above: num(ns.aboveLine, 850) / 100, below: num(ns.belowLine, 567) / 100, between: num(ns.betweenNotes, 283) / 100 };
+      if (ns) noteSp = { above: num2(ns.aboveLine, 850) / 100, below: num2(ns.belowLine, 567) / 100, between: num2(ns.betweenNotes, 283) / 100 };
       for (const p of kids(root, "hp:p")) body.push(...await paraBlocks(p));
     }
     const pg = sectPr ? find(sectPr, "hp:pagePr") : null;
@@ -34254,7 +34393,7 @@ Apache License
     const landscape = pg?.attrs.landscape === "NARROWLY";
     const W = twip(landscape ? pg?.attrs.height : pg?.attrs.width) || 11906, Hh = twip(landscape ? pg?.attrs.width : pg?.attrs.height) || 16838;
     const footerRef = pageNumber ? '<w:footerReference w:type="default" r:id="rIdFooter1"/>' : "";
-    const sect = `<w:sectPr>${footerRef}<w:footnotePr><w:numFmt w:val="decimal"/></w:footnotePr><w:pgSz w:w="${W}" w:h="${Hh}"${landscape ? ' w:orient="landscape"' : ""}/><w:pgMar w:top="${twip(num(mg.top) + num(mg.header))}" w:right="${twip(mg.right)}" w:bottom="${twip(num(mg.bottom) + num(mg.footer))}" w:left="${twip(mg.left)}" w:header="${twip(mg.top)}" w:footer="${twip(mg.bottom)}" w:gutter="${twip(mg.gutter)}"/><w:cols w:space="425"/></w:sectPr>`;
+    const sect = `<w:sectPr>${footerRef}<w:footnotePr><w:numFmt w:val="decimal"/></w:footnotePr><w:pgSz w:w="${W}" w:h="${Hh}"${landscape ? ' w:orient="landscape"' : ""}/><w:pgMar w:top="${twip(num2(mg.top) + num2(mg.header))}" w:right="${twip(mg.right)}" w:bottom="${twip(num2(mg.bottom) + num2(mg.footer))}" w:left="${twip(mg.left)}" w:header="${twip(mg.top)}" w:footer="${twip(mg.bottom)}" w:gutter="${twip(mg.gutter)}"/><w:cols w:space="425"/></w:sectPr>`;
     const base = Object.values(H.chars).find((c) => c.hangul) || { hangul: "\uBC14\uD0D5", latin: "\uBC14\uD0D5", size: 10 };
     const W_NS = 'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"';
     const z = new import_jszip3.default();
@@ -35896,7 +36035,7 @@ ${b.text}` }, b.text, ...objTags, b.footnotes?.length ? h("span", { class: "fn" 
         const pg = h("div", { class: "page" }, h("span", { class: "pn" }, `${next + 1} / ${r.pages}`));
         try {
           const w = h("div", {});
-          w.innerHTML = r.doc.renderPageSvg(next);
+          w.innerHTML = renderPreviewSvg(r.doc, next);
           const svg = w.firstElementChild;
           svg.removeAttribute("width");
           svg.removeAttribute("height");
