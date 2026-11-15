@@ -6,6 +6,7 @@ import { CITE_STYLES, restyleCitations } from './cite.js';
 import { buildErrata } from './errata.js';
 import { THIRD_PARTY_LICENSES } from './licenses.js';
 import { initEngine, analyzeTemplate, renderTemplatePage, buildDocument } from './engine.js';
+import { renderPreviewSvg } from './preview.js';
 import { parseManuscript } from './parse.js';
 import { hwpxToDocx } from './hwpx2docx.js';
 import { safeUrl, sourceParts, hasLink } from './links.js';
@@ -356,7 +357,8 @@ function pagesView(r) {
   const drawMore = () => {
     for (let k = 0; k < step && next < r.pages; k++, next++) {
       const pg = h('div', { class: 'page' }, h('span', { class: 'pn' }, `${next + 1} / ${r.pages}`));
-      try { const w = h('div', {}); w.innerHTML = r.doc.renderPageSvg(next); const svg = w.firstElementChild; svg.removeAttribute('width'); svg.removeAttribute('height'); widenClips(svg); if (r.errata) annotateErrata(svg, r.errata); pg.append(svg); }
+      // renderPreviewSvg: 반각 겹낫표 󰡔󰡕가 《》로 그려지는 rhwp 결함을 미리보기에서만 바로잡는다(preview.js)
+      try { const w = h('div', {}); w.innerHTML = renderPreviewSvg(r.doc, next); const svg = w.firstElementChild; svg.removeAttribute('width'); svg.removeAttribute('height'); widenClips(svg); if (r.errata) annotateErrata(svg, r.errata); pg.append(svg); }
       catch (e) { pg.append(h('p', { class: 'err', style: 'padding:20px' }, '미리보기 실패: ' + e)); }
       try { const n = footnoteOverlap(r.doc, next); if (n) pg.append(h('span', { class: 'fnwarn', title: '미리보기 엔진(rhwp)은 각주가 많은 쪽에서 본문을 다음 쪽으로 넘기지 못해 본문과 각주가 겹쳐 보입니다. 저장한 HWP는 한글이 열 때 다시 배치하므로 겹치지 않습니다.' }, `각주가 많은 쪽 — 본문 ${n}줄이 각주 영역과 겹쳐 보임(미리보기만, 저장 파일은 정상)`)); } catch {}
 

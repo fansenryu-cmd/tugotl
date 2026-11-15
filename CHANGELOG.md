@@ -2,6 +2,11 @@
 
 판마다 무엇이 바뀌었는지 적습니다. 배포본은 [Releases](https://github.com/fansenryu-cmd/tugotl/releases)에 있습니다. *English summaries follow the Korean.*
 
+**v2.4.3 (2026-11-15)** — 결과 미리보기에서 반각 겹낫표가 겹화살괄호로 보이던 결함 고침.
+- **미리보기 겹낫표**: 원고의 한글 전용 반각 겹낫표 󰡔󰡕(U+F0854·U+F0855, 사설 영역)가 결과 미리보기에서 겹화살괄호 《》로 그려지던 것을 『』로 바로잡음(본문·참고문헌·각주, 학회·글꼴·브라우저와 무관). rhwp 0.8.7이 쪽을 그릴 때 사설 영역 글자를 바꾸는 표에서 두 글자를 《》에 잘못 잇는 탓으로, 새 `src/preview.js`가 같은 쪽의 렌더 트리에서 원래 글자가 반각 겹낫표인 자리만 찾아 미리보기 SVG의 그 글자만 바꿈. 원고에 원래 있던 《》, 글자 자리·쪽 나눔은 그대로이고, 자리를 맞추지 못한 줄은 손대지 않음. 바탕틀 미리보기에도 같게 적용.
+- **저장 파일은 그대로**: 저장한 HWP·HWPX에는 원래도 반각 겹낫표가 그대로 들어 있었고(한글에서 열면 정상), 이번 수정도 저장 경로는 건드리지 않음.
+- **시험 보강**: `tools/preview_brackets_test.mjs` 추가 — 지어낸 원고(본문·참고문헌·각주에 반각 겹낫표, 비교용 《》)를 학회 서식으로 변환해 미리보기에 반각 겹낫표 자리의 《》가 남지 않는지, 원래 《》는 그대로인지, 바뀐 것이 그 글자뿐인지, 저장한 HWP·HWPX의 반각 겹낫표가 그대로인지 봄. 기본 6곳, 258곳 전부(`--journals`)도 통과.
+
 **v2.4.2 (2026-11-10)** — 예문 번호 규칙 바로잡기, 한글 글꼴 따로 3곳, 규정 주소 링크.
 - **예문 번호 규칙 고침**: v2.4에서 넣은 규칙이 진짜 ‘(n)’ 항 제목을 본문으로 내리던 세 경우를 막음 — 긴 ‘(2)’ 제목이 본문으로 잡혀 (1)·(3)이 건너뛴 번호로 보이던 것, 절마다 하나씩인 ‘(1)’·‘(2)’, ‘(1) AI: 개념과 쓰임’·‘(2) [갈래 1] 얼개 짜기’처럼 쌍점·대괄호가 든 제목. 한편 ‘(2) John left.’처럼 표시 없이 문장만 있는 영문 예문도 예문 꼴 줄이 둘 이상이면 본문으로 둠. 판정은 줄 모양, 장·절을 넘어 이어지는 번호, 한 절 안의 예문 줄 수 세 가지로 함.
 - **한글·영문 글꼴 따로 3곳**: 음성음운형태론연구·담화와 인지·ESP Review — 규정대로 한글·한자는 바탕체, 영문은 Times New Roman(v2.4.1의 `format.fontHangul`).
@@ -85,6 +90,8 @@
 ---
 
 ## English
+
+*v2.4.3 (2026-11-15):* the result preview drew the Hangul-only half-width double corner brackets 󰡔󰡕 (private-use U+F0854/U+F0855) as double angle brackets 《》 in body text, references and footnotes, because the rhwp 0.8.7 renderer maps those two code points to the wrong characters. The preview now redraws only those positions as 『』, leaving original 《》, glyph positions and page breaks untouched. Saved HWP and HWPX files were never affected. New test: `tools/preview_brackets_test.mjs`.
 
 *v2.3 (2026-11-08):* *The Journal of Chinese Studies* (中國學報, Korean Society of Chinese Studies), requested in issue #1 — the first journal outside Korean language and literature (228 in total). Its sample manuscript is the template; footnotes use p./pp. with the ～ range mark, and the copyright transfer form is bundled. Where the society’s rule table and its sample file disagree (fonts, block-quote size and margins, body indent, range mark), the sample file is followed and both are recorded in the journal notes.
 

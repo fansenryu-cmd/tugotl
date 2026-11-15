@@ -5,6 +5,7 @@ import JSZip from 'jszip';
 import { ROLE_FALLBACK, GENERIC_FORMAT, ROLE_DEFS, FLOAT_ROLES } from './journals.js';
 import { makeImporter } from './objects.js';
 import { fixHwpBytes } from './hwpfix.js';
+import { renderPreviewSvg } from './preview.js';
 const ROLE_GROUP = Object.fromEntries(ROLE_DEFS.map((r) => [r.id, r.group]));
 
 export { HwpDocument };
@@ -83,7 +84,7 @@ const reflow = (d) => { try { return typeof d.reflowLinesegs === 'function' ? d.
 
 export function renderTemplatePage(bytes, page = 0) {
   const d = new HwpDocument(bytes);
-  try { return { svg: d.renderPageSvg(page), pages: d.pageCount() }; } finally { d.free(); }
+  try { return { svg: renderPreviewSvg(d, page), pages: d.pageCount() }; } finally { d.free(); }
 }
 
 // 바탕틀 HWPX의 각주 예시에서 문단/글자 모양 ID를 읽는다
