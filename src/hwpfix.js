@@ -68,3 +68,57 @@ export function fixHwpBytes(bytes, log) {
     return bytes;
   }
 }
+
+// ───────── 단마다 줄 배치 잇기 ─────────
+// rhwp 0.8.7의 줄 배치(reflowLinesegs)는 구역 첫 단 정의의 폭으로만 줄을 나눈다 — 앞부분 1단·본문 2단처럼 구역 중간에서 단이 바뀌면 2단 줄이 단 밖으로 넘친다.
+// 그래서 쓰인 단 설정마다 문서 전체를 그 단으로 둔 사본을 따로 줄 배치해 저장하고(variants), 최상위 문단마다 제 단의 사본에서 문단 레코드째(줄 배치 PARA_LINE_SEG, 안의 각주·표 포함) 가져온다.
+// 사본들은 단 정의 값만 다르고 문단·컨트롤 구조가 같다. base 는 단이 제자리에 있는 저장본(문서 정보·나머지 스트림은 base 것).
+// zoneOf(k): 최상위 문단 k 가 쓸 사본의 열쇠. 구역이 하나가 아니거나 문단 수가 어긋나면 예외
+const TAG_PARA_HEADER = 66;   // HWPTAG_BEGIN(16) + 50
+function sectionStream(bytes) {
+  const cfb = CFB.read(bytes, { type: 'array' });
+  const header = CFB.find(cfb, '/FileHeader');
+  if (!header || !header.content) throw new Error('FileHeader 없음');
+  const flags = header.content[36] | (header.content[37] << 8);
+  if (flags & 2) throw new Error('암호화된 파일');
+  const secs = cfb.FileIndex.filter((e, i) => e && e.type === 2 && /\/BodyText\/Section\d+$/.test(cfb.FullPaths[i]));
+  if (secs.length !== 1) throw new Error(`구역 ${secs.length}개`);
+  const compressed = (flags & 1) === 1;
+  const raw = compressed ? pako.inflateRaw(Uint8Array.from(secs[0].content)) : Uint8Array.from(secs[0].content);
+  return { cfb, entry: secs[0], compressed, raw };
+}
+// 최상위 문단(수준 0의 문단 머리 레코드)마다 [시작, 끝] 바이트 범위
+function topParagraphRanges(data) {
+  const dv = new DataView(data.buffer, data.byteOffset, data.byteLength);
+  const starts = []; let pos = 0;
+  while (pos + 4 <= data.length) {
+    const at = pos; const h = dv.getUint32(pos, true); pos += 4;
+    const tag = h & 0x3ff; const level = (h >>> 10) & 0x3ff; let size = h >>> 20;
+    if (size === 0xfff) { if (pos + 4 > data.length) throw new Error('레코드 길이 잘림'); size = dv.getUint32(pos, true); pos += 4; }
+    if (pos + size > data.length) throw new Error('레코드 잘림');
+    if (tag === TAG_PARA_HEADER && level === 0) starts.push(at);
+    pos += size;
+  }
+  if (pos !== data.length) throw new Error('레코드 끝이 맞지 않음');
+  return { prefix: starts.length ? starts[0] : data.length, ranges: starts.map((s, i) => [s, i + 1 < starts.length ? starts[i + 1] : data.length]) };
+}
+export function spliceColumnLayouts(baseBytes, variants, zoneOf) {
+  const base = sectionStream(baseBytes); const baseR = topParagraphRanges(base.raw);
+  const vs = new Map();
+  for (const [key, bytes] of variants) {
+    const v = sectionStream(bytes); const r = topParagraphRanges(v.raw);
+    if (r.ranges.length !== baseR.ranges.length) throw new Error(`문단 수 ${r.ranges.length} ≠ ${baseR.ranges.length}`);
+    vs.set(key, { raw: v.raw, r });
+  }
+  const parts = [base.raw.subarray(0, baseR.prefix)];
+  for (let k = 0; k < baseR.ranges.length; k++) {
+    const v = vs.get(zoneOf(k));
+    if (!v) { parts.push(base.raw.subarray(...baseR.ranges[k])); continue; }
+    parts.push(v.raw.subarray(...v.r.ranges[k]));
+  }
+  const len = parts.reduce((a, p) => a + p.length, 0); const raw = new Uint8Array(len); let o = 0; for (const p of parts) { raw.set(p, o); o += p.length; }
+  base.entry.content = base.compressed ? pako.deflateRaw(raw, { level: 6 }) : raw;
+  base.entry.size = base.entry.content.length;
+  const out = CFB.write(base.cfb, { type: 'array', fileType: 'cfb' });
+  return out instanceof Uint8Array ? out : Uint8Array.from(out);
+}

@@ -4,7 +4,7 @@ import init, { HwpDocument } from '../node_modules/@rhwp/core/rhwp.js';
 import JSZip from 'jszip';
 import { ROLE_FALLBACK, GENERIC_FORMAT, ROLE_DEFS, FLOAT_ROLES } from './journals.js';
 import { makeImporter } from './objects.js';
-import { fixHwpBytes } from './hwpfix.js';
+import { fixHwpBytes, spliceColumnLayouts } from './hwpfix.js';
 import { renderPreviewSvg } from './preview.js';
 const ROLE_GROUP = Object.fromEntries(ROLE_DEFS.map((r) => [r.id, r.group]));
 
@@ -151,6 +151,12 @@ function charPropsOf(doc, fmt, fontName) {
   const fid = doc.findOrCreateFontId(name);
   const p = { fontFamily: name, fontSize: U.fontSize(fmt.size || 10), bold: !!fmt.bold, italic: !!fmt.italic };
   if (fid >= 0) p.fontId = fid;
+  // 글꼴 번호는 언어(한글·영문·한자·일어·기타·기호·사용자)마다 따로 매겨진다. findOrCreateFontId 는 한글 목록의 번호라,
+  // 바탕틀의 언어별 글꼴 목록 순서가 다르면 영문 칸이 이웃 글꼴을 가리킨다(2026-11-17 한국도시행정학보·한국지방자치연구: 영문초록이 HY중고딕) — 언어마다 그 목록의 번호를 쓴다
+  if (fid >= 0 && typeof doc.findOrCreateFontIdForLang === 'function') {
+    const ids = Array.from({ length: 7 }, (_, lang) => { try { const v = doc.findOrCreateFontIdForLang(lang, name); return v >= 0 ? v : fid; } catch { return fid; } });
+    if (ids.some((v) => v !== fid)) p.fontIds = ids;   // 목록이 같으면 예전과 똑같이(fontId 하나)
+  }
   // 장평·자간을 적지 않은 역할은 100%·0%로 — 임시 문단이 바로 앞 역할의 값을 물려받지 않게
   p.spacings = Array(7).fill(fmt.spacing !== undefined ? fmt.spacing : 0);
   p.ratios = Array(7).fill(fmt.ratio !== undefined ? fmt.ratio : 100);
@@ -290,6 +296,34 @@ function topLevelPageBreaks(sec) {
   return out;
 }
 
+// 구역 XML의 최상위 문단에 든 단 정의(colPr) — [{ para, xml }]. 문단 번호는 topLevelPageBreaks 와 같은 순서(머리말·표 안 문단 제외)
+const COLPR_RE = /<hp:colPr\b[^>]*?(?:\/>|>[\s\S]*?<\/hp:colPr>)/;
+// styles: 최상위 문단마다 스타일 번호(styleIDRef), texts: 최상위 문단마다 글자나 개체(표·그림·도형)가 있는지
+const OBJ_TAG_RE = /<hp:(?:tbl|pic|rect|ellipse|arc|polygon|curve|line|container|equation|ole|textart)\b/;
+function topLevelColumnDefs(sec) {
+  const out = []; const styles = []; const texts = []; let depth = 0; let pi = -1;
+  for (const m of sec.matchAll(new RegExp(`<(\\/?)hp:(subList|p)\\b([^>]*)>|<hp:t>([^<]*)|${OBJ_TAG_RE.source}|${COLPR_RE.source}`, 'g'))) {
+    if (m[0].startsWith('<hp:colPr')) { if (depth === 0 && pi >= 0) out.push({ para: pi, xml: m[0] }); continue; }
+    if (m[0].startsWith('<hp:t>')) { if (depth === 0 && pi >= 0 && /\S/.test(m[4])) texts[pi] = true; continue; }
+    if (m[2] === undefined) { if (depth === 0 && pi >= 0) texts[pi] = true; continue; }   // 표·그림·도형
+    if (m[2] === 'subList') { depth += m[1] ? -1 : 1; continue; }
+    if (m[1] || m[3].endsWith('/')) continue;
+    if (depth === 0) { pi++; styles.push(+((/styleIDRef="(\d+)"/.exec(m[3]) || [0, -1])[1])); texts.push(false); }
+  }
+  out.styles = styles; out.texts = texts;
+  return out;
+}
+const colCountOf = (xml) => +((/colCount="(\d+)"/.exec(xml || '') || [0, 1])[1]) || 1;
+const ONE_COL = '<hp:colPr id="" type="NEWSPAPER" layout="LEFT" colCount="1" sameSz="1" sameGap="0"/>';
+// 규정 서식의 단(format.columns: { count, gap(mm), line?: true }) → colPr
+function formatColPr(c) {
+  const count = Math.max(1, Math.min(6, Math.round(+c.count || 1)));
+  if (count === 1) return ONE_COL;
+  const gap = Math.max(0, Math.round(((+c.gap >= 0 ? +c.gap : 8) * 7200) / 25.4));
+  const line = c.line ? '<hp:colLine type="SOLID" width="0.12 mm" color="#000000"/>' : '';
+  return `<hp:colPr id="" type="NEWSPAPER" layout="LEFT" colCount="${count}" sameSz="1" sameGap="${gap}"${line ? `>${line}</hp:colPr>` : '/>'}`;
+}
+
 // ───────── 문서 생성 ─────────
 const sanitize = (t) => (t || '').replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, '').replace(/\r\n?/g, '\n');
 // 각주 원문은 공백·빈 줄까지 그대로 둔다(줄마다 각주 문단 하나). 제어 문자만 제거
@@ -371,10 +405,19 @@ export async function buildDocument({ journal, templateBytes, blocks, onLog }) {
   let sec = await zip.file('Contents/section0.xml').async('string');
   // 바탕틀 예시 문단에 걸린 ‘쪽 나눔’(pageBreak="1", 예: 참고문헌·영문초록 제목이 새 쪽에서 시작)은 그 역할의 서식으로 따른다
   const pbGroups = new Set();
+  let tplCols = [];   // 구역마다 [{ para, xml }] — 원본 바탕틀의 단 정의 자리
   {
     const pbRoles = [];
     // 이 시점의 sec는 이미 비운 바탕틀이므로, 원본 바탕틀을 따로 내보내 읽는다
-    const tplPB = templateBytes ? await (async () => { const td = new HwpDocument(templateBytes); try { const tz = await JSZip.loadAsync(td.exportHwpx()); return topLevelPageBreaks(await tz.file('Contents/section0.xml').async('string')); } finally { td.free(); } })() : [];
+    let tplPB = [];
+    if (templateBytes) {
+      const td = new HwpDocument(templateBytes);
+      try {
+        const tz = await JSZip.loadAsync(td.exportHwpx());
+        tplPB = topLevelPageBreaks(await tz.file('Contents/section0.xml').async('string'));
+        for (let k = 0; tz.file(`Contents/section${k}.xml`); k++) tplCols.push(topLevelColumnDefs(await tz.file(`Contents/section${k}.xml`).async('string')));
+      } finally { td.free(); }
+    }
     for (const [role, spec] of Object.entries((templateBytes && journal.template && journal.template.roles) || {})) {
       if (spec && spec.para !== undefined && !spec.sec && tplPB[spec.para] && shapes[role] && !/대체/.test(shapes[role].src || '')) { shapes[role].pageBreakBefore = true; pbRoles.push(role); }
     }
@@ -420,13 +463,96 @@ export async function buildDocument({ journal, templateBytes, blocks, onLog }) {
 
   let pid = 1; let fnCount = 0; let fnNum = 0; let runCount = 0; let charCount = 0; let redParas = 0; let redFns = 0; let objLost = 0;
   const roleCount = {};
+
+  // ── 단 구성: 바탕틀이 앞부분(제목·저자·초록)은 1단, 본문부터 2단처럼 단 정의를 바꾸면 결과에도 같은 묶음 경계에서 바꾼다.
+  //    예전에는 비운 바탕틀 첫 문단의 단 정의 하나로 문서 전체를 짰다(앞 1단·본문 2단 양식은 전부 1단, 첫 문단부터 2단인 양식은 제목까지 2단).
+  //    묶음(앞부분·목차·초록·본문·참고문헌·영문초록·끝)마다 대표 역할의 바탕틀 자리(예시 문단 para, 스타일이면 그 스타일 문단들)에 걸린 단 정의를 쓴다.
+  //    자리를 모르는 묶음은 본문 앞이면 1단, 본문 뒤면 앞 묶음을 잇는다(본문 자리를 모르면 첫 문단의 단 정의 — 예전과 같음). 단은 묶음 경계에서만 바꾼다.
+  //    바탕틀 없는 규정 서식은 format.columns: { count, gap(mm), from: 'body'(역할·묶음 이름 또는 그 배열), line } 로 단을 정한다.
+  //    template.columns === false 면 예전처럼 첫 문단의 단 정의만 쓴다. 구역을 여럿 둔 바탕틀도 단 정의는 그 구역에서 읽되, 용지는 첫 구역 것(구역은 하나로 합침)
+  const firstColXml = (COLPR_RE.exec(sec) || [ONE_COL])[0];
+  const effGroups = []; { let pg = null; for (const b of blocks) { if (b.role === 'skip') { effGroups.push(null); continue; } const g = b.role === 'blank' || (FLOAT_ROLES.has(b.role) && pg) ? pg : (ROLE_GROUP[b.role] || 'body'); if (b.role !== 'blank') pg = g; effGroups.push(g); } }   // 아래 블록 삽입의 묶음 판정과 같은 규칙
+  const colPlan = (() => {
+    const fc = journal.format && journal.format.columns;
+    const tplOn = templateBytes && tplCols.length && !(journal.template && journal.template.columns === false);
+    if (!(fc && typeof fc === 'object') && !tplOn) return null;
+    const oneCol = colCountOf(firstColXml) === 1 ? firstColXml : ONE_COL;
+    const canon = (x) => (colCountOf(x) === 1 ? oneCol : x);   // 1단끼리는 간격이 달라도 같은 것으로(쓸데없는 단 정의를 넣지 않게)
+    const out = new Array(blocks.length).fill(null);
+    if (fc && typeof fc === 'object') {
+      const want = canon(formatColPr(fc)); const from = [].concat(fc.from || 'body'); let on = false;
+      blocks.forEach((b, i) => { const g = effGroups[i]; if (!g) return; if (!on && b.role !== 'blank' && (from.includes(b.role) || from.includes(g))) on = true; out[i] = on ? want : oneCol; });
+    } else {
+      const roles = journal.template.roles || {};
+      // 단 정의 자리마다 early: 그 앞에 글자 있는 최상위 문단이 하나도 없다(문서 첫머리의 단 = 양식 전체의 기본 단)
+      { let seen = false; for (const L of tplCols) { const T = L.texts || []; let k = 0; for (let p = 0; p < T.length; p++) { while (k < L.length && L[k].para <= p) { L[k].early = !seen; k++; } if (T[p]) seen = true; } while (k < L.length) L[k++].early = !seen; } }
+      const entryAt = (s, p) => { const L = tplCols[s] || []; let x = null; for (const c of L) { if (c.para <= p) x = c; else break; } return x || L[0] || null; };
+      const colAt = (s, p) => { const e = entryAt(s, p); return e ? e.xml : null; };
+      // 스타일로 정한 역할은 바탕틀에서 그 스타일을 쓴 최상위 문단들이 놓인 단으로 정한다.
+      //  · 본문 앞 묶음(제목·목차·초록): 바탕틀 본문 시작 앞의 문단만, 그리고 문서 첫머리부터 걸린 다단은 세지 않는다
+      //    (표지를 표로 짠 양식은 같은 스타일의 짧은 글만 다단 구역에 있어, 그대로 따르면 제목·초록이 본문 단에 끌려 들어간다)
+      //  · 본문의 장·절·항 제목: 그 스타일 문단이 다단 구역에 하나라도 있으면 다단(초록 제목 같은 앞부분 문단이 같은 스타일을 써도 본문 예시가 짧은 양식이 1단으로 떨어지지 않게)
+      const pos = (s, p) => s * 1e6 + p;
+      const styleOf = (role) => { const sp = roles[role]; return sp && sp.para === undefined && sp.style && shapes[role] && shapes[role].styleId !== undefined && !/대체/.test(shapes[role].src || '') ? shapes[role].styleId : null; };
+      const firstPosOfStyle = (sid) => { for (let s = 0; s < tplCols.length; s++) { const k = (tplCols[s].styles || []).indexOf(sid); if (k >= 0) return pos(s, k); } return Infinity; };
+      const paraPos = ['h1', 'body', 'bodyFirst'].map((r) => roles[r]).filter((sp) => sp && sp.para !== undefined).map((sp) => pos(sp.sec || 0, sp.para));
+      const bodyStart = paraPos.length ? Math.min(...paraPos) : Math.min(...['h1', 'body'].map((r) => { const sid = styleOf(r); return sid === null ? Infinity : firstPosOfStyle(sid); }));
+      const styleCol = (sid, front, preferMulti) => {
+        const cnt = new Map();
+        tplCols.forEach((L, s) => (L.styles || []).forEach((st, p) => {
+          if (st !== sid || (front && pos(s, p) >= bodyStart)) return;
+          const e = entryAt(s, p); if (!e) return; const k = canon(e.xml);
+          if (front && e.early && colCountOf(k) > 1) return;
+          cnt.set(k, (cnt.get(k) || 0) + 1);
+        }));
+        let best = null;
+        for (const [k, v] of cnt) {
+          if (!best) { best = [k, v]; continue; }
+          const km = colCountOf(k) > 1; const bm = colCountOf(best[0]) > 1;
+          if (preferMulti && km !== bm) { if (km) best = [k, v]; continue; }   // 본문 장·절 제목: 다단 우선
+          if (v > best[1]) best = [k, v];
+        }
+        return best ? best[0] : null;
+      };
+      const roleColCache = new Map();
+      const roleCol = (role, front) => {
+        const key = `${role}|${front}`;
+        if (!roleColCache.has(key)) { const sp = roles[role]; const sid = styleOf(role); roleColCache.set(key, sp && sp.para !== undefined ? canon(colAt(sp.sec || 0, sp.para) || firstColXml) : sid !== null ? styleCol(sid, front, !front && /^h[123]$/.test(role)) : null); }
+        return roleColCache.get(key);
+      };
+      // 묶음의 단 = 묶음마다 대표 역할(본문은 장 제목, 참고문헌은 참고문헌 제목 …) 가운데 원고에 있고 자리를 아는 첫 역할의 단. 없으면 묶음 블록들이 가리키는 단 가운데 가장 많은 것
+      const REP = { body: ['h1', 'h2', 'h3', 'body', 'bodyFirst'], references: ['refHead', 'ref'], front: ['title', 'titleEn', 'author'], toc: ['tocHead', 'toc'], abstractKo: ['abstract', 'abstractHead', 'keywords'], abstractEn: ['abstractEn', 'abstractEnHead', 'keywordsEn', 'titleEn2'], tail: ['dates'] };
+      const present = {}; const votes = {}; { let seen = false;
+        blocks.forEach((b, i) => { const g = effGroups[i]; if (!g) return; if (g === 'body') seen = true; if (b.role === 'blank' || FLOAT_ROLES.has(b.role)) return; const front = !seen && g !== 'body'; (present[g] || (present[g] = new Map())).set(b.role, front); const x = roleCol(b.role, front); if (!x) return; const v = votes[g] || (votes[g] = new Map()); v.set(x, (v.get(x) || 0) + 1); }); }
+      const located = {};
+      for (const [g, v] of Object.entries(votes)) {
+        const rep = (REP[g] || []).find((r) => present[g].has(r) && roleCol(r, present[g].get(r)));
+        if (rep) { located[g] = roleCol(rep, present[g].get(rep)); continue; }
+        let best = null; for (const [k, n] of v) if (!best || n > best[1]) best = [k, n]; located[g] = best[0];
+      }
+      const bodyCol = located.body || canon(firstColXml);
+      const gcol = {}; let seenBody = false; let prev = null;
+      blocks.forEach((b, i) => { const g = effGroups[i]; if (!g) return; if (g === 'body') seenBody = true; if (gcol[g] === undefined) gcol[g] = located[g] || (g === 'body' ? bodyCol : seenBody ? (prev || bodyCol) : oneCol); out[i] = gcol[g]; prev = out[i]; });
+    }
+    const firstSet = out.find((x) => x); if (!firstSet) return null;
+    let last = firstSet; for (let i = 0; i < out.length; i++) { if (blocks[i].role === 'skip') continue; if (out[i]) last = out[i]; else out[i] = last; }   // 맨 앞 빈 줄은 첫 묶음의 단
+    if (out.every((x) => !x || x === firstColXml)) return null;   // 바꿀 것이 없으면 예전과 똑같이
+    return out;
+  })();
+  const bodyColXml = (() => { if (!colPlan) return firstColXml; const i = effGroups.indexOf('body'); return (i >= 0 && colPlan[i]) || colPlan.find((x) => x) || firstColXml; })();   // 표·그림 폭은 본문 단 기준
+  if (colPlan) {
+    const desc = (x) => { const n = colCountOf(x); const g = +((/sameGap="(\d+)"/.exec(x) || [0, 0])[1]); return n === 1 ? '1단' : `${n}단(간격 ${U.hwpToMm(g)} mm)`; };
+    const marks = []; let cur = null; blocks.forEach((b, i) => { if (!colPlan[i] || colPlan[i] === cur) return; marks.push(`${cur === null ? '처음' : `‘${b.role}’`}부터 ${desc(colPlan[i])}`); cur = colPlan[i]; });
+    log(`단 구성 ${journal.format && journal.format.columns ? '규정대로' : '바탕틀대로'} — ${marks.slice(0, 5).join(', ')}${marks.length > 5 ? ` 외 ${marks.length - 5}곳` : ''}`);
+  }
+
   // 표·그림: 원고 자원(같은 원고면 같은 객체)마다 옮겨 심는 도구를 하나씩 만든다
   const pageW = (() => {
     const pm = /<hp:pagePr\b[^>]*?landscape="(\w+)"[^>]*?width="(\d+)"[^>]*?height="(\d+)"/.exec(sec); const mm = /<hp:margin\b[^>]*\/>/.exec(sec);
     if (!pm || !mm) return 0;
     const at = (k) => +((new RegExp(`${k}="(\\d+)"`).exec(mm[0]) || [0, 0])[1]);
-    const cols = +((/<hp:colPr\b[^>]*colCount="(\d+)"/.exec(sec) || [0, 1])[1]) || 1;
-    const gap = +((/<hp:colPr\b[^>]*sameGap="(\d+)"/.exec(sec) || [0, 0])[1]) || 0;
+    const cols = colCountOf(bodyColXml);
+    const gap = +((/sameGap="(\d+)"/.exec(bodyColXml) || [0, 0])[1]) || 0;
     const w = (pm[1] === 'NARROWLY' ? +pm[3] : +pm[2]) - at('left') - at('right') - at('gutter');
     return Math.max(0, Math.floor((w - gap * (cols - 1)) / cols));
   })();
@@ -533,7 +659,8 @@ export async function buildDocument({ journal, templateBytes, blocks, onLog }) {
       if (live[k].role === 'caption' || (live[k].text || '').trim().length > 30) break;
     }
   });
-  for (const b of blocks) {
+  let curCol = null; let firstCol = null; const colMarks = []; const COL_MARK = '@@COLPR@@';   // colMarks: [{ para(최상위 문단 번호), xml }] 문서 순서
+  for (const [bi, b] of blocks.entries()) {
     if (b.role === 'skip') continue;
     const group = b.role === 'blank' || (FLOAT_ROLES.has(b.role) && prevGroup) ? prevGroup : (ROLE_GROUP[b.role] || 'body');   // 표·그림·캡션은 놓인 자리의 묶음(새 쪽을 열지 않음)
     const groupStart = b.role !== 'blank' && group !== prevGroup && pbGroups.has(group) && prevGroup !== null;
@@ -543,9 +670,11 @@ export async function buildDocument({ journal, templateBytes, blocks, onLog }) {
     const sh = shapes[b.role] || shapes.body || { ps: 0, cs: 0 };
     if (b.flag === 'red' && text) redParas++;
     const attrs = `paraPrIDRef="${keepSet.has(b) ? `@KEEP${sh.ps}@` : sh.ps}" styleIDRef="${sh.styleId ?? 0}" pageBreak="${b.pageBreakBefore || groupStart || (sh.pageBreakBefore && group === 'body') ? 1 : 0}" columnBreak="0" merged="0"`;
-    const runs = runsXml(b, text, sh.cs);
+    let runs = runsXml(b, text, sh.cs);
     roleCount[b.role] = (roleCount[b.role] || 0) + 1;
-    if (firstAttrs === null) { firstAttrs = attrs; firstRuns = runs; continue; }
+    const wantCol = colPlan ? colPlan[bi] : null;
+    if (firstAttrs === null) { firstAttrs = attrs; firstRuns = runs; firstCol = curCol = wantCol; continue; }
+    if (wantCol && wantCol !== curCol) { runs = `<hp:run charPrIDRef="${sh.cs}"><hp:ctrl>${COL_MARK}</hp:ctrl></hp:run>${runs}`; colMarks.push({ para: bodyParas.length + 1, xml: wantCol }); curCol = wantCol; }   // 이 문단에서 단 정의를 바꾼다(한글의 ‘다단 설정 나누기’). 단 정의 자리는 줄 배치 뒤에 채운다
     bodyParas.push(`<hp:p id="${pid++}" ${attrs}>${runs}</hp:p>`);
   }
   // 첫 문단: 바탕틀의 구역·단 정의 런은 남기고 글 런만 우리 것으로 바꾼다
@@ -556,7 +685,12 @@ export async function buildDocument({ journal, templateBytes, blocks, onLog }) {
   if (pStart < 0 || pEnd < 0) throw new Error('바탕틀 구역에서 첫 문단을 찾지 못했습니다');
   const pm = { index: pStart };
   const firstP = sec.slice(pStart, pEnd);
-  const ctrlRuns = topLevel(firstP.slice(firstP.indexOf('>') + 1), 'run').filter((r) => /<hp:secPr|<hp:ctrl>/.test(r)).map((r) => r.replace(/<hp:t>[\s\S]*?<\/hp:t>/g, ''));
+  let ctrlRuns = topLevel(firstP.slice(firstP.indexOf('>') + 1), 'run').filter((r) => /<hp:secPr|<hp:ctrl>/.test(r)).map((r) => r.replace(/<hp:t>[\s\S]*?<\/hp:t>/g, ''));
+  if (colPlan) {   // 첫 문단의 단 정의는 첫 묶음의 단으로(자리는 줄 배치 뒤에 채운다)
+    let done = false; ctrlRuns = ctrlRuns.map((r) => (done ? r : r.replace(COLPR_RE, () => { done = true; return COL_MARK; })));
+    if (!done) ctrlRuns.push(`<hp:run charPrIDRef="0"><hp:ctrl>${COL_MARK}</hp:ctrl></hp:run>`);
+    colMarks.unshift({ para: 0, xml: firstCol || firstColXml });
+  }
   const newFirst = `<hp:p id="0" ${firstAttrs || 'paraPrIDRef="0" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0"'}>${ctrlRuns.join('')}${firstRuns || ''}</hp:p>`;
   // 첫 문단 뒤에 남아 있을 수 있는 문단(비운 바탕틀의 잔여)은 버린다
   sec = sec.slice(0, pm.index) + newFirst + bodyParas.join('') + sec.slice(sec.lastIndexOf('</hs:sec>'));
@@ -588,8 +722,9 @@ export async function buildDocument({ journal, templateBytes, blocks, onLog }) {
   // 한글·한자 글꼴을 따로 정한 규정(format.fontHangul — 2026-11-09 한국영어학회: 한국어 본문 한컴바탕, 영문 Times New Roman):
   // 규정 글꼴(format.font)을 쓰는 글자 모양의 한글·한자 칸만 fontHangul 로 바꾼다(라틴 문자는 format.font 그대로)
   if (!templateBytes && fmt && fmt.font && fmt.fontHangul && fmt.fontHangul !== fmt.font) header = splitHangulFont(header, fmt.font, fmt.fontHangul);
-  zip.file('Contents/section0.xml', enc.encode(sec));
   zip.file('Contents/header.xml', enc.encode(header));
+  const fillCols = (x) => { let k = 0; return x.replace(/@@COLPR@@/g, () => colMarks[k++].xml); };
+  zip.file('Contents/section0.xml', enc.encode(colMarks.length ? fillCols(sec) : sec));
   const roleSummary = Object.entries(roleCount).map(([k, v]) => `${k} ${v}`).join(', ');
   log(`문단 ${Object.values(roleCount).reduce((a, b) => a + b, 0)}개 작성 — ${roleSummary}`);
   if (runCount) log(`강조 서식(굵게·기울임 등) ${runCount}곳 유지`);
@@ -605,8 +740,26 @@ export async function buildDocument({ journal, templateBytes, blocks, onLog }) {
   if (reflowed !== null) log(`줄 배치 계산 — 문단 ${reflowed}개`);
   const rep = doc2.exportHwpWithReport();
   const loss = J(rep.contentLoss()) || {};
+  let hwpRaw = rep.takeBytes();
+  // 단이 바뀌는 문서: rhwp 줄 배치는 구역 첫 단의 폭으로만 줄을 나눠 2단 줄이 단 밖으로 넘친다 →
+  // 쓰인 단 설정마다 문서 전체를 그 단으로 둔 사본을 줄 배치해 저장하고, 최상위 문단마다 제 단의 사본에서 문단 레코드째 가져온다(hwpfix.js spliceColumnLayouts)
+  if (colMarks.length) {
+    try {
+      const variants = new Map();
+      for (const xml of new Set(colMarks.map((c) => c.xml))) {
+        zip.file('Contents/section0.xml', enc.encode(sec.split(COL_MARK).join(xml)));
+        const vd = new HwpDocument(await zip.generateAsync({ type: 'uint8array' }));
+        try { reflow(vd); variants.set(xml, vd.exportHwp()); } finally { vd.free(); }
+      }
+      const zoneOf = (k) => { let z = colMarks[0].xml; for (const c of colMarks) { if (c.para <= k) z = c.xml; else break; } return z; };
+      hwpRaw = spliceColumnLayouts(hwpRaw, variants, zoneOf);
+      log(`단마다 줄 배치 — 단 설정 ${variants.size}가지로 따로 흘려 문단마다 제 단 폭의 줄 나눔을 씀`);
+    } catch (e) {
+      log(`단마다 줄 배치를 하지 못해 첫 단 폭의 줄 배치를 그대로 씀(미리보기에서 다단 줄이 단 밖으로 넘칠 수 있음) — ${String(e && e.message || e).slice(0, 80)}`, 'warn');
+    }
+  }
   // rhwp 0.8.7의 각주 모양 레코드 배치를 한글 배치로 고친다(구분선 길이·선 위 여백 — hwpfix.js)
-  const hwp = fixHwpBytes(rep.takeBytes(), (m, k) => log(m, k));
+  const hwp = fixHwpBytes(hwpRaw, (m, k) => log(m, k));
   const hwpx = doc2.exportHwpx();
   doc2.free();
   if (loss.count) log(`저장 중 손실 보고 ${loss.count}건: ${JSON.stringify(loss.losses).slice(0, 300)}`, 'warn');
