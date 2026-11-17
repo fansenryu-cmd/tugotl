@@ -270,7 +270,7 @@ const KW_LABEL = /^([^가-힣A-Za-z0-9]{0,3}(?:(?:(?:국문|한글|영문)\s*)?(
 const kwLabelUsable = (l) => ((l.match(/[(（\[【〔「『<＜]/g) || []).length === (l.match(/[)）\]】〕」』>＞]/g) || []).length) && /[^가-힣A-Za-z]$/.test(l);   // 괄호 짝이 맞고 구분 기호로 끝나는 머리말만 쓴다
 function relabelByTemplate(shapes, given) {
   const labels = {};
-  for (const [k, v] of Object.entries(given || {})) if (typeof v === 'string' && v.length <= 16) labels[k] = v;   // 규정값 학회는 journals.js의 labels로 지정
+  for (const [k, v] of Object.entries(given || {})) if (typeof v === 'string' && v.length <= 24) labels[k] = v;   // 규정값 학회는 journals.js의 labels로 지정(‘참고문헌 (References)’처럼 두 언어를 함께 쓰는 표지까지)
   for (const role of Object.keys(LABEL_RE)) { if (labels[role]) continue; const s = shapes[role]?.sample; if (s && s.length <= 16 && LABEL_RE[role].test(s)) labels[role] = s; }
   for (const role of ['keywords', 'keywordsEn']) { if (labels[role]) continue; const s = shapes[role]?.sample; const m = s && KW_LABEL.exec(s); if (m && m[1].length <= 16 && kwLabelUsable(m[1])) labels[role] = m[1]; }
   const fn = (b) => {
@@ -360,9 +360,11 @@ export async function buildDocument({ journal, templateBytes, blocks, onLog }) {
   doc.deleteRange(0, 0, 0, n - 1, doc.getParagraphLength(0, n - 1));
   if (doc.getParagraphLength(0, 0) > 0) doc.deleteText(0, 0, 0, doc.getParagraphLength(0, 0));
   // 첫 문단에 남은 각주·표·개체 컨트롤 제거 (구역·단 정의는 남긴다)
-  let leftover = 0;
+  //  조종 문자 목록의 문단 번호는 문서 전체 번호다 — 둘째 구역부터의 컨트롤(구역을 합칠 때 어차피 버림)은 빼야 한다.
+  //  예전에는 그것을 첫 구역 번호로 지우려다 실패해 멈춰, 여러 구역 바탕틀의 첫 문단 표(표지 표)가 빈 채로 결과에 남았다
+  let leftover = 0; const sec0Paras = doc.getParagraphCount(0);
   for (let guard = 0; guard < 50; guard++) {
-    const left = (J(doc.getControls()) || []).filter((c) => c.list === 0 && c.ctrlId !== 'secd' && c.ctrlId !== 'cold');
+    const left = (J(doc.getControls()) || []).filter((c) => c.list === 0 && c.para < sec0Paras && c.ctrlId !== 'secd' && c.ctrlId !== 'cold');
     if (!left.length) break;
     const c = left[left.length - 1];
     let r = null;
