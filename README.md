@@ -1,4 +1,4 @@
-# 투고틀 (tugotl) v2.4.3
+# 투고틀 (tugotl) v2.5
 
 **KCI 학술지 투고용 논문 양식 변환기** · [English below](#english)
 
@@ -11,7 +11,7 @@
 
 **AI의 개입 없이, 오로지 프로그램 규칙만으로, 내 PC 안에서 작동하며, 논문 정보를 어디에도 저장·전송하지 않는 논문 서지·양식 변환기입니다.**
 
-원고(HWP·HWPX·DOCX·TXT·MD)를 올리고 학회지를 고르면 그 학회의 양식과 규정에 맞춘 한글 파일을 만듭니다. HWPX나 Word(DOCX)로도 저장할 수 있습니다. 글꼴·크기·줄 간격·여백·용지·각주 서식은 학회 양식을 그대로 따르고, 원고의 문장은 바꾸지 않습니다. 내장 학회는 258곳입니다(KCI 등재지 246곳, 등재후보지 12곳).
+원고(HWP·HWPX·DOCX·TXT·MD)를 올리고 학회지를 고르면 그 학회의 양식과 규정에 맞춘 한글 파일을 만듭니다. HWPX나 Word(DOCX)로도 저장할 수 있습니다. 글꼴·크기·줄 간격·여백·용지·각주 서식은 학회 양식을 그대로 따르고, 원고의 문장은 바꾸지 않습니다. 내장 학회는 261곳입니다(KCI 등재지 249곳, 등재후보지 12곳).
 
 ### 바로 쓰기
 
@@ -36,16 +36,13 @@
 
 원고는 브라우저 메모리에서만 처리되고, 서버·외부 전송·AI 호출이 없습니다. 사용량은 배포본 내려받기 수와 소개 페이지 방문 수만 셉니다.
 
-### 최근 변경 — v2.4.3 (2026-11-15)
+### 최근 변경 — v2.5 (2026-11-17)
 
-- **v2.4.3 — 미리보기 겹낫표:** 원고의 한글 전용 반각 겹낫표(󰡔󰡕)가 결과 미리보기에서 겹화살괄호(《》)로 보이던 것을 고쳤습니다(본문·참고문헌·각주). 미리보기 엔진의 글자 바꿈 결함이라, 저장한 HWP·HWPX는 원래도 바뀌지 않았고 이번에도 그대로입니다
-- **v2.4.2 — 예문 번호·글꼴·규정 주소:** ‘(1) AI: 개념과 쓰임’ 같은 항 제목을 언어학 예문으로 잘못 보아 본문으로 내리던 것을 고쳤습니다. 음성음운형태론연구·담화와 인지·ESP Review는 규정대로 한글 바탕체·영문 Times New Roman으로 넣습니다. 학회 정보의 규정 원문·안내 주소를 208곳에서 링크로 보여 줍니다
-- **v2.4.1 — 『영어학』(한국영어학회) 집중 점검:** 규정대로 한글·한자는 한컴바탕, 영문은 Times New Roman으로 넣고(한글 글꼴을 따로 정하는 규정 서식), 게재 논문 11편으로 표·그림·각주를 대조했습니다
-- **영어학·영어영문학 30곳 추가:** 영어학 전문지(영어학·영어학연구·현대문법연구·생성문법연구 등), 영어학과 영문학을 함께 싣는 영어영문학 종합지, 영어 논문이 중심인 언어학지 등 KCI 등재 30곳을 넣어 258곳이 됐습니다. 분야 거르기에 ‘영어학·영어영문학’을 새로 만들었습니다
-- **언어학 원고 인식:** 예문 번호(‘(1) a. …’, ‘(3) A: …’)를 항 제목으로 잡지 않고, ‘Abstract’ 제목 없이 Keywords 줄 앞에 온 영문 초록을 영문초록으로 잡습니다
-- **재현 점검:** KCI 원문 논문 5편(영어학연구·응용언어학·생성문법연구·영어영문학·언어과학)을 새 30곳 양식으로 변환해 본문·각주·표·그림을 대조했습니다
+- **국어국문·영어 밖 학회 3곳 추가:** 『규제연구』(한국규제학회), 『한국도자학연구』(한국도자학회), 『기초조형학연구』(한국기초조형학회) — KCI 등재 3곳을 넣어 261곳이 됐습니다. 분야 거르기에 ‘사회과학·정책’과 ‘미술·디자인’을 새로 만들었습니다
+- **바탕틀과 규정 수치:** 『기초조형학연구』는 학회 논문 샘플 HWP를 견본화해 바탕틀로 쓰고(안내 메모는 지움), 수정보고서를 내장했습니다(2026년 9월부터 필수인 참고문헌 증빙자료 제출 가이드는 학회 누리집 링크로 안내). 『규제연구』(공식 양식 없음)와 『한국도자학연구』(양식은 회원 로그인 뒤에만 받을 수 있음)는 규정 수치로 서식을 만듭니다
+- **규정과 양식이 다른 곳:** 규정·양식·게재 논문이 서로 다른 곳(인용 방식, 여백, 빈 줄, 들여쓰기 등)은 학회 정보의 참고(notes)에 모두 적었습니다
 
-v2.3 (2026-11-08)에서는 사용자 요청([이슈 #1](https://github.com/fansenryu-cmd/tugotl/issues/1))으로 『中國學報』(중국학보, 한국중국학회)를 넣었고, v2.2 (2026-11-04)에서는 유아교육·보육 학회 19곳을 넣고(분야 거르기 ‘유아교육·보육’ 신설) 장·절 제목 단계와 표·그림 제목 쪽 나눔을 고쳤으며, v2.1 (2026-11-01)에서는 국어교육·한문교육·방송(드라마)·불교문예 학회 18곳을 넣었고, v2.0 (2026-10-25)에서는 각주 구분선을 바로잡고(학회 양식의 선 길이·굵기·색) 한글 산출물과 같은 서식의 Word(DOCX) 저장을 넣었습니다.
+v2.4.3 (2026-11-15)에서는 결과 미리보기에서 반각 겹낫표(󰡔󰡕)가 겹화살괄호(《》)로 보이던 것을 고쳤고, v2.4.2 (2026-11-10)에서는 항 제목을 언어학 예문으로 잘못 보던 규칙을 바로잡고 규정 주소를 링크로 보여 주며, v2.4.1 (2026-11-09)에서는 『영어학』을 집중 점검했고, v2.4 (2026-11-09)에서는 영어학·영어영문학 30곳을 넣었습니다(분야 거르기 ‘영어학·영어영문학’ 신설). v2.3 (2026-11-08)에서는 사용자 요청([이슈 #1](https://github.com/fansenryu-cmd/tugotl/issues/1))으로 『中國學報』(중국학보, 한국중국학회)를 넣었고, v2.2 (2026-11-04)에서는 유아교육·보육 학회 19곳을 넣고(분야 거르기 ‘유아교육·보육’ 신설) 장·절 제목 단계와 표·그림 제목 쪽 나눔을 고쳤으며, v2.1 (2026-11-01)에서는 국어교육·한문교육·방송(드라마)·불교문예 학회 18곳을 넣었고, v2.0 (2026-10-25)에서는 각주 구분선을 바로잡고(학회 양식의 선 길이·굵기·색) 한글 산출물과 같은 서식의 Word(DOCX) 저장을 넣었습니다.
 
 전체 내역은 [CHANGELOG.md](CHANGELOG.md), v2.0의 조사·검증 기록은 [docs/v2.0_설계.md](docs/v2.0_설계.md)에 있습니다.
 
@@ -54,7 +51,7 @@ v2.3 (2026-11-08)에서는 사용자 요청([이슈 #1](https://github.com/fanse
 | 문서 | 내용 |
 |---|---|
 | [docs/사용안내.md](docs/사용안내.md) | 화면 흐름, 설정, 정오표, 휴대폰, 표·그림, 개인정보 |
-| [docs/학회목록.md](docs/학회목록.md) | 내장 학회 258곳 전체 목록 |
+| [docs/학회목록.md](docs/학회목록.md) | 내장 학회 261곳 전체 목록 |
 | [docs/개발.md](docs/개발.md) | 변환 원리, 빌드·검증 도구, 코드 구조, 학회 추가 방법 |
 | [docs/글꼴안내.md](docs/글꼴안내.md) | 학회별 필요 글꼴 |
 | [CHANGELOG.md](CHANGELOG.md) | 판별 변경 내역 |
@@ -94,11 +91,11 @@ v2.3 (2026-11-08)에서는 사용자 요청([이슈 #1](https://github.com/fanse
 - **Input:** HWP, HWPX, DOCX, TXT or MD. **Output:** HWP, HWPX or Word (DOCX), laid out in the journal’s own template or published specifications.
 - **Rules only, no AI.** The text of your paper is never rewritten. Only citation details in footnotes and references (page units, page-range marks, title brackets) are normalised to the journal’s rules, and each can be switched off.
 - **Private by design.** Everything runs in your browser from a single offline HTML file. Nothing is uploaded.
-- **258 built-in journals** (246 KCI-accredited, 12 candidate) with submission links, deadlines, fees, length limits and required forms.
+- **261 built-in journals** (249 KCI-accredited, 12 candidate) with submission links, deadlines, fees, length limits and required forms.
 
 **Quick start:** download **[tugotl.html](https://github.com/fansenryu-cmd/tugotl/releases/latest/download/tugotl.html)** (about 30 MB) and open it in Chrome or Edge, or use it online at **https://fansenryu-cmd.github.io/tugotl/**. Pick the journal, drop your manuscript, press **적용 (Apply)**, check the preview, and press **저장 (Save)**. The interface is in Korean; the in-app help has an English section.
 
-**v2.4.3 (2026-11-15):** the result preview no longer shows the Hangul-only half-width double corner brackets (󰡔󰡕, private-use code points) as double angle brackets (《》) in body text, references and footnotes; the saved HWP and HWPX files were never affected and are unchanged. v2.4.2 (2026-11-10): the rule for numbered linguistic examples no longer turns real “(1) …” subsection headings (ones with a colon or brackets, or only one per section) into body text; *Studies in Phonetics, Phonology and Morphology*, *Discourse and Cognition* and *ESP Review* now use 바탕체 for Hangul and Hanja and Times New Roman for Latin text as their rules require; and the journal panel links the rule and guideline pages for 208 journals. v2.4.1 (2026-11-09): for the *Korean Journal of English Language and Linguistics* the Hangul and Hanja text now uses 한컴바탕 and Latin text Times New Roman as its rules require, checked against 11 published papers. **What’s new in v2.4 (2026-11-09):** 30 KCI-accredited journals in English linguistics and English language and literature, with a new filter — 258 journals in total. Linguistics manuscripts are read better: numbered examples such as “(1) a. …” are no longer taken for section headings, and an English abstract without an ‘Abstract’ heading before the Keywords line is recognised as the abstract. v2.3 (2026-11-08) added *The Journal of Chinese Studies* (中國學報) at a user’s request ([issue #1](https://github.com/fansenryu-cmd/tugotl/issues/1)). v2.2 (2026-11-04) added 19 early childhood education and care journals and fixed section levels under Roman-numeral chapters, captions left alone at the bottom of a page, and page-based length limits. v2.1 (2026-11-01) added 18 journals in Korean-language education, classical Chinese education, broadcasting (TV drama) and Buddhist literature; v2.0 (2026-10-25) fixed the footnote separator and added Word (DOCX) export. See [CHANGELOG.md](CHANGELOG.md) and [docs/v2.0_설계.md](docs/v2.0_설계.md).
+**What’s new in v2.5 (2026-11-17):** three KCI-accredited journals outside Korean and English studies — *Journal of Regulation Studies* (규제연구, 한국규제학회), *Korean Journal of Ceramic Studies* (한국도자학연구, 한국도자학회) and *Journal of Basic Design & Art* (기초조형학연구, 한국기초조형학회) — 261 journals in total, with two new field filters (social science & policy; art & design). *Journal of Basic Design & Art* uses the society’s sanitized sample manuscript as its template and bundles its revision report form (the reference-evidence guide required from September 2026 is linked on the society’s site); the other two are laid out from their published numbers, because one has no official template and the other releases its template only to logged-in members. Where a society’s rules, template and published papers disagree, the journal notes record each. v2.4.3 (2026-11-15): the result preview no longer shows the Hangul-only half-width double corner brackets (󰡔󰡕, private-use code points) as double angle brackets (《》) in body text, references and footnotes; the saved HWP and HWPX files were never affected and are unchanged. v2.4.2 (2026-11-10): the rule for numbered linguistic examples no longer turns real “(1) …” subsection headings (ones with a colon or brackets, or only one per section) into body text; *Studies in Phonetics, Phonology and Morphology*, *Discourse and Cognition* and *ESP Review* now use 바탕체 for Hangul and Hanja and Times New Roman for Latin text as their rules require; and the journal panel links the rule and guideline pages for 208 journals. v2.4.1 (2026-11-09): for the *Korean Journal of English Language and Linguistics* the Hangul and Hanja text now uses 한컴바탕 and Latin text Times New Roman as its rules require, checked against 11 published papers. v2.4 (2026-11-09): 30 KCI-accredited journals in English linguistics and English language and literature, with a new filter — 258 journals in total. Linguistics manuscripts are read better: numbered examples such as “(1) a. …” are no longer taken for section headings, and an English abstract without an ‘Abstract’ heading before the Keywords line is recognised as the abstract. v2.3 (2026-11-08) added *The Journal of Chinese Studies* (中國學報) at a user’s request ([issue #1](https://github.com/fansenryu-cmd/tugotl/issues/1)). v2.2 (2026-11-04) added 19 early childhood education and care journals and fixed section levels under Roman-numeral chapters, captions left alone at the bottom of a page, and page-based length limits. v2.1 (2026-11-01) added 18 journals in Korean-language education, classical Chinese education, broadcasting (TV drama) and Buddhist literature; v2.0 (2026-10-25) fixed the footnote separator and added Word (DOCX) export. See [CHANGELOG.md](CHANGELOG.md) and [docs/v2.0_설계.md](docs/v2.0_설계.md).
 
 **More:** [usage guide](docs/사용안내.md#english--using-tugotl) · [journal list](docs/학회목록.md) · [development](docs/개발.md#english--development) · [changelog](CHANGELOG.md).
 

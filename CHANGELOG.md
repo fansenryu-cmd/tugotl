@@ -2,6 +2,13 @@
 
 판마다 무엇이 바뀌었는지 적습니다. 배포본은 [Releases](https://github.com/fansenryu-cmd/tugotl/releases)에 있습니다. *English summaries follow the Korean.*
 
+**v2.5 (2026-11-17)** — 사회과학·미술디자인 학회 3곳 추가(258곳 → 261곳).
+- **새 학회(분야 ‘사회과학·정책’·‘미술·디자인’ 신설)**: 『규제연구』(한국규제학회, KCI 등재), 『한국도자학연구』(한국도자학회, KCI 등재), 『기초조형학연구』(한국기초조형학회, KCI 등재). 학회 공식 규정·양식만으로 수집.
+- **『기초조형학연구』**: 학회 누리집의 논문 샘플(Thesis_sample(2024_07).hwp)을 견본화해 바탕틀로 씀 — 견본화 뒤 남은 안내 메모 문단(빨간·회색 안내, 끝의 도판목록 안내)을 지우고 절·항 제목 번호를 되살림. APA 7판 내주(각주 지양), 참고문헌 ‘References’·쪽 범위 –(en dash), 본문 왼쪽 여백 101.8pt 판면. 학술지논문 수정보고서 내장, 참고문헌 증빙자료 제출 가이드(2026년 9월부터 필수)는 예시 그림에 개인 실명이 있어 내장하지 않고 학회 누리집 링크만, 논문 작성 가이드라인(2023.2.28) 원본은 docs/첨부. 1·2쪽(제목·차례·요약·Abstract)은 양식에서 표 안이라 규정·양식 수치로만 맞춤. 양식과 웹 규정이 다른 곳(여백, 자간, 빈 줄, 참고문헌 글꼴)은 양식을 따름.
+- **『규제연구』**: 공식 양식 HWP가 없어 바탕틀 없이 규정 수치(A4, 글자 11, 줄간 200)만 덮어씀(여백·글꼴은 일반 양식). 본문 저자(연도) 인용 체계. 게재 논문의 APA식 표기·장절 번호가 규정 예시와 다른 점은 학회 정보의 참고(notes)에 적음.
+- **『한국도자학연구』**: 공식 양식은 회원 로그인 뒤에만 받을 수 있어 바탕틀 없이 논문투고규정 7 ‘글자모양과 문단모양’ 표(2026.4.29 시행) 값으로 서식을 만듦(200×277 mm, 휴먼명조·휴먼고딕, 장평 95). 규정에 없는 머리말·꼬리말 거리는 지어내지 않고 일반 양식 값을 씀. 본문 들여쓰기는 규정 문구 ‘3. 75cm’가 해석되지 않아 게재 논문 실측 ≈9pt.
+- verify_matrix 261/261 통과.
+
 **v2.4.3 (2026-11-15)** — 결과 미리보기에서 반각 겹낫표가 겹화살괄호로 보이던 결함 고침.
 - **미리보기 겹낫표**: 원고의 한글 전용 반각 겹낫표 󰡔󰡕(U+F0854·U+F0855, 사설 영역)가 결과 미리보기에서 겹화살괄호 《》로 그려지던 것을 『』로 바로잡음(본문·참고문헌·각주, 학회·글꼴·브라우저와 무관). rhwp 0.8.7이 쪽을 그릴 때 사설 영역 글자를 바꾸는 표에서 두 글자를 《》에 잘못 잇는 탓으로, 새 `src/preview.js`가 같은 쪽의 렌더 트리에서 원래 글자가 반각 겹낫표인 자리만 찾아 미리보기 SVG의 그 글자만 바꿈. 원고에 원래 있던 《》, 글자 자리·쪽 나눔은 그대로이고, 자리를 맞추지 못한 줄은 손대지 않음. 바탕틀 미리보기에도 같게 적용.
 - **저장 파일은 그대로**: 저장한 HWP·HWPX에는 원래도 반각 겹낫표가 그대로 들어 있었고(한글에서 열면 정상), 이번 수정도 저장 경로는 건드리지 않음.
@@ -90,6 +97,8 @@
 ---
 
 ## English
+
+*v2.5 (2026-11-17):* three KCI-accredited journals outside Korean and English studies, with two new field filters (social science & policy; art & design) — 261 journals in total. *Journal of Basic Design & Art* (기초조형학연구) uses the society’s sample manuscript, sanitized and stripped of its guidance notes, as its template, and bundles the revision report form; the reference-evidence guide (required from September 2026) is linked on the society’s site rather than bundled, because its sample images show a private individual’s name. *Journal of Regulation Studies* (규제연구) has no official template and *Korean Journal of Ceramic Studies* (한국도자학연구) gives its template only to logged-in members, so both are laid out from their published numbers; values the rules do not state (margins for the first, header and footer distances for the second) fall back to the generic layout rather than being guessed. Where rules, template and published papers disagree, each journal’s notes record all of them.
 
 *v2.4.3 (2026-11-15):* the result preview drew the Hangul-only half-width double corner brackets 󰡔󰡕 (private-use U+F0854/U+F0855) as double angle brackets 《》 in body text, references and footnotes, because the rhwp 0.8.7 renderer maps those two code points to the wrong characters. The preview now redraws only those positions as 『』, leaving original 《》, glyph positions and page breaks untouched. Saved HWP and HWPX files were never affected. New test: `tools/preview_brackets_test.mjs`.
 
